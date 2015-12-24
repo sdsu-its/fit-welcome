@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select your Host {{FIRST}}</title>
+
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<table>
+    <tr>
+        <td class="pageHead">Who are you meeting with?</td>
+    </tr>
+    <tr>
+        <td>
+            <form action="conf">
+                <input type="hidden" name="id" value="{{REDID}}">
+                <input type="hidden" name="goal" value="Meet an ID">
+                <table>
+                    <tr>
+                        <td>
+                            <button class="panelButton" id="bolt" type="submit" name="host" value="bolt">BOLT / QOLT Consultation
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+
+                <table>
+                    {{HOSTS}}
+                </table>
+            </form>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

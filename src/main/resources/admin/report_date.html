@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Date Range for Report</title>
+
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<table>
+    <tr>
+        <td class="pageSubHead">Select Date Range for {{REPORT}}</td>
+    </tr>
+    <tr>
+        <td>
+            <form action="admin/report">
+                <input type="hidden" name="id" value="{{REDID}}">
+                <input type="hidden" name="report_type" value="{{RTYPE}}">
+                <table>
+                    <tr>
+                        <td>
+                            Start Date:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="Start Date" type="date" name="start" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            End Date:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="End Date" type="date" name="end" required>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Submit">Run Report</button>
+            </form>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

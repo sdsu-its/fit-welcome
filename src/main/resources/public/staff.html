@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello {{FIRST}}!</title>
+
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<table>
+    <tr>
+        <td class="pageHead">Hey {{FIRST}}!</td>
+    </tr>
+    <tr>
+        <td class="pageSubHead">You are currently {{STATUS}}.</td>
+    </tr>
+    <tr>
+        <td>
+            <form action="conf">
+                <button id="clock" type="submit" name="Action" value="toggle clock">Clock {{VERB}}</button>
+                <input type="hidden" name="id" value="{{REDID}}">
+                <input type="hidden" name="source" value="staff">
+            </form>
+            <form action="admin">
+                <input type="hidden" name="id" value="{{REDID}}">
+                <button id="admin" type="submit" {{ADMIN}}>Admin</button>
+            </form>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

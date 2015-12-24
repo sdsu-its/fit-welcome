@@ -1,0 +1,472 @@
+package edu.sdsu.its.fit_welcome;
+
+import com.opencsv.CSVWriter;
+import edu.sdsu.its.fit_welcome.Models.ClockIO;
+import edu.sdsu.its.fit_welcome.Models.Quote;
+import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.fit_welcome.Models.User;
+import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * Interface with the MySQL DB
+ *
+ * @author Tom Paulus
+ *         Created on 12/15/15.
+ */
+@SuppressWarnings({"SqlNoDataSourceInspection", "SqlResolve"})
+public class DB {
+    private static final String db_url = Param.getParam("fit_welcome", "db-url");
+    private static final String db_user = Param.getParam("fit_welcome", "db-user");
+    private static final String db_password = Param.getParam("fit_welcome", "db-password");
+
+    /**
+     * Create and return a new DB Connection
+     * Don't forget to close the connection!
+     *
+     * @return {@link Connection} DB Connection
+     */
+    public static Connection getConnection() {
+        Connection conn = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            conn = DriverManager.getConnection(db_url, db_user, db_password);
+        } catch (Exception e) {
+            Logger.getLogger(DB.class).fatal("Problem Initializing DB Connection", e);
+            System.exit(69);
+        }
+
+        return conn;
+    }
+
+    private static void executeStatement(final String sql) {
+        new Thread() {
+            @Override
+            public void run() {
+                Statement statement = null;
+                Connection connection = getConnection();
+
+                try {
+                    statement = connection.createStatement();
+                    Logger.getLogger(DB.class).info(String.format("Executing SQL Statement - \"%s\"", sql));
+                    statement.execute(sql);
+
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).error("Problem Executing Statement \"" + sql + "\"", e);
+                } finally {
+                    if (statement != null) {
+                        try {
+                            statement.close();
+                            connection.close();
+                        } catch (SQLException e) {
+                            Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                        }
+                    }
+                }
+            }
+        }.start();
+    }
+
+    private static File queryToCSV(final String sql, final String fileName) throws IOException {
+        Connection connection = getConnection();
+        Statement statement = null;
+        CSVWriter writer = null;
+        File file = null;
+
+        try {
+            statement = connection.createStatement();
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName + ".csv");
+
+            writer = new CSVWriter(new FileWriter(file));
+            writer.writeAll(resultSet, true);
+
+            resultSet.close();
+
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem Querying DB", e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Data Dump File");
+                }
+            }
+
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return file;
+    }
+
+    private static String sanitize(final String input) {
+        return input.replace("'", "");
+    }
+
+
+    /**
+     * Get User for the specified ID
+     *
+     * @param id {@link int} User's ID (Commonly their RedID)
+     * @return {@link User} User
+     */
+    public static User getUser(final int id) {
+        Connection connection = getConnection();
+        Statement statement = null;
+        User user = null;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = "SELECT * FROM itsdev_welcome.bbusers WHERE id = " + id + ";";
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                user = new User(id, resultSet.getString("first_name"), resultSet.getString("last_name"), resultSet.getString("email"));
+            }
+
+            resultSet.close();
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem querying DB for UserID", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return user;
+    }
+
+    /**
+     * Get Staff User based on ID
+     *
+     * @param id {@link int} User's ID (Commonly their RedID)
+     * @return {@link Staff} Staff
+     */
+    public static Staff getStaff(final int id) {
+        Connection connection = getConnection();
+        Statement statement = null;
+        Staff staff = null;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = "SELECT * FROM itsdev_welcome.staff WHERE id = " + id + ";";
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                staff = new Staff(id, resultSet.getString("first_name"), resultSet.getString("last_name"),
+                        resultSet.getString("email"), resultSet.getBoolean("clockable"), resultSet.getBoolean("admin"), resultSet.getBoolean("instructional_designer"));
+            }
+
+
+            resultSet.close();
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem querying DB for UserID", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return staff;
+    }
+
+    /**
+     * Get all Staff Users. Restrictions can be imposed with the restrictions param.
+     * Use restrictions with care as they are un sanitized and not checked.
+     *
+     * @param restriction {@link String} Restriction of which users should be included. Uses SQL format
+     *                    ex. "WHERE admin = 1"
+     *                    Use empty string to get all staff users.
+     * @return {@link Staff[]} All staff users who meet the supplied criteria.
+     */
+    public static Staff[] getAllStaff(final String restriction) {
+        Connection connection = getConnection();
+        Statement statement = null;
+        Staff[] staff = null;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = "SELECT * FROM itsdev_welcome.staff " + restriction + ";";
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            final List<Staff> staffList = new ArrayList<Staff>();
+
+
+            while (resultSet.next()) {
+                staffList.add(new Staff(resultSet.getInt("id"), resultSet.getString("first_name"), resultSet.getString("last_name"),
+                        resultSet.getString("email"), resultSet.getBoolean("clockable"), resultSet.getBoolean("admin"), resultSet.getBoolean("instructional_designer")));
+            }
+
+            Collections.sort(staffList, new Comparator<Staff>() {
+                public int compare(Staff staff1, Staff staff2) {
+                    return staff1.lastName.compareToIgnoreCase(staff2.lastName);
+                }
+            });
+
+
+            staff = new Staff[staffList.size()];
+
+            for (int s = 0; s < staffList.size(); s++) {
+                staff[s] = staffList.get(s);
+            }
+
+            resultSet.close();
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem querying DB for Staff List", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return staff;
+    }
+
+    /**
+     * Log FIT Center Event
+     *
+     * @param id     {@link int} Users's ID
+     * @param action {@link String} User's Goal
+     * @param params {@link String} Notes/Specifications for User's visit
+     */
+    public static void logEvent(final int id, final String action, final String params) {
+        final String sql = String.format("INSERT INTO itsdev_welcome.events VALUE ('" + new Timestamp(new java.util.Date().getTime()).toString() + "', %d, '%s', '%s')", id, sanitize(action), sanitize(params));
+        executeStatement(sql);
+    }
+
+    /**
+     * Get all Quotes from the DB
+     *
+     * @return {@link Quote[]} All Quotes
+     */
+    public static Quote[] getQuotes() {
+        Connection connection = getConnection();
+        Statement statement = null;
+        Quote[] quotes = null;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = "SELECT * FROM itsdev_welcome.quotes;";
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            final List<Quote> quoteList = new ArrayList<Quote>();
+
+            while (resultSet.next()) {
+                quoteList.add(new Quote(resultSet.getString("text"), resultSet.getString("author")));
+            }
+
+            quotes = new Quote[quoteList.size()];
+
+            for (int q = 0; q < quoteList.size(); q++) {
+                quotes[q] = quoteList.get(q);
+            }
+
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem Adding Action to DB", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return quotes;
+    }
+
+    /**
+     * Clock In the User
+     *
+     * @param id   {@link int} User's ID
+     * @param time {@link String} Current Time in SQL format
+     *             'now()' can be used, but is not recommended because Statements are Threaded.
+     */
+    public static void clockIn(final int id, final String time) {
+        final String sql = String.format("INSERT INTO itsdev_welcome.clock VALUES (%d, %s, DEFAULT );", id, time);
+        executeStatement(sql);
+    }
+
+    /**
+     * Clock Out the User
+     *
+     * @param id   {@link int} User's ID
+     * @param time {@link String} Current Time in SQL format
+     *             'now()' can be used, but is not recommended because Statements are Threaded.
+     */
+    public static void clockOut(final int id, final String time) {
+        final String sql = String.format("UPDATE itsdev_welcome.clock SET time_out = %s WHERE id = %d AND time_out = '0000-00-00 00:00:00';\n", time, id);
+        executeStatement(sql);
+    }
+
+    /**
+     * @param id {@link int} Staff ID
+     * @return True if Clocked IN, False if Clocked OUT
+     */
+    public static boolean clockStatus(final int id) {
+        Connection connection = getConnection();
+        Statement statement = null;
+        boolean status = false;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = String.format("SELECT * FROM itsdev_welcome.clock WHERE id = %d AND time_out = '0000-00-00 00:00:00';", id);
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            status = resultSet.next();
+
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem Adding Action to DB", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return status;
+    }
+
+    /**
+     * Export all Events to a CSV.
+     *
+     * @param start    {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
+     * @param end      {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
+     * @param fileName {@link String} File Name for the Report. Do NOT include .csv
+     * @return {@link File} File object for the Report CSV
+     */
+    public static File exportEvents(final String start, final String end, final String fileName) {
+        final String sql = "SELECT *\n" +
+                "FROM itsdev_welcome.events\n" +
+                "WHERE\n" +
+                "  TIMESTAMP BETWEEN STR_TO_DATE('" + start + "', '%Y-%m-%d') AND\n" +
+                "  DATE_ADD(STR_TO_DATE('" + end + "', '%Y-%m-%d'), INTERVAL 1 DAY)\n" +
+                "ORDER BY TIMESTAMP ASC;";
+
+        try {
+            return queryToCSV(sql, fileName);
+        } catch (IOException e) {
+            Logger.getLogger(DB.class).error("Problem Saving Events to CSV", e);
+            return null;
+        }
+    }
+
+    /**
+     * Export all ClockIO pairs for a User.
+     * - Used to generate Timesheets
+     *
+     * @param id    {@link int} ID of user whose Clock In/Outs should be queried.
+     * @param start {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
+     * @param end   {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
+     * @return {@link ClockIO[]} All ClockIn/Out pairs for the slected user during the specified interval
+     */
+    public static ClockIO[] exportClockIOs(final int id, final String start, final String end) {
+        final String sql = "SELECT *\n" +
+                "FROM itsdev_welcome.clock\n" +
+                "WHERE\n" +
+                "  id = " + Integer.toString(id) + " AND\n" +
+                "  time_in BETWEEN STR_TO_DATE('" + start + "', '%Y-%m-%d') AND\n" +
+                "  DATE_ADD(STR_TO_DATE('" + end + "', '%Y-%m-%d'), INTERVAL 1 DAY)\n" +
+                "ORDER BY time_in ASC;";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+        ClockIO[] rarray = null;
+
+        try {
+            statement = connection.createStatement();
+            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            List<ClockIO> clockIOs = new ArrayList<ClockIO>();
+            while (resultSet.next()) {
+                clockIOs.add(new ClockIO(DateTime.parse(resultSet.getString("time_in"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0")),
+                        DateTime.parse(resultSet.getString("time_out"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0"))));
+            }
+
+            rarray = new ClockIO[clockIOs.size()];
+            for (int e = 0; e < clockIOs.size(); e++) {
+                rarray[e] = clockIOs.get(e);
+            }
+        } catch (SQLException e) {
+            Logger.getLogger(DB.class).error("Problem retreating Clock entries from DB");
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return rarray;
+    }
+
+    /**
+     * Create a new Staff User
+     *
+     * @param staff {@link Staff} New User to Create
+     * @return {@link} If user was created successfully. False if the ID already exists.
+     */
+    public static boolean createNewStaff(final Staff staff) {
+        if (getStaff(staff.id) != null) {
+            // If a staff member with that record already exists for that ID, thrown an error.
+            Logger.getLogger(DB.class).warn("Cannot create new Staff user, a record with that ID already exists.");
+            return false;
+        }
+
+        final String sql = String.format("INSERT INTO itsdev_welcome.staff VALUE (%d, '%s', '%s', '%s', %d, %d, %d);",
+                staff.id, sanitize(staff.firstName), sanitize(staff.lastName), sanitize(staff.email), staff.clockable ? 1 : 0, staff.admin ? 1 : 0, staff.instructional_designer ? 1 : 0);
+        executeStatement(sql);
+
+        return true;
+    }
+}
