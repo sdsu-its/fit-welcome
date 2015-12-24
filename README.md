@@ -72,16 +72,17 @@ CREATE TABLE staff
 ### Acuity Setup
 One small addition needs to be made to the Acuity Scheduler. By default, the Client Scheduling page of Acuity is not setup to process multiple sessions in the same window. To fix this, we need to add a small snippet of code to the Confirmation Page. This can be done by enabling _Custom Conversion Tracking_ (Under Import/Export/Syncing).
 
-Insert the following snippet. Be sure to replace `mypage` with the full URL of the page that the scheduler iframe is embedded in.
+Insert the following snippet. Be sure to replace `mypage` with the URL(without http or https) of the page that the scheduler iframe is embedded in.
 
 ```
 var url = (window.location != window.parent.location)
     ? document.referrer
     : document.location;
 
-if (url=='mypage') {
-    // Where mypage above is the Full URL of the page that the scheduler iframe is embedded in.
+if (url.indexOf("mypage") !=-1) {
+    // Where mypage above is the URL, without http or https, of the page that the scheduler iframe is embedded in.
     // This prevents redirects if the page in embedded elsewhere.
+
     window.top.location = '../index.hmtl';
 }
 ```
