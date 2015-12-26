@@ -79,10 +79,10 @@ var url = (window.location != window.parent.location)
     ? document.referrer
     : document.location;
 
-if (url.indexOf("mypage") !=-1) {
+if (url.indexOf('mypage') !=-1) {
     // Where mypage above is the URL, without http or https, of the page that the scheduler iframe is embedded in.
     // This prevents redirects if the page in embedded elsewhere.
 
-    window.top.location = '../index.hmtl';
+    window.top.location = '../index.html';
 }
 ```
