@@ -1,7 +1,7 @@
 FIT Center Welcome Console
 ===========================
 
-The ITS FIT (Faculty Instructional Technology) Center is a grate place for San Diego State University Faculty to learn and use Learning Technologies, like OMR machines and classroom response tools.
+The ITS FIT (Faculty Instructional Technology) Center is a great place for San Diego State University Faculty to learn and use Learning Technologies, like OMR machines and classroom response tools.
 
 Tracking why Faculty come to the FIT Center can help to improve the services and support they receive. This is where the FIT Welcome Console can help. Running a web-enabled device, like a desktop or tablet, guests can check in, providing statical tracking, as well as notifications in certain cases.
 
