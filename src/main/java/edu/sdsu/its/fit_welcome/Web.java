@@ -41,8 +41,8 @@ public class Web {
 
         int redid = User.parseSwipe(uid);
 
-        User user = User.getUser(redid);
         Staff staff = Staff.getStaff(redid);
+        User user = (staff == null)? User.getUser(redid): null;
 
         if (user == null && staff == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(Pages.makePage(Pages.NOT_FOUND, new HashMap<String, String>())).build();

@@ -30,6 +30,7 @@ import java.util.List;
 public class Acutiy {
     private static final String USERID = Param.getParam("Acuity", "User ID");
     private static final String KEY = Param.getParam("Acuity", "API Key");
+    public static final String CALID = Param.getParam("Acuity", "ParScore Calendar");
     private static final Logger Log = Logger.getLogger(Acutiy.class);
 
     private static String getCurrentTimeStamp(final String pattern) {
@@ -116,7 +117,7 @@ public class Acutiy {
                     .setPath("appointments")
                     .setParameter("minDate", getCurrentTimeStamp("yyyy-MM-dd"))
                     .setParameter("maxDate", getCurrentTimeStamp("yyyy-MM-dd"))
-                    .setParameter("calendarID", Param.getParam("Acuity", "ParScore Calendar"))
+                    .setParameter("calendarID", CALID)
                     .setParameter("canceled", "false")
                     .build();
 
