@@ -1,6 +1,8 @@
 package edu.sdsu.its.fit_welcome;
 
 import edu.sdsu.its.fit_welcome.Models.User;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -43,6 +45,21 @@ public class Clock {
             // Currently Clocked IN, needs to be Clocked OUT
             DB.clockIn(this.user.id, String.format("'%s'", new Timestamp(new Date().getTime()).toString()));
             return true;
+        }
+    }
+
+    /**
+     * Models a Clock Cycle (A Clock in / clock out pair)
+     */
+    public static class ClockIO {
+        public DateTime inTime;
+        public DateTime outTime;
+        public Duration duration;
+
+        public ClockIO(DateTime inTime, DateTime outTime) {
+            this.inTime = inTime;
+            this.outTime = outTime;
+            this.duration = new Duration(inTime, outTime);
         }
     }
 }

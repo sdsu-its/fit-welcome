@@ -1,7 +1,6 @@
 package edu.sdsu.its.fit_welcome;
 
 import com.opencsv.CSVWriter;
-import edu.sdsu.its.fit_welcome.Models.ClockIO;
 import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
@@ -404,9 +403,9 @@ public class DB {
      * @param id    {@link int} ID of user whose Clock In/Outs should be queried.
      * @param start {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
      * @param end   {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
-     * @return {@link ClockIO[]} All ClockIn/Out pairs for the slected user during the specified interval
+     * @return {@link Clock.ClockIO[]} All ClockIn/Out pairs for the slected user during the specified interval
      */
-    public static ClockIO[] exportClockIOs(final int id, final String start, final String end) {
+    public static Clock.ClockIO[] exportClockIOs(final int id, final String start, final String end) {
         final String sql = "SELECT *\n" +
                 "FROM itsdev_welcome.clock\n" +
                 "WHERE\n" +
@@ -417,20 +416,20 @@ public class DB {
 
         Connection connection = getConnection();
         Statement statement = null;
-        ClockIO[] rarray = null;
+        Clock.ClockIO[] rarray = null;
 
         try {
             statement = connection.createStatement();
             Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
-            List<ClockIO> clockIOs = new ArrayList<ClockIO>();
+            List<Clock.ClockIO> clockIOs = new ArrayList<Clock.ClockIO>();
             while (resultSet.next()) {
-                clockIOs.add(new ClockIO(DateTime.parse(resultSet.getString("time_in"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0")),
+                clockIOs.add(new Clock.ClockIO(DateTime.parse(resultSet.getString("time_in"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0")),
                         DateTime.parse(resultSet.getString("time_out"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0"))));
             }
 
-            rarray = new ClockIO[clockIOs.size()];
+            rarray = new Clock.ClockIO[clockIOs.size()];
             for (int e = 0; e < clockIOs.size(); e++) {
                 rarray[e] = clockIOs.get(e);
             }
