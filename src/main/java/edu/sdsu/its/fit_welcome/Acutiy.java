@@ -28,9 +28,9 @@ import java.util.List;
  *         Created on 12/12/15.
  */
 public class Acutiy {
+    public static final String CALID = Param.getParam("Acuity", "ParScore Calendar");
     private static final String USERID = Param.getParam("Acuity", "User ID");
     private static final String KEY = Param.getParam("Acuity", "API Key");
-    public static final String CALID = Param.getParam("Acuity", "ParScore Calendar");
     private static final Logger Log = Logger.getLogger(Acutiy.class);
 
     private static String getCurrentTimeStamp(final String pattern) {
@@ -135,16 +135,17 @@ public class Acutiy {
         return result;
     }
 
+    /**
+     * Check-in User for Specified Appointment
+     *
+     * @param appointmentID {@link Integer} Acuity AppointmentID
+     */
     public static void checkIn(final Integer appointmentID) {
         final Appointment appointment = getAppt(appointmentID);
         final Appointment newAppointment = new Appointment();
 
-        final String checkInText = "Checked In at " + getCurrentTimeStamp("MM/dd/yy hh:mm:ss a");
-        if (appointment.notes.length() > 0) {
-            newAppointment.notes = appointment.notes + "\n" + checkInText;
-        } else {
-            newAppointment.notes = checkInText;
-        }
+        final String checkInText = "Checked in at " + getCurrentTimeStamp("hh:mma");
+        newAppointment.notes = checkInText + ((appointment.notes.length() > 0) ? "\n" + appointment.notes : ""); // Checked In at TIME (\n Original Note) - if exists
 
         final URI uri;
         try {

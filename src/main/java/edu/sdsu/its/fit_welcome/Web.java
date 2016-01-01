@@ -56,7 +56,7 @@ public class Web {
             final boolean status = new Clock(staff).getStatus();
             params.put("STATUS", status ? "Clocked In" : "Clocked Out");
             params.put("VERB", status ? "Out" : "In");
-            params.put("ADMIN", staff.admin ? "" : "disabled=\"disabled\"");
+            params.put("ADMIN", staff.admin ? "" : "style=\"display: none;\"");
 
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.STAFF_WELCOME, params)).build();
         } else if (staff != null && staff.admin) {
