@@ -267,7 +267,7 @@ public class DB {
      * @param params {@link String} Notes/Specifications for User's visit
      */
     public static void logEvent(final int id, final String action, final String params) {
-        final String sql = String.format("INSERT INTO itsdev_welcome.events VALUE ('" + new Timestamp(new java.util.Date().getTime()).toString() + "', %d, '%s', '%s')", id, sanitize(action), sanitize(params));
+        final String sql = String.format("INSERT INTO itsdev_welcome.events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", new Timestamp(new java.util.Date().getTime()).toString(), id, sanitize(action), sanitize(params));
         executeStatement(sql);
     }
 
