@@ -13,7 +13,14 @@ FIT Welcome also includes various staff tools, including...
 
 
 ## Setup
-FIT Welcome is written primarily in Java and is run using the TomCat framework. A MySQL DB is used to store user information, as well as log events and clock in/out times.
+FIT Welcome is written primarily in Java and is run using the TomCat framework to run the WebSites. A MySQL DB is used to store user information, as well as log events and clock in/out times.
+
+__FollowUp__ is an additional optional module that is run independently as a Java Executable at the end of every day (or whenever you like) that sends a follow up email with a survey link to users who have visited within the last X days. There is also a param to limit the number of emails a user gets.
+ - Param: `followup_freshness` - Within how many days to contact the users. For example a value of 3 would mean to contact those who have visited in the last 3 days.
+ - Param: `followup_max` - The minimum number of days since the user was last emailed. For Example a value of 7 would mean that a user who visits every day would only get an email every 7 days.
+
+ - ___Full Param List is below!___
+
 
 FIT Welcome also uses [Key Server](https://github.com/sdsu-its/key-server) to access credentials for various tools and services (DataBase, APIs, Email, etc.)
 
@@ -26,16 +33,18 @@ __Clock__ is used to store Clock In/Out events.
 __Events__ stores all check-in information, as well as any additional information that is relevant to that check-in.
 __Quotes__ stores a list of quotes that are displayed on the confirmation pages. These quotes can be anything you like! (A good source for quotes is [Brainy Quote](http://www.brainyquote.com/)).
 The __Staff__ stores information for all staff users.
+__Emails__ is used by the FollowUp module to track who was sent emails when.
 
 __Important Note:__ information in the __Staff__ table has priority over information in the __bbusers__ table; this is done to allow normal users to be changed to staff users without the need to remove them from the primary users table.
 
 ```
 CREATE TABLE bbusers
 (
-    id INT(11) PRIMARY KEY NOT NULL,
+    id INT(9) PRIMARY KEY NOT NULL,
     first_name TEXT,
     last_name TEXT,
-    email TEXT
+    email TEXT,
+    send_emails TINYINT(1) DEFAULT '1'
 );
 CREATE TABLE clock
 (
@@ -45,7 +54,7 @@ CREATE TABLE clock
 );
 CREATE TABLE events
 (
-    ID int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    ID int(9) PRIMARY KEY NOT NULL AUTO_INCREMENT,
     TIMESTAMP TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL,
     redid INT(9),
     action TEXT,
@@ -53,13 +62,13 @@ CREATE TABLE events
 );
 CREATE TABLE quotes
 (
-    id INT(11) PRIMARY KEY NOT NULL,
+    id INT(9) PRIMARY KEY NOT NULL,
     text TEXT,
     author TEXT
 );
 CREATE TABLE staff
 (
-    id INT(11) PRIMARY KEY NOT NULL,
+    id INT(9) PRIMARY KEY NOT NULL,
     first_name TEXT,
     last_name TEXT,
     email TEXT,
@@ -67,8 +76,24 @@ CREATE TABLE staff
     admin TINYINT(1),
     instructional_designer TINYINT(1)
 );
+CREATE TABLE email
+(
+    TIMESTAMP TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL,
+    ID int(9),
+    TYPE TEXT
+);
 ```
 
+### KeyServer Setup
+- `db-password` = Database Password
+- `db-url` = jdbc:mysql://db_host:3306/ _replace db_host and possibly the port with your MySQL server info_
+-	`db-user` = Database Username
+- `followup_freshness` = The maximum amount of time since the user's last visit to email the user
+-	`followup_max` = The minimum number of days between emails
+-	`followup_survey_link` = Survey Link for the User, use the string `{{ event_id }}` to fill in the Event ID.
+Example: [http://www.bing.com/images/search?q={{ event_id }}](http://www.bing.com/images/search?q={{ event_id }})
+-	`followup_unsubscribe` = Unsubscribe Link, use `{{ email }}` to substitute the email.
+Example:  [http://your_domian_with_context/pages/followup/unsubscribe?e={{ email }}](http://your_domian_with_context/pages/followup/unsubscribe?e={{ email }})
 
 ### Acuity Setup
 One small addition needs to be made to the Acuity Scheduler. By default, the Client Scheduling page of Acuity is not setup to process multiple sessions in the same window. To fix this, we need to add a small snippet of code to the Confirmation Page. This can be done by enabling _Custom Conversion Tracking_ (Under Import/Export/Syncing).

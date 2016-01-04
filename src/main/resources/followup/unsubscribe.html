@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Unsubscribe from FIT Center Follow Up Emails</title>
+
+    <link rel="stylesheet" href="../../subscribe.css" type="text/css">
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+</head>
+<body>
+
+<!-- Start Container -->
+<div id="container">
+
+    <!-- Start Logo -->
+    <a href="https://its.sdsu.edu" title="ITS Home Page"><img src="../../logo.png" alt="ITS Logo" height="74"
+                                                              class="logo"/></a>
+    <!-- End Logo -->
+
+    <!-- Start Message -->
+    <div id="message">
+        <h1>Hi {{FNAME}} {{LNAME}}!</h1>
+        <p>Your email address has been removed from our list. You will no longer receive any emails as a result of
+            visiting the FIT Center.</p>
+        <p>We're sorry to see you go.</p>
+        <!-- Start Form -->
+        <form id="subscribe-form" method="post" action="subscribe">
+            <label>Enter your email address below if you want to receive emails again</label>
+            <input id="email" name="email" size="25" class="required email" value="Your Email Address"
+                   title="Enter your Email Address"/>
+            <input type="submit" value="Subscribe" class="submit" title="Subscribe to List"/>
+        </form>
+        <!-- End Form -->
+
+    </div><!-- End Message -->
+</div><!-- End Container -->
+
+<script src="../js/jquery-1.4.1.js" type="text/javascript"></script>
+<script src="../js/validate.js" type="text/javascript"></script>
+<script>
+    $(document).ready(function () {
+        $("#email").click(function () {
+            $(this).attr({value: ''});
+        });
+        $("#subscribe-form").validate();
+    });
+</script>
+
+</body>
+</html>

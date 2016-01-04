@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 import java.util.Scanner;
 
 /**
- * Send Email to user with Streaming Ticket attached.
+ * Send Email to user with Reports Attached.
  *
  * @author Tom Paulus
  *         Created on 9/25/15.

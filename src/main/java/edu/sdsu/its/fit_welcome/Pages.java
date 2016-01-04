@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 /**
- * TODO JavaDoc
+ * Generate Non-Static HTML Pages
  *
  * @author Tom Paulus
  *         Created on 12/11/15.
@@ -28,6 +28,9 @@ public class Pages {
     public static final String ADMIN_CONF = "admin/conf.html";
     public static final String MANUAL_TIME = "admin/manual_time.html";
     public static final String NEW_USER = "admin/new_staff.html";
+
+    public static final String UNSUBSCRIBE = "followup/unsubscribe.html";
+    public static final String SUBSCRIBE = "followup/subscribe.html";
 
     public static final String FORBIDDEN = "403.html";
     public static final String NOT_FOUND = "404.html";

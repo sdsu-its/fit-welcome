@@ -1,0 +1,120 @@
+/* Layout */
+body {
+	font-family: Arial,Helvetica, sans-serif;
+}
+
+.logo {
+	margin: 0 0 10px 0;
+}
+
+#container {
+	margin: 100px auto;
+	width: 560px;
+	text-align: center;
+}
+
+#message {
+	background: #DDDDDD;
+	padding: 15px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+}
+
+#notice {
+	font-size: 18px;
+}
+
+#welcome {
+	text-align: left;
+	padding: 15px;
+}
+
+/* Links */
+a:link, a:visited, a:active {
+	text-decoration: underline;
+	color: #DDD;
+	font-weight: bold;
+}
+
+a:hover {
+	color: #CCCCCC;
+}
+
+a.silent:link, a.silent:visited, a.silent:active {
+	text-decoration: none;
+	color: #000;
+	font-weight: normal;
+}
+
+a.silent:hover {
+	color: #000;
+	text-decoration: underline;
+}
+
+/* Type */
+
+p {
+	font-size: 16px;
+	line-height: 25px;
+}
+
+h1 {
+	font-size: 35px;
+	font-weight: bold;
+	margin-top: 30px;
+	margin-bottom: 15px;
+}
+
+h2 {
+	font-size: 30px;
+	line-height: 1.5;
+	font-weight: bold;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+h3 {
+	font-size: 20px;
+	margin-top: 20px;
+	margin-bottom: 15px;
+}
+
+
+/* Form */
+
+label { width: 300px;  }
+label.error { float: left; color: red; margin: 10px 0 0 35px;}
+
+.submit {
+	background: #7d7d7d;
+	border: 1px solid #999;
+	width: 150px;
+	height: 35px;
+	margin: 10px 0 0 -10px;
+	color: #222;
+		cursor: pointer;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+.submit:hover {
+	background: #00AE74;
+	border: 1px solid #006F4A;
+}
+
+#email {
+	width: 250px;
+	margin-top: 10px;
+	padding: 5px;
+	border: 1px #666 solid;
+	color: #777;
+	text-align: center;
+}
+#email:hover {
+	border: 1px #999 solid;
+}
+
+#subscribe-form {
+	width: 370px;
+	margin: 20px auto;
+}

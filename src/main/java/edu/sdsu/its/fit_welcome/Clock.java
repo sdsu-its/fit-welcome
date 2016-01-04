@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 /**
- * TODO JavaDoc
+ * Manages the User's Digital Clock (Whether they are clocked in or out)
  *
  * @author Tom Paulus
  *         Created on 12/12/15.

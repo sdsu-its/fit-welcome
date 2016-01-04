@@ -28,6 +28,7 @@ public class DB {
     private static final String db_url = Param.getParam("fit_welcome", "db-url");
     private static final String db_user = Param.getParam("fit_welcome", "db-user");
     private static final String db_password = Param.getParam("fit_welcome", "db-password");
+    private static final Logger Log = Logger.getLogger(DB.class);
 
     /**
      * Create and return a new DB Connection
@@ -41,7 +42,7 @@ public class DB {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             conn = DriverManager.getConnection(db_url, db_user, db_password);
         } catch (Exception e) {
-            Logger.getLogger(DB.class).fatal("Problem Initializing DB Connection", e);
+            Log.fatal("Problem Initializing DB Connection", e);
             System.exit(69);
         }
 
@@ -57,18 +58,18 @@ public class DB {
 
                 try {
                     statement = connection.createStatement();
-                    Logger.getLogger(DB.class).info(String.format("Executing SQL Statement - \"%s\"", sql));
+                    Log.info(String.format("Executing SQL Statement - \"%s\"", sql));
                     statement.execute(sql);
 
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).error("Problem Executing Statement \"" + sql + "\"", e);
+                    Log.error("Problem Executing Statement \"" + sql + "\"", e);
                 } finally {
                     if (statement != null) {
                         try {
                             statement.close();
                             connection.close();
                         } catch (SQLException e) {
-                            Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                            Log.warn("Problem Closing Statement", e);
                         }
                     }
                 }
@@ -84,7 +85,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName + ".csv");
@@ -95,13 +96,13 @@ public class DB {
             resultSet.close();
 
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem Querying DB", e);
+            Log.error("Problem Querying DB", e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Data Dump File");
+                    Log.warn("Problem Closing Data Dump File");
                 }
             }
 
@@ -110,7 +111,7 @@ public class DB {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -137,7 +138,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM itsdev_welcome.bbusers WHERE id = " + id + ";";
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -146,14 +147,52 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem querying DB for UserID", e);
+            Log.error("Problem querying DB for UserID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return user;
+    }
+
+    /**
+     * Get User for the specified email
+     *
+     * @param email {@link String} User's email
+     * @return {@link User} User
+     */
+    public static User getUser(final String email) {
+        Connection connection = getConnection();
+        Statement statement = null;
+        User user = null;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = "SELECT * FROM itsdev_welcome.bbusers WHERE email = '" + email + "';";
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                user = new User(resultSet.getInt("id"), resultSet.getString("first_name"), resultSet.getString("last_name"), resultSet.getString("email"));
+            }
+
+            resultSet.close();
+        } catch (SQLException e) {
+            Log.error("Problem querying DB for UserID", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -175,7 +214,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM itsdev_welcome.staff WHERE id = " + id + ";";
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -186,14 +225,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem querying DB for UserID", e);
+            Log.error("Problem querying DB for UserID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -218,7 +257,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM itsdev_welcome.staff " + restriction + ";";
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             final List<Staff> staffList = new ArrayList<Staff>();
@@ -244,14 +283,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem querying DB for Staff List", e);
+            Log.error("Problem querying DB for Staff List", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -284,7 +323,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM itsdev_welcome.quotes;";
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             final List<Quote> quoteList = new ArrayList<Quote>();
@@ -300,14 +339,14 @@ public class DB {
             }
 
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem Adding Action to DB", e);
+            Log.error("Problem Adding Action to DB", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -351,20 +390,20 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = String.format("SELECT * FROM itsdev_welcome.clock WHERE id = %d AND time_out = '0000-00-00 00:00:00';", id);
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             status = resultSet.next();
 
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem Adding Action to DB", e);
+            Log.error("Problem Adding Action to DB", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -391,7 +430,7 @@ public class DB {
         try {
             return queryToCSV(sql, fileName);
         } catch (IOException e) {
-            Logger.getLogger(DB.class).error("Problem Saving Events to CSV", e);
+            Log.error("Problem Saving Events to CSV", e);
             return null;
         }
     }
@@ -420,7 +459,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Logger.getLogger(DB.class).info(String.format("Executing SQL Query - \"%s\"", sql));
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             List<Clock.ClockIO> clockIOs = new ArrayList<Clock.ClockIO>();
@@ -434,14 +473,14 @@ public class DB {
                 rarray[e] = clockIOs.get(e);
             }
         } catch (SQLException e) {
-            Logger.getLogger(DB.class).error("Problem retreating Clock entries from DB");
+            Log.error("Problem retreating Clock entries from DB");
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Logger.getLogger(DB.class).warn("Problem Closing Statement", e);
+                    Log.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -458,7 +497,7 @@ public class DB {
     public static boolean createNewStaff(final Staff staff) {
         if (getStaff(staff.id) != null) {
             // If a staff member with that record already exists for that ID, thrown an error.
-            Logger.getLogger(DB.class).warn("Cannot create new Staff user, a record with that ID already exists.");
+            Log.warn("Cannot create new Staff user, a record with that ID already exists.");
             return false;
         }
 
@@ -467,5 +506,31 @@ public class DB {
         executeStatement(sql);
 
         return true;
+    }
+
+    /**
+     * Set the Don't Email flag for the User in the User List
+     *
+     * @param email {@link String} Email to Unsubscribe
+     */
+    public static void unsubscribe(final String email) {
+        final String sql = "UPDATE itsdev_welcome.bbusers\n" +
+                "SET send_emails = 0\n" +
+                "WHERE email = '" + email + "';";
+        Log.info(String.format("Unsubscribing user with email: %s from FollowUp List", email));
+        executeStatement(sql);
+    }
+
+    /**
+     * Unset the Don't Email flag for the User in the User List
+     *
+     * @param email {@link String } Email to Resubscribe
+     */
+    public static void subscribe(final String email) {
+        final String sql = "UPDATE itsdev_welcome.bbusers\n" +
+                "SET send_emails = 1\n" +
+                "WHERE email = '" + email + "';";
+        Log.info(String.format("Subscribing user with email: %s to FollowUp List", email));
+        executeStatement(sql);
     }
 }
