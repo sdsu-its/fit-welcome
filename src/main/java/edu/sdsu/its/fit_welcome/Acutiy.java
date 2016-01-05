@@ -54,7 +54,7 @@ public class Acutiy {
         for (Appointment appointment : appointments) {
             if (appointment.firstName.equals(user.firstName) &&
                     appointment.lastName.equals(user.lastName) &&
-                    !appointment.notes.contains("Checked In")) {
+                    !appointment.notes.toLowerCase().contains("Checked in".toLowerCase())) {
                 appointmentsForUser.add(appointment);
             }
         }

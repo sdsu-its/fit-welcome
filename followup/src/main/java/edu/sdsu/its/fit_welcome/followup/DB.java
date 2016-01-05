@@ -181,7 +181,8 @@ public class DB {
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
-                last = new DateTime(resultSet.getTimestamp(1));
+                Timestamp ts = resultSet.getTimestamp(1);
+                if (ts != null) last = new DateTime(ts);
             }
 
         } catch (SQLException e) {
