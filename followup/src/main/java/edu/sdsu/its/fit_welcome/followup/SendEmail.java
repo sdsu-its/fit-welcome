@@ -36,23 +36,14 @@ public class SendEmail {
     }
 
     /**
-     * Generate HTML Message for Report Email.
+     * Make Survey Message HTML
      *
-     * @param firstName {@link String} Recipient's first name
-     * @return {@link String} HTML Message for Sending
+     * @param firstName {@link String} Recipient's First Name
+     * @param email {@link String} Recipient's Email - For Unsubscribe
+     * @param date {@link String} Visit Date
+     * @param eventID {@link int} ID associated with their visit
+     * @return {@link String} Message HTML
      */
-    private String makeFileMessage(final String firstName) {
-        String message;
-        Timestamp timestamp = new Timestamp(new java.util.Date().getTime());
-
-        message = this.readFile("report_email_template.html")
-                .replace("{{ first }}", firstName)
-                .replace("{{ generated_on_date_footer }}", timestamp.toString());
-
-        return message;
-    }
-
-
     private String makeSurveyMessage(final String firstName, final String email, final String date, final int eventID) {
         String message;
         Timestamp timestamp = new Timestamp(new java.util.Date().getTime());
@@ -62,6 +53,7 @@ public class SendEmail {
                 .replace("{{ date }}", date)
                 .replace("{{ survey_link }}", Param.getParam("fit_welcome", "followup_survey_link"))
                 .replace("{{ event_id }}", Integer.toString(eventID))
+                .replace("{{ frequency }}", Param.getParam("fit_welcome", "followup_max"))
                 .replace("{{ generated_on_date_footer }}", timestamp.toString())
                 .replace("{{ unsubscribe_link }}", Param.getParam("fit_welcome", "followup_unsubscribe"))
                 .replace("{{ email }}", email);
