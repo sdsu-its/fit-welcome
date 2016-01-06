@@ -54,28 +54,6 @@ public class SendEmail {
     }
 
     /**
-     * Generate HTML Message for Notification Email.
-     *
-     * @param hostFirstName  {@link String} Host's first name
-     * @param guestFirstName {@link String} Guest's first name
-     * @param guestLastName  {@link String} Guest's last name
-     * @return {@link String} HTML Message for Sending
-     */
-    private String makeNotificationMessage(final String hostFirstName, final String guestFirstName, final String guestLastName) {
-        String message;
-        Timestamp timestamp = new Timestamp(new java.util.Date().getTime());
-
-        message = this.readFile("notification_email_template.html")
-                .replace("{{ host_first }}", hostFirstName)
-                .replace("{{ guest_first }}", guestFirstName)
-                .replace("{{ guest_last }}", guestLastName)
-                .replace("{{ generated_on_date_footer }}", timestamp.toString());
-
-        return message;
-    }
-
-
-    /**
      * Send Email with Reports (Usage, Timesheet, etc.) to the requester
      *
      * @param reportType {@link String} Name of the Report that was Run
@@ -113,31 +91,6 @@ public class SendEmail {
         }
         return this;
     }
-
-    /**
-     * Send Email to notify hosts that their guest is waiting for them.
-     *
-     * @param staff {@link Staff} Host
-     * @param user  {@link User} Guest
-     * @return {@link SendEmail} Instance of SendEmail
-     */
-    public SendEmail emailNotification(final Staff staff, final User user) {
-        mEmail.setHostName(Param.getParam("fit_email", "host"));
-        mEmail.setSmtpPort(Integer.parseInt(Param.getParam("fit_email", "port")));
-        mEmail.setAuthenticator(new DefaultAuthenticator(Param.getParam("fit_email", "username"), Param.getParam("fit_email", "password")));
-        mEmail.setSSLOnConnect(Boolean.parseBoolean(Param.getParam("fit_email", "ssl")));
-        try {
-            mEmail.setFrom(Param.getParam("fit_email", "from_email"), Param.getParam("fit_email", "from_name"));
-            mEmail.setSubject(String.format("[FIT WELCOME] %s %s is waiting to meet with you!", user.firstName, user.lastName));
-            mEmail.setHtmlMsg(makeNotificationMessage(staff.firstName, user.firstName, user.lastName));
-
-        } catch (EmailException e) {
-            Logger.getLogger(getClass()).error("Problem Making Email", e);
-        }
-
-        return this;
-    }
-
 
     /**
      * Send email to requester.

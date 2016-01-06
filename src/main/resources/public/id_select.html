@@ -9,7 +9,7 @@
 <body>
 <table>
     <tr>
-        <td class="pageHead">Who are you meeting with?</td>
+        <td class="pageHead">What are you having problems with?</td>
     </tr>
     <tr>
         <td>
@@ -19,14 +19,35 @@
                 <table>
                     <tr>
                         <td>
-                            <button class="panelButton" id="bolt" type="submit" name="host" value="bolt">BOLT / QOLT Consultation
-                            </button>
+                            <button class="panelButton" type="submit" name="problem" value="Blackboard">Blackboard</button>
+                        </td>
+                        <td>
+                            <button class="panelButton" type="submit" name="problem" value="Lecture Capture">Lecture Capture</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button class="panelButton" type="submit" name="problem" value="Web Conferencing">Web Conferencing</button>
+                        </td>
+                        <td>
+                            <button class="panelButton" type="submit" name="problem" value="Turnitin">turnitin&reg;</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button class="panelButton" type="submit" name="problem" value="Respondus">Respondus</button>
+                        </td>
+                        <td>
+                            <button class="panelButton" type="submit" name="problem" value="Course Design">Course Design</button>
                         </td>
                     </tr>
                 </table>
-
                 <table>
-                    {{HOSTS}}
+                    <tr>
+                        <td>
+                            <button class="panelButton" id="full" type="submit" name="problem" value="Other">Something Else</button>
+                        </td>
+                    </tr>
                 </table>
             </form>
         </td>

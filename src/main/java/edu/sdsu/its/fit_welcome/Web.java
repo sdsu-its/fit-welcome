@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ public class Web {
         int redid = User.parseSwipe(uid);
 
         Staff staff = Staff.getStaff(redid);
-        User user = (staff == null)? User.getUser(redid): null;
+        User user = (staff == null) ? User.getUser(redid) : null;
 
         if (user == null && staff == null) {
             return Response.status(Response.Status.NOT_FOUND).entity(Pages.makePage(Pages.NOT_FOUND, new HashMap<String, String>())).build();
@@ -90,7 +89,7 @@ public class Web {
      * @param hasAppt       {@link String} If an Acuity Appointment was found.
      * @param appointmentID {@link String} Appointment ID for the appointment that was found
      * @param source        {@link String} Which page the user came from
-     * @param hostId        {@link String} ID of their Host if they have a meeting
+     * @param problem       {@link String} Problem they are having (Meet with an ID)
      * @return {@link Response} Response
      */
     @Path("conf")
@@ -102,9 +101,9 @@ public class Web {
                                  @QueryParam("has_appt") final String hasAppt,
                                  @QueryParam("apptID") final String appointmentID,
                                  @QueryParam("source") final String source,
-                                 @QueryParam("host") final String hostId) {
+                                 @QueryParam("problem") final String problem) {
 
-        Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & host - %s", id, goal, hasAppt, appointmentID, source, hostId));
+        Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & problem - %s", id, goal, hasAppt, appointmentID, source, problem));
 
         final User user = User.getUser(Integer.parseInt(id));
 
@@ -135,10 +134,10 @@ public class Web {
                 Log.warn("Problem Creating Redirect URI", e);
             }
         } else if ("Meet an ID".equals(goal)) {
-            if (hostId == null) {
+            if (problem == null) {
                 try {
                     final URI redirect = new URIBuilder()
-                            .setPath("hostSelect")
+                            .setPath("problemSelect")
                             .setParameter("id", Integer.toString(user.id))
                             .build();
 
@@ -147,20 +146,9 @@ public class Web {
                     Log.warn("Problem Creating Redirect URI", e);
                 }
             } else {
-                if ("bolt".equals(hostId)) {
-                    new Event(user, goal, "BOLT/QOLT Consult").logEvent();
-                } else {
-                    final Staff host = Staff.getStaff(hostId);
-                    new Event(user, goal, host.firstName).logEvent();
+                new Event(user, goal, problem).logEvent();
 
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            Log.info("Starting new Thread to send Notification Email");
-                            new SendEmail().emailNotification(host, user).send(host.email);
-                        }
-                    }.start();
-                }
+                params.put("NOTE", "A FIT Consultant will be with you shortly!");
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
         } else if ("appt_found".equals(source)) {
@@ -176,8 +164,7 @@ public class Web {
                 } catch (URISyntaxException e) {
                     Log.warn("Problem Creating Redirect URI", e);
                 }
-            }
-            else {
+            } else {
                 new Thread() {
                     @Override
                     public void run() {
@@ -187,10 +174,22 @@ public class Web {
                 }.start();
 
                 new Event(user, goal, "Appointment ID: " + appointmentID).logEvent();
+
+                params.put("NOTE", "Let us know if there is anything we can<br>\n" +
+                        "            do to make your visit more productive!");
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
+        } else if ("Use ParScore".equals(goal)) {
+            new Event(user, goal, "Walk In").logEvent();
+            params.put("NOTE", "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. " +
+                    "Please check with the FIT Center Consultant regarding machine availability.");
+
+            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
         } else {
             new Event(user, goal, "").logEvent();
+
+            params.put("NOTE", "Let us know if there is anything we can<br>\n" +
+                    "            do to make your visit more productive!");
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
         }
 
@@ -222,24 +221,23 @@ public class Web {
     }
 
     /**
-     * Host Selection Page
+     * Problem Selection Page
      *
      * @param id {@link String} User's ID
      * @return {@link Response} Response
      */
-    @Path("hostSelect")
+    @Path("problemSelect")
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     public Response hostSelect(@QueryParam("id") final String id) {
-        Log.info(String.format("Recieved Request: [GET] HOSTSELECT - id = %s", id));
+        Log.info(String.format("Recieved Request: [GET] PROBLEMSELECT - id = %s", id));
 
         User user = User.getUser(Integer.parseInt(id));
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("REDID", Integer.toString(user.id));
         params.put("FIRST", user.firstName);
-        params.put("HOSTS", Pages.arrayToButtons(Staff.getAllStaff("WHERE instructional_designer = 1")));
 
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MEET_ID, params)).build();
     }
