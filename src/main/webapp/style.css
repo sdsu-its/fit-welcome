@@ -147,6 +147,6 @@ form {
     margin-right: auto;
 }
 
-#full {
+button.full {
     width: 26em;
 }

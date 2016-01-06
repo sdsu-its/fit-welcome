@@ -148,7 +148,7 @@ public class Web {
             } else {
                 new Event(user, goal, problem).logEvent();
 
-                params.put("NOTE", "A FIT Consultant will be with you shortly!");
+                params.put("NOTE", "A FIT Consultant will be with you shortly!<br>");
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
         } else if ("appt_found".equals(source)) {
@@ -182,7 +182,7 @@ public class Web {
         } else if ("Use ParScore".equals(goal)) {
             new Event(user, goal, "Walk In").logEvent();
             params.put("NOTE", "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. " +
-                    "Please check with the FIT Center Consultant regarding machine availability.");
+                    "<br><br>Please check with the FIT Center Consultant regarding machine availability.");
 
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
         } else {
