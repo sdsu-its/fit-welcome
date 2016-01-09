@@ -46,8 +46,8 @@ public class Main {
     public static void main(String[] args) {
         final Event[] events = DB.exportEvents(Integer.parseInt(Param.getParam("fit_welcome", "followup_freshness")));
         for (Event e : events) {
-            if (canEmail(e.user)) {
-                if (!emailsSent.contains(e.user.email)) {
+            if (!emailsSent.contains(e.user.email)) {
+                if (canEmail(e.user)) {
                     emailsSent.add(e.user.email);
 
                     new Thread() {
