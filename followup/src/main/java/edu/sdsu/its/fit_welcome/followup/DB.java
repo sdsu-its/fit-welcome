@@ -87,7 +87,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM itsdev_welcome.bbusers WHERE id = " + id + ";";
+            final String sql = "SELECT * FROM bbusers WHERE id = " + id + ";";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -121,7 +121,7 @@ public class DB {
      */
     public static Event[] exportEvents(final int maxAge) {
         final String sql = "SELECT *\n" +
-                "FROM itsdev_welcome.events\n" +
+                "FROM events\n" +
                 "WHERE TIMESTAMP BETWEEN DATE_SUB(now(), INTERVAL " + maxAge + " DAY) AND NOW()\n" +
                 "ORDER BY TIMESTAMP ASC;";
 
@@ -169,7 +169,7 @@ public class DB {
      * @return {@link Duration} Time since last email
      */
     public static Duration lastEmailed(final int userID) {
-        final String sql = "SELECT MAX(TIMESTAMP) FROM itsdev_welcome.email WHERE ID=" + userID + " AND TYPE = '" + Main.Email_Name + "' ;";
+        final String sql = "SELECT MAX(TIMESTAMP) FROM email WHERE ID=" + userID + " AND TYPE = '" + Main.Email_Name + "' ;";
 
         Connection connection = getConnection();
         Statement statement = null;
@@ -210,7 +210,7 @@ public class DB {
      */
 
     public static void logEmail(final int recipientID, final String type) {
-        final String sql = "INSERT INTO itsdev_welcome.email (TIMESTAMP, ID, TYPE) VALUES (NOW(), " + recipientID + ", '" + sanitize(type) + "');";
+        final String sql = "INSERT INTO email (TIMESTAMP, ID, TYPE) VALUES (NOW(), " + recipientID + ", '" + sanitize(type) + "');";
         executeStatement(sql);
     }
 }

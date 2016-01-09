@@ -138,7 +138,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM itsdev_welcome.bbusers WHERE id = " + id + ";";
+            final String sql = "SELECT * FROM bbusers WHERE id = " + id + ";";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -176,7 +176,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM itsdev_welcome.bbusers WHERE email = '" + email + "';";
+            final String sql = "SELECT * FROM bbusers WHERE email = '" + email + "';";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -214,7 +214,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM itsdev_welcome.staff WHERE id = " + id + ";";
+            final String sql = "SELECT * FROM staff WHERE id = " + id + ";";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -257,11 +257,11 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM itsdev_welcome.staff " + restriction + ";";
+            final String sql = "SELECT * FROM staff " + restriction + ";";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
-            final List<Staff> staffList = new ArrayList<Staff>();
+            final List<Staff> staffList = new ArrayList<>();
 
 
             while (resultSet.next()) {
@@ -269,11 +269,7 @@ public class DB {
                         resultSet.getString("email"), resultSet.getBoolean("clockable"), resultSet.getBoolean("admin"), resultSet.getBoolean("instructional_designer")));
             }
 
-            Collections.sort(staffList, new Comparator<Staff>() {
-                public int compare(Staff staff1, Staff staff2) {
-                    return staff1.lastName.compareToIgnoreCase(staff2.lastName);
-                }
-            });
+            Collections.sort(staffList, (staff1, staff2) -> staff1.lastName.compareToIgnoreCase(staff2.lastName));
 
 
             staff = new Staff[staffList.size()];
@@ -307,7 +303,7 @@ public class DB {
      * @param params {@link String} Notes/Specifications for User's visit
      */
     public static void logEvent(final int id, final String action, final String params) {
-        final String sql = String.format("INSERT INTO itsdev_welcome.events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", new Timestamp(new java.util.Date().getTime()).toString(), id, sanitize(action), sanitize(params));
+        final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", new Timestamp(new java.util.Date().getTime()).toString(), id, sanitize(action), sanitize(params));
         executeStatement(sql);
     }
 
@@ -323,11 +319,11 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM itsdev_welcome.quotes;";
+            final String sql = "SELECT * FROM quotes;";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
-            final List<Quote> quoteList = new ArrayList<Quote>();
+            final List<Quote> quoteList = new ArrayList<>();
 
             while (resultSet.next()) {
                 quoteList.add(new Quote(resultSet.getString("text"), resultSet.getString("author")));
@@ -363,7 +359,7 @@ public class DB {
      *             'now()' can be used, but is not recommended because Statements are Threaded.
      */
     public static void clockIn(final int id, final String time) {
-        final String sql = String.format("INSERT INTO itsdev_welcome.clock VALUES (%d, %s, DEFAULT );", id, time);
+        final String sql = String.format("INSERT INTO clock VALUES (%d, %s, DEFAULT );", id, time);
         executeStatement(sql);
     }
 
@@ -375,7 +371,7 @@ public class DB {
      *             'now()' can be used, but is not recommended because Statements are Threaded.
      */
     public static void clockOut(final int id, final String time) {
-        final String sql = String.format("UPDATE itsdev_welcome.clock SET time_out = %s WHERE id = %d AND time_out = '0000-00-00 00:00:00';\n", time, id);
+        final String sql = String.format("UPDATE clock SET time_out = %s WHERE id = %d AND time_out = '0000-00-00 00:00:00';\n", time, id);
         executeStatement(sql);
     }
 
@@ -390,7 +386,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = String.format("SELECT * FROM itsdev_welcome.clock WHERE id = %d AND time_out = '0000-00-00 00:00:00';", id);
+            final String sql = String.format("SELECT * FROM clock WHERE id = %d AND time_out = '0000-00-00 00:00:00';", id);
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -422,7 +418,7 @@ public class DB {
      */
     public static File exportEvents(final String start, final String end, final String fileName) {
         final String sql = "SELECT *\n" +
-                "FROM itsdev_welcome.events\n" +
+                "FROM events\n" +
                 "WHERE\n" +
                 "  TIMESTAMP BETWEEN STR_TO_DATE('" + start + "', '%Y-%m-%d') AND\n" +
                 "  DATE_ADD(STR_TO_DATE('" + end + "', '%Y-%m-%d'), INTERVAL 1 DAY)\n" +
@@ -447,7 +443,7 @@ public class DB {
      */
     public static Clock.ClockIO[] exportClockIOs(final int id, final String start, final String end) {
         final String sql = "SELECT *\n" +
-                "FROM itsdev_welcome.clock\n" +
+                "FROM clock\n" +
                 "WHERE\n" +
                 "  id = " + Integer.toString(id) + " AND\n" +
                 "  time_in BETWEEN STR_TO_DATE('" + start + "', '%Y-%m-%d') AND\n" +
@@ -502,7 +498,7 @@ public class DB {
             return false;
         }
 
-        final String sql = String.format("INSERT INTO itsdev_welcome.staff VALUE (%d, '%s', '%s', '%s', %d, %d, %d);",
+        final String sql = String.format("INSERT INTO staff VALUE (%d, '%s', '%s', '%s', %d, %d, %d);",
                 staff.id, sanitize(staff.firstName), sanitize(staff.lastName), sanitize(staff.email), staff.clockable ? 1 : 0, staff.admin ? 1 : 0, staff.instructional_designer ? 1 : 0);
         executeStatement(sql);
 
@@ -515,7 +511,7 @@ public class DB {
      * @param email {@link String} Email to Unsubscribe
      */
     public static void unsubscribe(final String email) {
-        final String sql = "UPDATE itsdev_welcome.bbusers\n" +
+        final String sql = "UPDATE bbusers\n" +
                 "SET send_emails = 0\n" +
                 "WHERE email = '" + email + "';";
         Log.info(String.format("Unsubscribing user with email: %s from FollowUp List", email));
@@ -528,7 +524,7 @@ public class DB {
      * @param email {@link String } Email to Resubscribe
      */
     public static void subscribe(final String email) {
-        final String sql = "UPDATE itsdev_welcome.bbusers\n" +
+        final String sql = "UPDATE bbusers\n" +
                 "SET send_emails = 1\n" +
                 "WHERE email = '" + email + "';";
         Log.info(String.format("Subscribing user with email: %s to FollowUp List", email));
@@ -541,7 +537,7 @@ public class DB {
      * @return {@link int} Largest event id
      */
     public static int numEvents() {
-        final String sql = "SELECT MAX(ID) FROM itsdev_welcome.events;";
+        final String sql = "SELECT MAX(ID) FROM events;";
 
         Connection connection = getConnection();
         Statement statement = null;
@@ -579,7 +575,7 @@ public class DB {
      * @return {@link List} list of all Events since the provided event
      */
     public static List<Event> getEventsSince(final int last) {
-        final String sql = "SELECT * FROM itsdev_welcome.events WHERE ID > " + last + " AND TIMESTAMP > DATE_SUB(NOW(), INTERVAL 1 DAY) ORDER BY TIMESTAMP ASC;";
+        final String sql = "SELECT * FROM events WHERE ID > " + last + " AND TIMESTAMP > DATE_SUB(NOW(), INTERVAL 1 DAY) ORDER BY TIMESTAMP ASC;";
 
         Connection connection = getConnection();
         Statement statement = null;

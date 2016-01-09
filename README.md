@@ -10,6 +10,7 @@ We also use [Acuity Scheduling](https://acuityscheduling.com/) to manage ParScor
 FIT Welcome also includes various staff tools, including...
 - Clock In/Out capabilities for Hourly Employees
 - Reporting Tools for User and Staff Activity
+- Live Activity - Visit /live and enter a staff ID to view.
 
 
 ## Setup
@@ -86,7 +87,7 @@ CREATE TABLE email
 
 ### KeyServer Setup
 - `db-password` = Database Password
-- `db-url` = jdbc:mysql://db_host:3306/ _replace db_host and possibly the port with your MySQL server info_
+- `db-url` = jdbc:mysql://db_host:3306/db_name _replace db_host, db_name and possibly the port with your MySQL server info_
 -	`db-user` = Database Username
 - `followup_freshness` = The maximum amount of time since the user's last visit to email the user
 -	`followup_max` = The minimum number of days between emails
