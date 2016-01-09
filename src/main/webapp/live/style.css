@@ -1,0 +1,115 @@
+body {
+    font-family: Helvetica, sans-serif;
+    font-weight: lighter;
+}
+
+h1 {
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: .5em;
+}
+
+table {
+    width: 95%;
+}
+
+#events {
+    border-collapse: collapse;
+    overflow-y: auto;
+}
+
+#events td {
+    padding: .5em 0;
+}
+
+#events .header {
+    font-weight: normal;
+    border-bottom: thin solid black;
+}
+
+#events tr.header > td {
+    padding: 0 0 .25em;
+}
+
+#events .center {
+    text-align: center;
+}
+
+#loading {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: normal;
+
+    margin-top: 7em;
+}
+
+table.edit {
+    min-width: 25em;
+}
+
+table.edit td {
+    padding: .25em;
+}
+
+table.edit textarea {
+    width: 100%;
+}
+
+table.editButtons {
+    padding: .5em 0 0;
+}
+
+table.editButtons button {
+    font-size: .75em;
+    width: 100%;
+    height: 2.5em;
+}
+
+/*Flash Rows*/
+@-webkit-keyframes flashing {
+    from {
+        background-color: lemonchiffon;
+    }
+    to {
+        background-color: inherit;
+    }
+}
+
+@-moz-keyframes flashing {
+    from {
+        background-color: lemonchiffon;
+    }
+    to {
+        background-color: inherit;
+    }
+}
+
+@-o-keyframes flashing {
+    from {
+        background-color: lemonchiffon;
+    }
+    to {
+        background-color: inherit;
+    }
+}
+
+@keyframes flashing {
+    from {
+        background-color: lemonchiffon;
+    }
+    to {
+        background-color: inherit;
+    }
+}
+
+.flashing {
+    -webkit-animation: flashing 1s infinite;
+    /* Safari 4+ */
+    -moz-animation: flashing 1s infinite;
+    /* Fx 5+ */
+    -o-animation: flashing 1s infinite;
+    /* Opera 12+ */
+    animation: flashing 1s infinite;
+    /* IE 10+ */
+}

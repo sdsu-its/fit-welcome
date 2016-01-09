@@ -1,6 +1,7 @@
 package edu.sdsu.its.fit_welcome;
 
 import com.opencsv.CSVWriter;
+import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
@@ -532,5 +533,80 @@ public class DB {
                 "WHERE email = '" + email + "';";
         Log.info(String.format("Subscribing user with email: %s to FollowUp List", email));
         executeStatement(sql);
+    }
+
+    /**
+     * Get the number of Events
+     *
+     * @return {@link int} Largest event id
+     */
+    public static int numEvents() {
+        final String sql = "SELECT MAX(ID) FROM itsdev_welcome.events;";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+        int max = 0;
+
+        try {
+            statement = connection.createStatement();
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                max = resultSet.getInt(1);
+            }
+
+        } catch (SQLException e) {
+            Log.error("Problem retrieving Event entries from DB");
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return max;
+    }
+
+    /**
+     * Get all Events Today Since X Event ID
+     *
+     * @param last {@link int} Last eventID fetched - get all since
+     * @return {@link List} list of all Events since the provided event
+     */
+    public static List<Event> getEventsSince(final int last) {
+        final String sql = "SELECT * FROM itsdev_welcome.events WHERE ID > " + last + " AND TIMESTAMP > DATE_SUB(NOW(), INTERVAL 1 DAY) ORDER BY TIMESTAMP ASC;";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+        List<Event> events = new ArrayList<>();
+
+        try {
+            statement = connection.createStatement();
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+                events.add(new Event(resultSet.getInt("ID"), User.getUser(resultSet.getInt("redid")), new DateTime(resultSet.getTimestamp("TIMESTAMP")), resultSet.getString("action"), resultSet.getString("params")));
+            }
+
+        } catch (SQLException e) {
+            Log.error("Problem retrieving Event entries from DB");
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return events;
     }
 }
