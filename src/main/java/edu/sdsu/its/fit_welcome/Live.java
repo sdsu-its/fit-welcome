@@ -2,6 +2,7 @@ package edu.sdsu.its.fit_welcome;
 
 import com.google.gson.Gson;
 import edu.sdsu.its.fit_welcome.Models.Event;
+import edu.sdsu.its.fit_welcome.Models.Staff;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.*;
@@ -12,7 +13,7 @@ import java.util.List;
 
 /**
  * Live Dashboard
- *
+ * <p/>
  * Shows the current checkins to staff users and updates live
  *
  * @author Tom Paulus
@@ -22,19 +23,31 @@ import java.util.List;
 public class Live {
     Logger Log = Logger.getLogger(Live.class);
 
+    /**
+     * Show Live Dashboard
+     *
+     * @param userID {@link String} User's ID Must be designated as Staff - Accepts SwipeCards
+     * @return {@link Response} Live Dashboard
+     */
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
-    public Response index(@QueryParam("id") Integer userID) {
-        Log.info(String.format("Recieved Request: [GET] LIVE - id = %d", userID));
+    public Response index(@QueryParam("id") String userID) {
+        Log.info(String.format("Recieved Request: [GET] LIVE - id = %s", userID));
 
-        if (userID != null && DB.getStaff(userID) != null) {
+        if (userID != null && Staff.getStaff(userID) != null) {
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.LIVE, new HashMap<>())).build();
         } else {
             return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<>())).build();
         }
     }
 
+    /**
+     * Get all events since the last event provided
+     *
+     * @param lastEvent {@link Integer} EventID of the last Event Recieved
+     * @return {@link Response} All events since as JSON Document
+     */
     @GET
     @Path("getEvents")
     @Consumes(MediaType.WILDCARD)
