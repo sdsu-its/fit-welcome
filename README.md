@@ -83,6 +83,7 @@ CREATE TABLE email
     ID int(9),
     TYPE TEXT
 );
+INSERT INTO bbusers VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.edu', 0);
 ```
 
 ### KeyServer Setup
