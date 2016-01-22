@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Date Range for Report</title>
+
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<table>
+    <tr>
+        <td class="pageSubHead">Manual Time Entry</td>
+    </tr>
+    <tr>
+        <td>
+            <form action="admin/manual_time">
+                <input type="hidden" name="id" value="{{REDID}}">
+                <table>
+                    <tr>
+                        <td>
+                            User:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="User" name="user" required>
+                                <option value="" style="display:none;" selected disabled>Select User</option>
+                                {{STAFFUSERS}}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Type:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="Action" name="action" required>
+                                <option value="" style="display:none;" selected disabled>Select Action</option>
+                                <option value="clockIn">Clock In</option>
+                                <option value="clockOut">Clock Out</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Date/Time:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="Date" type="datetime-local" name="date" required>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Submit" onclick="return confirm('Are you sure?')">Add
+                    Entry
+                </button>
+            </form>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
