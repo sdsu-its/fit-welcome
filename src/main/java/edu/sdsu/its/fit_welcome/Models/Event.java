@@ -3,6 +3,8 @@ package edu.sdsu.its.fit_welcome.Models;
 import edu.sdsu.its.fit_welcome.DB;
 import org.joda.time.DateTime;
 
+import java.sql.Timestamp;
+
 /**
  * Models a FIT Center Event (When someone comes in to do something)
  *  - Intentionally Vague
@@ -34,7 +36,14 @@ public class Event {
         this.params = params;
     }
 
+    public Event(User owner, String timeString, String type, String params) {
+        this.owner = owner;
+        this.timeString = timeString;
+        this.type = type;
+        this.params = params;
+    }
+
     public void logEvent() {
-        DB.logEvent(owner.id, type, params);
+        DB.logEvent(timeString != null ? timeString : new Timestamp(new java.util.Date().getTime()).toString(), owner.id, type, params);
     }
 }

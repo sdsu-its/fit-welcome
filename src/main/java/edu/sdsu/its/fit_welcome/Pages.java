@@ -27,6 +27,7 @@ public class Pages {
     public static final String REPORT_CONF = "admin/report_conf.html";
     public static final String ADMIN_CONF = "admin/conf.html";
     public static final String MANUAL_TIME = "admin/manual_time.html";
+    public static final String MANUAL_EVENT = "admin/manual_event.html";
     public static final String NEW_USER = "admin/new_staff.html";
 
     public static final String UNSUBSCRIBE = "followup/unsubscribe.html";

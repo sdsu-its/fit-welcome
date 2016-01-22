@@ -123,7 +123,7 @@ form {
 }
 
 #clock {
-    height: 3em;
+    height: 2em;
     width: 10em;
 
     font-size: 6.5em;
@@ -149,4 +149,8 @@ form {
 
 button.full {
     width: 26em;
+}
+
+input.date {
+    width: 18.5em;
 }

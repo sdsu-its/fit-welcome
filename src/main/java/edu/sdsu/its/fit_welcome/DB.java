@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -302,8 +301,8 @@ public class DB {
      * @param action {@link String} User's Goal
      * @param params {@link String} Notes/Specifications for User's visit
      */
-    public static void logEvent(final int id, final String action, final String params) {
-        final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", new Timestamp(new java.util.Date().getTime()).toString(), id, sanitize(action), sanitize(params));
+    public static void logEvent(final String timestamp, final int id, final String action, final String params) {
+        final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", timestamp, id, sanitize(action), sanitize(params));
         executeStatement(sql);
     }
 

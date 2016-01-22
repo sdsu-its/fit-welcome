@@ -1,13 +1,19 @@
 package edu.sdsu.its.fit_welcome;
 
+import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.sql.Timestamp;
 import java.util.HashMap;
 
 /**
@@ -48,6 +54,10 @@ public class Admin {
         if ("manual time".equals(adminAction)) {
             params.put("STAFFUSERS", Pages.arrayToList(Staff.getAllStaff("WHERE clockable = 1")));
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MANUAL_TIME, params)).build();
+        }
+
+        if ("manual visit".equals(adminAction)) {
+            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MANUAL_EVENT, params)).build();
         }
 
         if ("email timesheets".equals(adminAction)) {
@@ -177,6 +187,45 @@ public class Admin {
         } else {
             return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
         }
+
+        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+    }
+
+    /**
+     * Manual Event Entry
+     *
+     * @param id     {@link String} Admin's ID
+     * @param userID {@link String} Visitor's ID
+     * @param action {@link String} Visitor's Action
+     * @param date   {@link String} Date and Time the action should be performed
+     *               In HTML datetime-locale format
+     * @return {@link Response} Response
+     */
+    @Path("manual_event")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    public Response manualEvent(@QueryParam("id") final String id, @QueryParam("user") final String userID, @QueryParam("action") final String action, @QueryParam("date") final String date) {
+        Log.info(String.format("Recieved Request: [GET] ADMIN/MANUAL_EVENT - id = %s & userID - %s & action - %s & date - %s", id, userID, action, date));
+
+        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+        if (staff == null || !staff.admin) {
+            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
+        }
+
+        final Quote quote = Quote.getRandom();
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+        params.put("FIRST", staff.firstName);
+        params.put("QUOTE", quote.text);
+        params.put("QUOTEAUTHOR", quote.author);
+        params.put("ACTION", "Manually Added a Visitor Entry");
+
+
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
+        DateTime dt = formatter.parseDateTime(date.replace("T", " ")); //Remove Stupid T in HTML DateTime-Locale time
+
+        new Event(User.getUser(userID), new Timestamp(dt.getMillis()).toString(), action, "Back Dated").logEvent();
 
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
     }
