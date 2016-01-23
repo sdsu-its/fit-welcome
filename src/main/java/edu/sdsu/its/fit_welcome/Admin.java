@@ -49,31 +49,32 @@ public class Admin {
 
         if (adminAction == null) {
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN, params)).build();
-        }
-
-        if ("manual time".equals(adminAction)) {
+        } else if ("manual time".equals(adminAction)) {
             params.put("STAFFUSERS", Pages.arrayToList(Staff.getAllStaff("WHERE clockable = 1")));
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MANUAL_TIME, params)).build();
-        }
-
-        if ("manual visit".equals(adminAction)) {
+        } else if ("manual visit".equals(adminAction)) {
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MANUAL_EVENT, params)).build();
-        }
-
-        if ("email timesheets".equals(adminAction)) {
+        } else if ("email timesheets".equals(adminAction)) {
             params.put("REPORT", "Staff Timesheets");
             params.put("RTYPE", "timesheets");
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_DATE_PICKER, params)).build();
-        }
-
-        if ("new staff".equals(adminAction)) {
+        } else if ("new staff".equals(adminAction)) {
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.NEW_USER, params)).build();
-        }
-
-        if ("run report".equals(adminAction)) {
+        } else if ("run report".equals(adminAction)) {
             params.put("REPORT", "Usage Report");
             params.put("RTYPE", "usage");
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_DATE_PICKER, params)).build();
+        } else if ("clock out all".equals(adminAction)) {
+            for (Staff s : DB.getAllStaff("WHERE clockable = 1")) {
+                Clock clock = new Clock(s);
+                if (clock.getStatus()) {
+                    Log.info(String.format("Clocking Out %s forcefully", s.firstName));
+                    clock.toggle();
+                }
+            }
+            params.put("ACTION", "Force Clocked out all Users");
+
+            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
         }
 
         return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();

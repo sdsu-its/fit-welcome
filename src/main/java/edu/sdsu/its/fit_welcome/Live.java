@@ -65,7 +65,7 @@ public class Live {
             Event event = eventList.get(e);
 
             // Checks for notify
-            // ID: 999999999 is used to designate walk-ins
+            // ID: 999999999 is used to designate unknown IDs
             if ("Meet an ID".equals(event.type) && event.owner.id != 999999999) {
                 Log.debug("Event's goal is to meet with ID, setting Notify to True");
                 event.notify = true;

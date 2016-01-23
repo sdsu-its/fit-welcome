@@ -32,6 +32,10 @@ public class Followup {
         Response response;
         User user = null;
 
+        if (email != null && email.length() < 0) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         if (email != null) {
             user = DB.getUser(email);
         }

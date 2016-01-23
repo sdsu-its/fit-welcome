@@ -27,6 +27,10 @@ public class Timesheet {
     public static File make(Clock.ClockIO[] entries, final String fileName) {
         HashMap<String, Double> days = new HashMap<String, Double>(); // Day:Minutes Worked
         for (Clock.ClockIO entry : entries) {
+            if (entry.inTime == null || entry.outTime == null) {
+                continue;
+            }
+
             if (days.containsKey(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd")))) {
                 days.put(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd")), days.get(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))) + entry.duration.getStandardSeconds() / 60d);
             } else {

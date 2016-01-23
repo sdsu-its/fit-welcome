@@ -47,6 +47,25 @@
                             </button>
                         </td>
                     </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button class="full panelButton" type="submit" name="action" value="clock out all" onclick="return confirm('Are you sure?')" >Force Clock Out all Users</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="return confirm('Are you sure?')" action="admin">
+                <input type="hidden" name="id" value="{{REDID}}">
+                <table>
+                    <tr>
+                        <td>
+
+                        </td>
+                    </tr>
                 </table>
             </form>
         </td>

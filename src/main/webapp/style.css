@@ -2,6 +2,11 @@ body {
     font-family: Helvetica, sans-serif;
 }
 
+.index {
+    padding-top: 5em;
+    padding-bottom: 3em;
+}
+
 table {
     align-items: center;
     margin: 0 auto;
@@ -30,7 +35,6 @@ button {
 }
 
 .mainHead {
-    padding-top: 2em;
     padding-bottom: 1em;
     text-align: center;
     font-size: 4em;
@@ -124,7 +128,7 @@ form {
 
 #clock {
     height: 2em;
-    width: 10em;
+    width: 7em;
 
     font-size: 6.5em;
 }
