@@ -65,10 +65,11 @@ public class Live {
             Event event = eventList.get(e);
 
             // Checks for notify
-            if ("Meet an ID".equals(event.type)) {
+            // ID: 999999999 is used to designate walk-ins
+            if ("Meet an ID".equals(event.type) && event.owner.id != 999999999) {
                 Log.debug("Event's goal is to meet with ID, setting Notify to True");
                 event.notify = true;
-            } else if ("Use ParScore".equals(event.type) && "Walk In".equals(event.params)) {
+            } else if ("Use ParScore".equals(event.type) && "Walk In".equals(event.params) && event.owner.id != 999999999) {
                 Log.debug("Event is a ParScore Walk In, setting Notify to True");
                 event.notify = true;
             }
