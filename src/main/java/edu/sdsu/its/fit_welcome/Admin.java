@@ -4,6 +4,7 @@ import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -13,6 +14,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
@@ -65,16 +68,16 @@ public class Admin {
             params.put("RTYPE", "usage");
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_DATE_PICKER, params)).build();
         } else if ("clock out all".equals(adminAction)) {
-            for (Staff s : DB.getAllStaff("WHERE clockable = 1")) {
-                Clock clock = new Clock(s);
-                if (clock.getStatus()) {
-                    Log.info(String.format("Clocking Out %s forcefully", s.firstName));
-                    clock.toggle();
-                }
-            }
-            params.put("ACTION", "Force Clocked out all Users");
+            try {
+                final URI redirect = new URIBuilder()
+                        .setPath("admin/clock_out_users")
+                        .setParameter("id", id) // Admin User ID for Authentication
+                        .build();
 
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
+                return Response.seeOther(redirect).build();
+            } catch (URISyntaxException e) {
+                Log.warn("Problem Creating Redirect URI", e);
+            }
         }
 
         return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
@@ -229,6 +232,58 @@ public class Admin {
         new Event(User.getUser(userID), new Timestamp(dt.getMillis()).toString(), action, "Back Dated").logEvent();
 
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+    }
+
+    /**
+     * Clock out some/all users via admin panel
+     *
+     * @param id {@link String} Admin ID
+     * @param userID {@link String} User to Clock Out,
+     *                             Leave blank to clock out all
+     * @return {@link Response} Response
+     */
+    @Path("clock_out_users")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    public Response clockOut(@QueryParam("id") String id, @QueryParam("userID") String userID) {
+        Log.info(String.format("Recieved Request: [GET] ADMIN/CLOCK_OUT_USERS - id = %s & userID - %s", id, userID));
+
+        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+        if (staff == null || !staff.admin) {
+            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
+        }
+
+
+        final Quote quote = Quote.getRandom();
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+        params.put("QUOTE", quote.text);
+        params.put("QUOTEAUTHOR", quote.author);
+
+        if (userID == null || userID.length() < 0) {
+            // Clock out All Users
+            for (Staff s : DB.getAllStaff("WHERE clockable = 1")) {
+                Clock clock = new Clock(s);
+                if (clock.getStatus()) {
+                    Log.info(String.format("Clocking Out %s forcefully", s.firstName));
+                    clock.toggle();
+                }
+            }
+            params.put("ACTION", "Force Clocked out all Users");
+
+            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+        } else {
+            final Staff s = Staff.getStaff(userID);
+            Clock clock = new Clock(s);
+            if (clock.getStatus()) {
+                Log.info(String.format("Clocking Out %s forcefully", s.firstName));
+                clock.toggle();
+            }
+            params.put("ACTION", String.format("Force Clocked out %s", s.firstName));
+
+            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+        }
     }
 
     /**
