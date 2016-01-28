@@ -100,17 +100,18 @@ Example:  [http://your_domian_with_context/pages/followup/unsubscribe?e={{ email
 ### Acuity Setup
 One small addition needs to be made to the Acuity Scheduler. By default, the Client Scheduling page of Acuity is not setup to process multiple sessions in the same window. To fix this, we need to add a small snippet of code to the Confirmation Page. This can be done by enabling _Custom Conversion Tracking_ (Under Import/Export/Syncing).
 
-Insert the following snippet. Be sure to replace `mypage` with the URL(without http or https) of the page that the scheduler iframe is embedded in.
+Insert the following snippet. Be sure to replace `mypage` with the URL(with http or https) of the homepage the welcome system (index page).
 
 ```
-var url = (window.location != window.parent.location)
-    ? document.referrer
-    : document.location;
+<script type="text/javascript">
+var embedded = window.parent != window.top;
 
-if (url.indexOf('mypage') !=-1) {
-    // Where mypage above is the URL, without http or https, of the page that the scheduler iframe is embedded in.
-    // This prevents redirects if the page in embedded elsewhere.
-
-    window.top.location = '../index.html';
+if (embedded) {
+    setTimeout(function () {
+        window.top.location = "mypage"
+        // Where mypage above is the full url, including http/https, to the welcome system index page.
+    }, 10000);
+    // This prevents redirects if the page in linked elsewhere.
 }
+</script>
 ```
