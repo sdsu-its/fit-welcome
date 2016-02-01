@@ -18,6 +18,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Admin Interfaces/Pages
@@ -182,11 +184,16 @@ public class Admin {
 
         final Staff staff1 = Staff.getStaff(userID);
 
+        final String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}";
+
+        final Pattern r = Pattern.compile(pattern);
+        final Matcher m = r.matcher(date);
+
         if ("clockIn".equals(action)) {
-            DB.clockIn(Integer.parseInt(userID), "STR_TO_DATE('" + date + "','%Y-%m-%dT%H:%i')");
+            DB.clockIn(Integer.parseInt(userID), "STR_TO_DATE('" + m.group() + "','%Y-%m-%dT%H:%i')");
             params.put("ACTION", String.format("Manually Clocked In %s %s", staff1.firstName, staff1.lastName));
         } else if ("clockOut".equals(action)) {
-            DB.clockOut(Integer.parseInt(userID), "STR_TO_DATE('" + date + "','%Y-%m-%dT%H:%i')");
+            DB.clockOut(Integer.parseInt(userID), "STR_TO_DATE('" + m.group() + "','%Y-%m-%dT%H:%i')");
             params.put("ACTION", String.format("Manually Clocked Out %s %s", staff1.firstName, staff1.lastName));
         } else {
             return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
@@ -226,8 +233,13 @@ public class Admin {
         params.put("ACTION", "Manually Added a Visitor Entry");
 
 
+        final String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}";
+
+        final Pattern r = Pattern.compile(pattern);
+        final Matcher m = r.matcher(date);
+
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
-        DateTime dt = formatter.parseDateTime(date.replace("T", " ")); //Remove Stupid T in HTML DateTime-Locale time
+        DateTime dt = formatter.parseDateTime(m.group().replace("T", " ")); //Remove Stupid T in HTML DateTime-Locale time
 
         new Event(User.getUser(userID), new Timestamp(dt.getMillis()).toString(), action, "Back Dated").logEvent();
 
@@ -237,9 +249,9 @@ public class Admin {
     /**
      * Clock out some/all users via admin panel
      *
-     * @param id {@link String} Admin ID
+     * @param id     {@link String} Admin ID
      * @param userID {@link String} User to Clock Out,
-     *                             Leave blank to clock out all
+     *               Leave blank to clock out all
      * @return {@link Response} Response
      */
     @Path("clock_out_users")
