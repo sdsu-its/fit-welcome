@@ -27,16 +27,17 @@ public class Web {
     /**
      * Welcome Page
      *
-     * @param uid        {@link String} UserID (Either typed in or Magstripe Encoded)
-     * @param skipAcuity {@link String} if "yes" Acuity will not be checked for appointments
+     * @param uid          {@link String} UserID (Either typed in or Magstripe Encoded)
+     * @param skipAcuity   {@link String} if "yes" Acuity will not be checked for appointments
+     * @param acuityApptID {@link String} Acuity Appointment ID if declined
      * @return {@link Response} Response
      */
     @Path("welcome")
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
-    public Response welcome(@QueryParam("id") final String uid, @QueryParam("skip_sch") final String skipAcuity) {
-        Log.info(String.format("Recieved Request: [GET] WELCOME - id = %s & skip_sch - %s", uid, skipAcuity));
+    public Response welcome(@QueryParam("id") final String uid, @QueryParam("skip_sch") final String skipAcuity, @QueryParam("appt_id") final String acuityApptID) {
+        Log.info(String.format("Recieved Request: [GET] WELCOME - id = %s & skip_sch = %s & appt_id = %s", uid, skipAcuity, acuityApptID));
 
         int redid = User.parseSwipe(uid);
 
@@ -50,6 +51,7 @@ public class Web {
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff != null ? staff.firstName : user.firstName);
         params.put("REDID", Integer.toString(redid));
+        params.put("APPTID", acuityApptID != null ? acuityApptID : "");
 
         if (staff != null && staff.clockable) {
             final boolean status = new Clock(staff).getStatus();
@@ -158,6 +160,7 @@ public class Web {
                             .setPath("welcome")
                             .setParameter("id", id)
                             .setParameter("skip_sch", "yes")
+                            .setParameter("appt_id", appointmentID)
                             .build();
 
                     return Response.seeOther(redirect).build();
@@ -180,6 +183,22 @@ public class Web {
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
         } else if ("Use ParScore".equals(goal)) {
+            if (appointmentID != null) {   // Catch Users who decline ParScore at first, but then select Par Score
+                new Event(user, goal, "Appointment ID: " + appointmentID).logEvent();
+
+                new Thread() {
+                    @Override
+                    public void run() {
+                        Log.info("Starting new Thread to update Acuity Appointment");
+                        Acutiy.checkIn(Integer.parseInt(appointmentID));
+                    }
+                }.start();
+
+                params.put("NOTE", "Let us know if there is anything we can<br>\n" +
+                        "            do to make your visit more productive!");
+                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
+            }
+
             new Event(user, goal, "Walk In").logEvent();
             params.put("NOTE", "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. " +
                     "<br><br>Please check with the FIT Center Consultant regarding machine availability.");
