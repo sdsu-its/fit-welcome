@@ -32,9 +32,7 @@ public class Pages {
 
     public static final String UNSUBSCRIBE = "followup/unsubscribe.html";
     public static final String SUBSCRIBE = "followup/subscribe.html";
-
-    public static final String LIVE = "live.html";
-
+    
     public static final String FORBIDDEN = "403.html";
     public static final String NOT_FOUND = "404.html";
 

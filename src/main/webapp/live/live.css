@@ -44,6 +44,15 @@ table {
     margin-top: 7em;
 }
 
+#badCred {
+    text-align: center;
+    color: red;
+    font-size: 1.5em;
+
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
 table.edit {
     min-width: 25em;
 }

@@ -24,25 +24,6 @@ public class Live {
     Logger Log = Logger.getLogger(Live.class);
 
     /**
-     * Show Live Dashboard
-     *
-     * @param userID {@link String} User's ID Must be designated as Staff - Accepts SwipeCards
-     * @return {@link Response} Live Dashboard
-     */
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response index(@QueryParam("id") String userID) {
-        Log.info(String.format("Recieved Request: [GET] LIVE - id = %s", userID));
-
-        if (userID != null && Staff.getStaff(userID) != null) {
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.LIVE, new HashMap<>())).build();
-        } else {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<>())).build();
-        }
-    }
-
-    /**
      * Get all events since the last event provided
      *
      * @param lastEvent {@link Integer} EventID of the last Event Recieved
@@ -52,8 +33,13 @@ public class Live {
     @Path("getEvents")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEvents(@QueryParam("last") Integer lastEvent) {
-        Log.info(String.format("Recieved Request: [GET] GETEVENTS - last = %d", lastEvent));
+    public Response getEvents(@QueryParam("id") String id, @QueryParam("last") Integer lastEvent) {
+        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+        if (staff == null) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Log.info(String.format("Recieved Request: [GET] GETEVENTS - id = %s & last = %d", id, lastEvent));
         if (lastEvent == null || lastEvent == 0) {
             lastEvent = DB.numEvents() - 10;
         }

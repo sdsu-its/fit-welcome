@@ -10,9 +10,12 @@
 
 
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="live.css">
+    <script src="live.js" type="application/javascript"></script>
 </head>
 <body>
-<table>
+<h1>FIT Center :: Live Activity Dashboard</h1>
+<table id="login">
     <tr>
         <td class="mainHead"></td>
     </tr>
@@ -23,11 +26,16 @@
     </tr>
     <tr>
         <td>
-            <form action="../pages/live">
+            <form action="#" onsubmit="login(); return false;">
                 <table>
                     <tr>
                         <td>
-                            <input class="inputBox" title="REDID" name="id" type="text" required autocomplete="off">
+                            <input class="inputBox" title="REDID" name="id" id="userID" type="text" required autocomplete="off">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <div id="badCred" style="display: none;">User Credentials Invalid...</div>
                         </td>
                     </tr>
                     <tr>
@@ -38,6 +46,17 @@
                 </table>
             </form>
         </td>
+    </tr>
+</table>
+
+<div id="loading" style="visibility: hidden;">Loading...</div>
+
+<table id="events" align="center" style="visibility: hidden;">
+    <tr class="header">
+        <td>User's Name</td>
+        <td>Check-in Time</td>
+        <td>Visit Goal</td>
+        <td>Problem/Params</td>
     </tr>
 </table>
 </body>

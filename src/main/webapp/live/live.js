@@ -6,14 +6,69 @@
 
 const refreshRate = 2500; // Refresh event list every X milliseconds
 const flashDuration = 4000; // How long a notified row should flash
-var notifyChime = new Audio("../live/Alert.mp3");
+var notifyChime = new Audio("Alert.mp3");
 
 var latestEvent = 0;
+
+var loggedIn = false;
+var userID = 0;
 var ready = false;
 
-window.onload = function start() {
-    loadEvents();
-};
+/**
+ * OnSubmit Action
+ * @returns {boolean} Always false to prevent refresh
+ */
+function login() {
+    userID = document.getElementById("userID").value;
+    checkLogin(userID);
+
+    return false; // Used to not change page
+}
+
+/**
+ * Check the user's ID
+ *
+ * @param userID {int} User's Supplied ID
+ */
+function checkLogin(userID) {
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            var response = xmlHttp;
+            console.log(response.status);
+            if (response.status != 403) {
+                setLogIn();
+                loadEvents();
+            }
+            else {
+                setBadCred();
+            }
+        }
+    };
+
+    xmlHttp.open('GET', "../pages/live/getEvents?id=" + userID);
+    xmlHttp.send();
+}
+
+/**
+ * Update document to display successful login
+ */
+function setLogIn() {
+    if (!loggedIn) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("badCred").style.display = "none";
+        document.getElementById("loading").style.visibility = "visible";
+        loggedIn = true;
+    }
+}
+
+/**
+ * Update document to display non-successful login
+ */
+function setBadCred() {
+    document.getElementById("badCred").style.display = "";
+}
 
 /**
  * Page is Fully Loaded, display contents
@@ -30,10 +85,10 @@ function setReady() {
  * Load Recent Events
  */
 function loadEvents() {
-    get("live/getEvents");
+    get("../pages/live/getEvents");
     window.setInterval(function () {
         if (ready) {
-            get("live/getEvents");
+            get("../pages/live/getEvents");
         }
     }, refreshRate);
 }
@@ -93,7 +148,7 @@ function get(url) {
         }
     };
 
-    xmlHttp.open('GET', url + "?last=" + latestEvent);
+    xmlHttp.open('GET', url + "?id=" + userID + "&last=" + latestEvent);
     xmlHttp.send();
 }
 
