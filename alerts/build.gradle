@@ -1,0 +1,26 @@
+group 'edu.sdsu.its.fit_welcome.alerts'
+version '1.0'
+
+apply plugin: 'java'
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File',
+                'Implementation-Version': version,
+                'Main-Class': 'edu.sdsu.its.fit_welcome.alerts.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'log4j:log4j:1.2.17'
+    compile 'mysql:mysql-connector-java:5.1.38'
+    compile 'org.apache.httpcomponents:httpclient:4.4'
+    compile 'org.apache.commons:commons-email:1.4'
+}
