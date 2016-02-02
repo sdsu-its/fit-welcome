@@ -188,6 +188,7 @@ public class Admin {
 
         final Pattern r = Pattern.compile(pattern);
         final Matcher m = r.matcher(date);
+        m.find();
 
         if ("clockIn".equals(action)) {
             DB.clockIn(Integer.parseInt(userID), "STR_TO_DATE('" + m.group() + "','%Y-%m-%dT%H:%i')");
@@ -237,6 +238,7 @@ public class Admin {
 
         final Pattern r = Pattern.compile(pattern);
         final Matcher m = r.matcher(date);
+        m.find();
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
         DateTime dt = formatter.parseDateTime(m.group().replace("T", " ")); //Remove Stupid T in HTML DateTime-Locale time
