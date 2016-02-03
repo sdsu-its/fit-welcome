@@ -138,7 +138,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = String.format("SELECT * FROM clock WHERE id = %d AND time_out = '0000-00-00 00:00:00';", id);
+            final String sql = String.format("SELECT * FROM clock WHERE id = %d AND time_out = '0000-00-00 00:00:00' AND time_in >= CURDATE();", id);
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
