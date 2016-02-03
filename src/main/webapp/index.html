@@ -17,13 +17,13 @@
     </tr>
     <tr>
         <td class="prompt">Please Swipe or Type in your
-            <br>REDID to get Started...
+            <br>REDID to get Started<span id="finish_action">, then press return.</span>
         </td>
     </tr>
     <tr>
         <td>
             <form action="pages/welcome">
-                <input class="inputBox" title="REDID" name="id" type="text" autofocus required autocomplete="off">
+                <input class="inputBox" title="REDID" name="id" type="text" required autocomplete="off">
             </form>
         </td>
     </tr>
@@ -33,5 +33,15 @@
         </td>
     </tr>
 </table>
+
+<script type="application/javascript">
+    var ua = navigator.userAgent;
+    var span = document.getElementById("finish_action");
+
+    if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
+        span.textContent = ", then press Go.";
+    }
+</script>
+
 </body>
 </html>
