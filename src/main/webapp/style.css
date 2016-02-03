@@ -133,6 +133,11 @@ form {
     font-size: 6.5em;
 }
 
+#clockVerb {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
 #admin {
     height: 1.5em;
     width: 10em;

@@ -21,7 +21,8 @@
     <tr>
         <td>
             <form action="conf">
-                <button id="clock" type="submit" name="Action" value="toggle clock">Clock {{VERB}}</button>
+                <button id="clock" type="submit" name="Action" value="toggle clock">Clock <span
+                        id="clockVerb">{{VERB}}</span></button>
                 <input type="hidden" name="id" value="{{REDID}}">
                 <input type="hidden" name="source" value="staff">
             </form>
