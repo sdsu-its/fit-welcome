@@ -574,7 +574,7 @@ public class DB {
      * @return {@link List} list of all Events since the provided event
      */
     public static List<Event> getEventsSince(final int last) {
-        final String sql = "SELECT * FROM events WHERE ID > " + last + " AND TIMESTAMP > DATE_SUB(NOW(), INTERVAL 1 DAY) ORDER BY TIMESTAMP ASC;";
+        final String sql = "SELECT * FROM events WHERE ID > " + last + " AND TIMESTAMP >= CURDATE() ORDER BY TIMESTAMP ASC;";
 
         Connection connection = getConnection();
         Statement statement = null;

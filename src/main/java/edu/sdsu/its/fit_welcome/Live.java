@@ -34,7 +34,7 @@ public class Live {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEvents(@QueryParam("id") String id, @QueryParam("last") Integer lastEvent) {
-        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+        Staff staff = id != null ? Staff.getStaff(id.replace(" ", "+")) : null;  //JavaScript Converts +s to Spaces, that's Bad!
         if (staff == null) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }

@@ -183,7 +183,7 @@ public class Web {
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
         } else if ("Use ParScore".equals(goal)) {
-            if (appointmentID != null) {   // Catch Users who decline ParScore at first, but then select Par Score
+            if (appointmentID != null && appointmentID.length() > 0) {   // Catch Users who decline ParScore at first, but then select Par Score
                 new Event(user, goal, "Appointment ID: " + appointmentID).logEvent();
 
                 new Thread() {
@@ -197,13 +197,13 @@ public class Web {
                 params.put("NOTE", "Let us know if there is anything we can<br>\n" +
                         "            do to make your visit more productive!");
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
+            } else {
+                new Event(user, goal, "Walk In").logEvent();
+                params.put("NOTE", "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. " +
+                        "<br><br>Please check with the FIT Center Consultant regarding machine availability.");
+
+                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
-
-            new Event(user, goal, "Walk In").logEvent();
-            params.put("NOTE", "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. " +
-                    "<br><br>Please check with the FIT Center Consultant regarding machine availability.");
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
         } else {
             new Event(user, goal, "").logEvent();
 
