@@ -14,6 +14,17 @@ var loggedIn = false;
 var userID = 0;
 var ready = false;
 
+window.onload = function () {
+    // Select the ID Input Area automatically on NON-iPads
+    var ua = navigator.userAgent;
+    var idBox = document.getElementById('userID');
+
+    if (!ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
+        idBox.focus();
+        idBox.select();
+    }
+};
+
 /**
  * OnSubmit Action
  * @returns {boolean} Always false to prevent refresh

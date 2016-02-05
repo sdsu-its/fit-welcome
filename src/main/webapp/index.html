@@ -23,7 +23,7 @@
     <tr>
         <td>
             <form action="pages/welcome">
-                <input class="inputBox" title="REDID" name="id" type="text" required autocomplete="off">
+                <input class="inputBox" title="REDID" name="id" id="idBox" type="text" required autocomplete="off">
             </form>
         </td>
     </tr>
@@ -37,9 +37,13 @@
 <script type="application/javascript">
     var ua = navigator.userAgent;
     var span = document.getElementById("finish_action");
+    var idBox = document.getElementById("idBox");
 
     if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
         span.textContent = ", then press Go.";
+    } else {
+        idBox.focus ();
+        idBox.select ();
     }
 </script>
 
