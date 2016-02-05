@@ -79,6 +79,7 @@ function setLogIn() {
  */
 function setBadCred() {
     document.getElementById("badCred").style.display = "";
+    document.getElementById("userID").value = "";
 }
 
 /**
