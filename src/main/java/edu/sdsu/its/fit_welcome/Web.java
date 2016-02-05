@@ -107,12 +107,13 @@ public class Web {
 
         Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & problem - %s", id, goal, hasAppt, appointmentID, source, problem));
 
-        final User user = User.getUser(Integer.parseInt(id));
+        final Staff staff = Staff.getStaff(id);
+        final User user = (staff == null) ? User.getUser(id) : null;
 
         final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", user.firstName);
+        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
         params.put("QUOTE", quote.text);
         params.put("QUOTEAUTHOR", quote.author);
 
@@ -126,9 +127,9 @@ public class Web {
             try {
                 final URI redirect = new URIBuilder()
                         .setPath("schedule")
-                        .setParameter("first", user.firstName)
-                        .setParameter("last", user.lastName)
-                        .setParameter("email", user.email.toLowerCase())
+                        .setParameter("first", staff != null ? staff.firstName : user.firstName)
+                        .setParameter("last", staff != null ? staff.lastName : user.lastName)
+                        .setParameter("email", staff != null ? staff.email.toLowerCase() : user.email.toLowerCase())
                         .build();
 
                 return Response.seeOther(redirect).build();
@@ -140,7 +141,7 @@ public class Web {
                 try {
                     final URI redirect = new URIBuilder()
                             .setPath("problemSelect")
-                            .setParameter("id", Integer.toString(user.id))
+                            .setParameter("id", Integer.toString(staff != null ? staff.id : user.id))
                             .build();
 
                     return Response.seeOther(redirect).build();
@@ -205,7 +206,7 @@ public class Web {
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
         } else {
-            new Event(user, goal, "").logEvent();
+            new Event(staff != null ? staff : user, goal, "").logEvent();
 
             params.put("NOTE", "Let us know if there is anything we can<br>\n" +
                     "            do to make your visit more productive!");
