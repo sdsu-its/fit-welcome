@@ -91,7 +91,7 @@ public class Web {
      * @param hasAppt       {@link String} If an Acuity Appointment was found.
      * @param appointmentID {@link String} Appointment ID for the appointment that was found
      * @param source        {@link String} Which page the user came from
-     * @param problem       {@link String} Problem they are having (Meet with an ID)
+     * @param param         {@link String} Problem they are having (Meet with an ID)
      * @return {@link Response} Response
      */
     @Path("conf")
@@ -103,9 +103,9 @@ public class Web {
                                  @QueryParam("has_appt") final String hasAppt,
                                  @QueryParam("apptID") final String appointmentID,
                                  @QueryParam("source") final String source,
-                                 @QueryParam("problem") final String problem) {
+                                 @QueryParam("param") final String param) {
 
-        Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & problem - %s", id, goal, hasAppt, appointmentID, source, problem));
+        Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & param - %s", id, goal, hasAppt, appointmentID, source, param));
 
         final Staff staff = Staff.getStaff(id);
         final User user = (staff == null) ? User.getUser(id) : null;
@@ -137,7 +137,7 @@ public class Web {
                 Log.warn("Problem Creating Redirect URI", e);
             }
         } else if ("Meet an ID".equals(goal)) {
-            if (problem == null) {
+            if (param == null) {
                 try {
                     final URI redirect = new URIBuilder()
                             .setPath("problemSelect")
@@ -149,7 +149,7 @@ public class Web {
                     Log.warn("Problem Creating Redirect URI", e);
                 }
             } else {
-                new Event(user, goal, problem).logEvent();
+                new Event(user, goal, param).logEvent();
 
                 params.put("NOTE", "A FIT Consultant will be with you shortly!<br>");
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
@@ -205,6 +205,25 @@ public class Web {
 
                 return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
             }
+        } else if ("Other".equals(goal)) {
+            if (param == null) {
+                try {
+                    final URI redirect = new URIBuilder()
+                            .setPath("otherSelect")
+                            .setParameter("id", Integer.toString(staff != null ? staff.id : user.id))
+                            .build();
+
+                    return Response.seeOther(redirect).build();
+                } catch (URISyntaxException e) {
+                    Log.warn("Problem Creating Redirect URI", e);
+                }
+            } else {
+                new Event(user, param, "").logEvent();
+
+                params.put("NOTE", "Let us know if there is anything we can<br>\n" +
+                        "            do to make your visit more productive!");
+                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
+            }
         } else {
             new Event(staff != null ? staff : user, goal, "").logEvent();
 
@@ -250,15 +269,40 @@ public class Web {
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
-    public Response hostSelect(@QueryParam("id") final String id) {
+    public Response problemSelect(@QueryParam("id") final String id) {
         Log.info(String.format("Recieved Request: [GET] PROBLEMSELECT - id = %s", id));
 
-        User user = User.getUser(Integer.parseInt(id));
+        final Staff staff = Staff.getStaff(id);
+        final User user = (staff == null) ? User.getUser(id) : null;
 
         final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("REDID", Integer.toString(user.id));
-        params.put("FIRST", user.firstName);
+        params.put("REDID", Integer.toString(staff != null ? staff.id : user.id));
+        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
 
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MEET_ID, params)).build();
     }
+
+    /**
+     * Other Selection Page
+     *
+     * @param id {@link String} User's ID
+     * @return {@link Response} Response
+     */
+    @Path("otherSelect")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    public Response otherSelect(@QueryParam("id") final String id) {
+        Log.info(String.format("Recieved Request: [GET] OTHERSELECT - id = %s", id));
+
+        final Staff staff = Staff.getStaff(id);
+        final User user = (staff == null) ? User.getUser(id) : null;
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+        params.put("REDID", Integer.toString(staff != null ? staff.id : user.id));
+        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
+
+        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.OTHER, params)).build();
+    }
+
 }

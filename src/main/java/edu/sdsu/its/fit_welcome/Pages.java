@@ -16,6 +16,7 @@ import java.util.Scanner;
 public class Pages {
     public static final String WELCOME = "public/welcome.html";
     public static final String MEET_ID = "public/id_select.html";
+    public static final String OTHER = "public/other_select.html";
     public static final String CONFIRMATION = "public/conf.html";
     public static final String APPT_FOUND = "public/appt_found.html";
     public static final String STAFF_WELCOME = "public/staff.html";
