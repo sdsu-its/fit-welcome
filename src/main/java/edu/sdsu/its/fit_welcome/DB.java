@@ -586,7 +586,11 @@ public class DB {
             ResultSet resultSet = statement.executeQuery(sql);
 
             while (resultSet.next()) {
-                events.add(new Event(resultSet.getInt("ID"), User.getUser(resultSet.getInt("redid")), new DateTime(resultSet.getTimestamp("TIMESTAMP")), resultSet.getString("action"), resultSet.getString("params")));
+                final int redID = resultSet.getInt("redid");
+                final User user = User.getUser(redID);
+                final Staff staff = user != null ? null : Staff.getStaff(redID);
+
+                events.add(new Event(resultSet.getInt("ID"), user != null ? user : staff, new DateTime(resultSet.getTimestamp("TIMESTAMP")), resultSet.getString("action"), resultSet.getString("params")));
             }
 
         } catch (SQLException e) {
