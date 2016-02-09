@@ -118,7 +118,7 @@ public class Web {
         params.put("QUOTEAUTHOR", quote.author);
 
         if ("staff".equals(source)) {
-            boolean new_status = new Clock(user).toggle();
+            boolean new_status = new Clock(staff).toggle();
 
             params.put("ACTION", new_status ? "Clocked In" : "Clocked Out");
 
