@@ -73,7 +73,7 @@ public class Web {
             }
         }
 
-        Acutiy.Appointment appointment = !"yes".equals(skipAcuity) ? Acutiy.getAppt(user) : null;
+        Acutiy.Appointment appointment = !"yes".equals(skipAcuity) ? Acutiy.getAppt(staff != null ? staff: user) : null;
         if (appointment != null) {
             params.put("TIME", appointment.time);
             params.put("APPTID", appointment.id.toString());
@@ -218,7 +218,7 @@ public class Web {
                     Log.warn("Problem Creating Redirect URI", e);
                 }
             } else {
-                new Event(user, param, "").logEvent();
+                new Event(staff != null ? staff : user, param, "").logEvent();
 
                 params.put("NOTE", "Let us know if there is anything we can<br>\n" +
                         "            do to make your visit more productive!");
