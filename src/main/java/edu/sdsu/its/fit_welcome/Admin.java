@@ -272,6 +272,8 @@ public class Admin {
         final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
+        params.put("FIRST", staff.firstName);
+
         params.put("QUOTE", quote.text);
         params.put("QUOTEAUTHOR", quote.author);
 

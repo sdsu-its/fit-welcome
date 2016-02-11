@@ -16,8 +16,8 @@
         <td class="mainHead">Welcome to the FIT Center!</td>
     </tr>
     <tr>
-        <td class="prompt">Please Swipe or Type in your
-            <br>REDID to get Started<span id="finish_action">, then press return.</span>
+        <td class="prompt" id="entryMethod">Please Swipe or Type in your
+            <br>REDID to get Started, then press return.</span>
         </td>
     </tr>
     <tr>
@@ -36,11 +36,12 @@
 
 <script type="application/javascript">
     var ua = navigator.userAgent;
-    var span = document.getElementById("finish_action");
+    var entryMethod = document.getElementById("entryMethod");
     var idBox = document.getElementById("idBox");
 
     if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
-        span.textContent = ", then press Go.";
+        span.textContent = "Please Type in your<br>" +
+                "REDID to get started, then press go.";
     } else {
         idBox.focus ();
         idBox.select ();
