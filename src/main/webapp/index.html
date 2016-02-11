@@ -40,8 +40,8 @@
     var idBox = document.getElementById("idBox");
 
     if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
-        entryMethod.textContent = "Please Type in your<br>" +
-                "REDID to get started, then press go.";
+        entryMethod.innerHTML = "Please Type in your REDID<br>" +
+                "to get started, then press go.";
     } else {
         idBox.focus ();
         idBox.select ();
