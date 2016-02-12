@@ -446,7 +446,7 @@ public class DB {
                 "WHERE\n" +
                 "  id = " + Integer.toString(id) + " AND\n" +
                 "  time_in BETWEEN STR_TO_DATE('" + start + "', '%Y-%m-%d') AND\n" +
-                "  DATE_ADD(STR_TO_DATE('" + end + "', '%Y-%m-%d'), INTERVAL 1 DAY)\n" +
+                "  DATE_ADD(STR_TO_DATE('" + end + "', '%Y-%m-%d'), INTERVAL 1 DAY) AND time_out != '0000-00-00 00:00:00'\n" +
                 "ORDER BY time_in ASC;";
 
         Connection connection = getConnection();
