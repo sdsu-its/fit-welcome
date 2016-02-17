@@ -122,6 +122,7 @@ public class Acutiy {
                     .build();
 
             final ClientResponse response = get(uri);
+            Log.debug(String.format("Get Request to Acuity for Today's Events returned (%s) - %s", response.getStatus(), response.getEntity(String.class)));
 
             final Gson gson = new Gson();
             result = gson.fromJson(response.getEntity(String.class), Appointment[].class);
@@ -156,7 +157,9 @@ public class Acutiy {
                     .build();
 
             final Gson gson = new Gson();
-            put(uri, gson.toJson(newAppointment));
+            ClientResponse response = put(uri, gson.toJson(newAppointment));
+
+            Log.debug(String.format("Put Request to Acuity for Check In (Appt: %s) returned (%s) - %s", appointmentID.toString(), response.getStatus(), response.getEntity(String.class)));
 
         } catch (URISyntaxException e) {
             Log.error("Could not formulate Acuity Schedule Request", e);
@@ -180,6 +183,7 @@ public class Acutiy {
 
         try {
             response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+            Log.debug(String.format("GET Request to %s returned - %s", uri.toString(), response.getEntity(String.class)));
             if (response.getStatus() != 200) {
                 Log.error("Error Connecting to Acuity - HTTP Error Code" + response.getStatus());
             }
@@ -201,6 +205,8 @@ public class Acutiy {
         ClientResponse response;
 
         response = webResource.accept(MediaType.WILDCARD_TYPE).entity(payload).put(ClientResponse.class);
+        Log.debug(String.format("PUT Request to %s returned - %s", uri.toString(), response.getEntity(String.class)));
+
         if (response.getStatus() != 200) {
             Log.error("Error Connecting to Acuity - HTTP Error Code" + response.getStatus());
         }
