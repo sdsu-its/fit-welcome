@@ -115,6 +115,7 @@ public class Acutiy {
                     .setScheme("https")
                     .setHost("acuityscheduling.com/api/v1/")
                     .setPath("appointments")
+                    .setParameter("admin", "true") // Bypasses Required Field Validations.
                     .setParameter("minDate", getCurrentTimeStamp("yyyy-MM-dd"))
                     .setParameter("maxDate", getCurrentTimeStamp("yyyy-MM-dd"))
                     .setParameter("calendarID", CALID)
@@ -154,6 +155,7 @@ public class Acutiy {
                     .setScheme("https")
                     .setHost("acuityscheduling.com/api/v1/appointments/")
                     .setPath(appointmentID.toString())
+                    .setParameter("admin", "true") // Bypasses Required Field Validations.
                     .build();
 
             final Gson gson = new Gson();
