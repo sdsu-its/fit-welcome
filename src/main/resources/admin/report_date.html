@@ -18,7 +18,7 @@
         <td>
             <form action="admin/report">
                 <input type="hidden" name="id" value="{{REDID}}">
-                <input type="hidden" name="report_type" value="{{RTYPE}}">
+                <input type="hidden" name="report_type" id="report_type" value="{{RTYPE}}">
                 <table>
                     <tr>
                         <td>
@@ -36,6 +36,17 @@
                             <input class="inputBox" title="End Date" type="date" name="end" required>
                         </td>
                     </tr>
+                    <tr id="type-row" style="display: none;">
+                        <td>
+                            Type:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="Report Type" name="report_params" id="ts-mode">
+                                <option name="Bulk" value="bulk">Bulk Report (Emailed to You)</option>
+                                <option name="Individual" value="individual">Individual Report (Emailed to Staff)</option>
+                            </select>
+                        </td>
+                    </tr>
                 </table>
                 <button class="submitButton" type="submit" title="Submit">Run Report</button>
             </form>
@@ -43,4 +54,10 @@
     </tr>
 </table>
 </body>
+<script>
+    if (document.getElementById("report_type").value == "timesheets") {
+        document.getElementById("ts-mode").required = true;
+        document.getElementById("type-row").style.display = "";
+    }
+</script>
 </html>

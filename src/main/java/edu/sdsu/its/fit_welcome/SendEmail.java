@@ -21,6 +21,12 @@ import java.util.Scanner;
  */
 public class SendEmail {
     final HtmlEmail mEmail = new HtmlEmail();
+    private static final String emailHost = Param.getParam("fit_email", "host");
+    private static final String emailPort = Param.getParam("fit_email", "port");
+    private static final String emailUser = Param.getParam("fit_email", "username");
+    private static final String emailPass = Param.getParam("fit_email", "password");
+    private static final String emailFromAdd = Param.getParam("fit_email", "from_email");
+    private static final String emailFromName = Param.getParam("fit_email", "from_name");
 
     /**
      * Read file from Local File System
@@ -77,12 +83,12 @@ public class SendEmail {
 
         }
 
-        mEmail.setHostName(Param.getParam("fit_email", "host"));
-        mEmail.setSmtpPort(Integer.parseInt(Param.getParam("fit_email", "port")));
-        mEmail.setAuthenticator(new DefaultAuthenticator(Param.getParam("fit_email", "username"), Param.getParam("fit_email", "password")));
+        mEmail.setHostName(emailHost);
+        mEmail.setSmtpPort(Integer.parseInt(emailPort));
+        mEmail.setAuthenticator(new DefaultAuthenticator(emailUser, emailPass));
         mEmail.setSSLOnConnect(Boolean.parseBoolean(Param.getParam("fit_email", "ssl")));
         try {
-            mEmail.setFrom(Param.getParam("fit_email", "from_email"), Param.getParam("fit_email", "from_name"));
+            mEmail.setFrom(emailFromAdd, emailFromName);
             mEmail.setSubject("[FIT WELCOME]  " + reportType);
             mEmail.setHtmlMsg(makeFileMessage(firstName));
 

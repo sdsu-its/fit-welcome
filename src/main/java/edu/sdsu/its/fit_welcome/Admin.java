@@ -89,19 +89,20 @@ public class Admin {
     /**
      * Reports Pages
      *
-     * @param id         {@link String} User's ID
-     * @param reportType {@link String} Which Type of report to Run.
-     *                   Either 'timesheets' or 'usage'
-     * @param startDate  {@link String} Start Date for the Report
-     * @param endDate    {@link String} End Date for the Report
+     * @param id           {@link String} User's ID
+     * @param reportType   {@link String} Which Type of report to Run.
+     *                     Either 'timesheets' or 'usage'
+     * @param reportParams {@link String} Additional Report Parameters
+     * @param startDate    {@link String} Start Date for the Report
+     * @param endDate      {@link String} End Date for the Report
      * @return {@link Response} Response
      */
     @Path("report")
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
-    public Response report(@QueryParam("id") final String id, @QueryParam("report_type") final String reportType, @QueryParam("start") final String startDate, @QueryParam("end") final String endDate) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN/REPORT - id = %s & report_type - %s & start - %s & end - %s", id, reportType, startDate, endDate));
+    public Response report(@QueryParam("id") final String id, @QueryParam("report_type") final String reportType, @QueryParam("report_params") final String reportParams, @QueryParam("start") final String startDate, @QueryParam("end") final String endDate) {
+        Log.info(String.format("Recieved Request: [GET] ADMIN/REPORT - id = %s & report_type - %s & report_params - %s & start - %s & end - %s", id, reportType, reportParams, startDate, endDate));
 
         final Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
         if (staff == null || !staff.admin) {
@@ -115,7 +116,7 @@ public class Admin {
         params.put("QUOTE", quote.text);
         params.put("QUOTEAUTHOR", quote.author);
 
-        if ("timesheets".equals(reportType)) {
+        if ("timesheets".equals(reportType) && "bulk".equals(reportParams)) {
             new Thread() {
                 @Override
                 public void run() {
@@ -134,9 +135,30 @@ public class Admin {
             }.start();
 
             return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_CONF, params)).build();
-        }
+        } else if ("timesheets".equals(reportType) && "individual".equals(reportParams)) {
+            new Thread() {
+                @Override
+                public void run() {
+                    Log.info("Starting new Thread to Generate Timesheets");
 
-        if ("usage".equals(reportType)) {
+                    final Staff[] allClockableStaff = DB.getAllStaff("WHERE clockable = 1");
+                    for (Staff clockableStaff : allClockableStaff) {
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                File[] timesheets = new File[1];
+
+                                Log.info("Starting new Thread to Send Individual Timesheet to " + clockableStaff.lastName);
+                                timesheets[0] = Timesheet.make(DB.exportClockIOs(clockableStaff.id, startDate, endDate), "Timesheet");
+                                new SendEmail().emailFile("Your Latest Timesheet", clockableStaff.firstName, timesheets).send(clockableStaff.email);
+                            }
+                        }.start();
+                    }
+                }
+            }.start();
+
+            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_CONF, params)).build();
+        } else if ("usage".equals(reportType)) {
             new Thread() {
                 @Override
                 public void run() {
