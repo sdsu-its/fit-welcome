@@ -7,7 +7,8 @@ import org.joda.time.format.DateTimeFormat;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Generate Timesheet based on ClockIO {@link Clock.ClockIO} entries.
@@ -20,21 +21,22 @@ public class Timesheet {
      * Generate a Timesheet with the total number of hours/minutes worked on a given day.
      * Days where no hours were worked will not be included.
      *
-     * @param entries {@link Clock.ClockIO[]} All Clock In/Out entries to be included in the report
+     * @param entries  {@link Clock.ClockIO[]} All Clock In/Out entries to be included in the report
      * @param fileName {@link String} Name of the File, Should not include extension
      * @return {@link File} Generated TimeSheet CVS
      */
     public static File make(Clock.ClockIO[] entries, final String fileName) {
-        HashMap<String, Double> days = new HashMap<String, Double>(); // Day:Minutes Worked
+        Map<String, Double> days = new TreeMap<>(); // Day:Minutes Worked
         for (Clock.ClockIO entry : entries) {
             if (entry.inTime == null || entry.outTime == null) {
                 continue;
             }
 
-            if (days.containsKey(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd")))) {
-                days.put(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd")), days.get(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))) + entry.duration.getStandardSeconds() / 60d);
+            final String inTime = entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd"));
+            if (days.containsKey(inTime)) {
+                days.put(inTime, days.get(inTime) + entry.duration.getStandardSeconds() / 60d);
             } else {
-                days.put(entry.inTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd")), entry.duration.getStandardSeconds() / 60d);
+                days.put(inTime, entry.duration.getStandardSeconds() / 60d);
             }
         }
 
