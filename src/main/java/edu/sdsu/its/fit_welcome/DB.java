@@ -137,7 +137,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM bbusers WHERE id = " + id + ";";
+            final String sql = "SELECT * FROM users WHERE id = " + id + ";";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -175,7 +175,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM bbusers WHERE email = '" + email + "';";
+            final String sql = "SELECT * FROM users WHERE email = '" + email + "';";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
@@ -510,7 +510,7 @@ public class DB {
      * @param email {@link String} Email to Unsubscribe
      */
     public static void unsubscribe(final String email) {
-        final String sql = "UPDATE bbusers\n" +
+        final String sql = "UPDATE users\n" +
                 "SET send_emails = 0\n" +
                 "WHERE email = '" + email + "';";
         Log.info(String.format("Unsubscribing user with email: %s from FollowUp List", email));
@@ -523,7 +523,7 @@ public class DB {
      * @param email {@link String } Email to Resubscribe
      */
     public static void subscribe(final String email) {
-        final String sql = "UPDATE bbusers\n" +
+        final String sql = "UPDATE users\n" +
                 "SET send_emails = 1\n" +
                 "WHERE email = '" + email + "';";
         Log.info(String.format("Subscribing user with email: %s to FollowUp List", email));

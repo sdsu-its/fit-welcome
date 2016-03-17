@@ -29,17 +29,17 @@ FIT Welcome also uses [Key Server](https://github.com/sdsu-its/key-server) to ac
 ### DB Config
 To setup the various tables that FIT Welcome uses, run the code below in the Database that will be used with FIT Welcome.
 
-All Primary Users (Faculty, TAs, etc.) should be in the __bbusers__ Table.
+All Primary Users (Faculty, TAs, etc.) should be in the __users__ Table.
 __Clock__ is used to store Clock In/Out events.
 __Events__ stores all check-in information, as well as any additional information that is relevant to that check-in.
 __Quotes__ stores a list of quotes that are displayed on the confirmation pages. These quotes can be anything you like! (A good source for quotes is [Brainy Quote](http://www.brainyquote.com/)).
 The __Staff__ stores information for all staff users.
 __Emails__ is used by the FollowUp module to track who was sent emails when.
 
-__Important Note:__ information in the __Staff__ table has priority over information in the __bbusers__ table; this is done to allow normal users to be changed to staff users without the need to remove them from the primary users table.
+__Important Note:__ information in the __Staff__ table has priority over information in the __users__ table; this is done to allow normal users to be changed to staff users without the need to remove them from the primary users table.
 
 ```
-CREATE TABLE bbusers
+CREATE TABLE users
 (
     id INT(9) PRIMARY KEY NOT NULL,
     first_name TEXT,
@@ -83,7 +83,7 @@ CREATE TABLE email
     ID int(9),
     TYPE TEXT
 );
-INSERT INTO bbusers VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.edu', 0);
+INSERT INTO users VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.edu', 0);
 ```
 
 ### KeyServer Setup
