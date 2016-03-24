@@ -143,16 +143,11 @@ public class Admin {
 
                     final Staff[] allClockableStaff = DB.getAllStaff("WHERE clockable = 1");
                     for (Staff clockableStaff : allClockableStaff) {
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                File[] timesheets = new File[1];
+                        File[] timesheets = new File[1];
 
-                                Log.info("Starting new Thread to Send Individual Timesheet to " + clockableStaff.lastName);
-                                timesheets[0] = Timesheet.make(DB.exportClockIOs(clockableStaff.id, startDate, endDate), "Timesheet");
-                                new SendEmail().emailFile("Your Latest Timesheet", clockableStaff.firstName, timesheets).send(clockableStaff.email);
-                            }
-                        }.start();
+                        Log.info(String.format("Sending Individual Timesheet to %s %s", clockableStaff.firstName, clockableStaff.lastName));
+                        timesheets[0] = Timesheet.make(DB.exportClockIOs(clockableStaff.id, startDate, endDate), "Timesheet");
+                        new SendEmail().emailFile("Your Latest Timesheet", clockableStaff.firstName, timesheets).send(clockableStaff.email);
                     }
                 }
             }.start();
