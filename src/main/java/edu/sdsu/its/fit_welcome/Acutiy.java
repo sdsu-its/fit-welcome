@@ -64,10 +64,10 @@ public class Acutiy {
         LocalTime earliestTime = new LocalTime("23:59:59"); // Last possible time fo the day
         Appointment earliestAppt = null;
 
-        final DateTimeFormatter accuityFmt = DateTimeFormat.forPattern("hh:mma");
+        final DateTimeFormatter acuityFmt = DateTimeFormat.forPattern("hh:mma");
 
         for (Appointment a : appointmentsForUser) {
-            LocalTime apptTime = accuityFmt.parseLocalTime(a.time);
+            LocalTime apptTime = acuityFmt.parseLocalTime(a.time);
             if (earliestTime.isAfter(apptTime)) {
                 earliestTime = apptTime;
                 earliestAppt = a;
