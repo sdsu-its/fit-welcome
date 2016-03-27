@@ -25,9 +25,9 @@ import java.util.List;
  */
 @SuppressWarnings({"SqlNoDataSourceInspection", "SqlResolve"})
 public class DB {
-    private static final String db_url = Param.getParam("fit_welcome", "db-url");
-    private static final String db_user = Param.getParam("fit_welcome", "db-user");
-    private static final String db_password = Param.getParam("fit_welcome", "db-password");
+    private static final String db_url = Param.getParam("db-url");
+    private static final String db_user = Param.getParam("db-user");
+    private static final String db_password = Param.getParam("db-password");
     private static final Logger Log = Logger.getLogger(DB.class);
 
     /**
@@ -43,7 +43,6 @@ public class DB {
             conn = DriverManager.getConnection(db_url, db_user, db_password);
         } catch (Exception e) {
             Log.fatal("Problem Initializing DB Connection", e);
-            System.exit(69);
         }
 
         return conn;

@@ -20,13 +20,22 @@ import java.net.URISyntaxException;
 public class Param {
     final private static String URL = System.getenv("KSPATH");
     final private static String KEY = System.getenv("KSKEY");
+    final private static String APP_NAME = System.getenv("WELCOME_APP");
 
+    /**
+     * Get Parameter form the Default Application (whose name is an environment variable)
+     * @param parameterName {@link String} Parameter Name
+     * @return {@link String} Parameter Value
+     */
+    public static String getParam(final String parameterName) {
+        return getParam(APP_NAME, parameterName);
+    }
 
     /**
      * Retrieve Param from Key Server
      *
      * @param applicationName {@link String} Application that the parameter is associated with
-     * @param parameterName {@link String } Parameter Name
+     * @param parameterName {@link String} Parameter Name
      * @return {@link String} Parameter Value
      */
     public static String getParam(final String applicationName, final String parameterName) {
