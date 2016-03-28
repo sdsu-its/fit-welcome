@@ -47,6 +47,14 @@ function makePage(pageName, pageJSON) {
         headTD.innerHTML = pageJSON.pageHead;
     }
 
+    if (pageJSON.pageSubHead != null) {
+        var subTR = tbl.insertRow();
+        var subTD = subTR.insertCell(0);
+        subTD.className = "pageSubHead";
+        subTD.colSpan = 2;
+        subTD.innerHTML = pageJSON.pageSubHead;
+    }
+
     for (var button = 0; button < Object.keys(pageJSON['buttons']).length; button += 2) {
         var tr = tbl.insertRow();
         for (var i = 0; i < 2; i++) {
@@ -65,7 +73,5 @@ function makePage(pageName, pageJSON) {
         }
     }
 
-
     document.body.appendChild(tbl); // Add the table to the Body
-
 }

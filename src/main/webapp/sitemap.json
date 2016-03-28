@@ -1,6 +1,7 @@
 {
   "index": {
-    "pageHead": "What do you hope to accomplish today?",
+    "pageHead": "Welcome <span class='firstName'>Jane</span>!",
+    "pageSubHead": "What do you hope to accomplish today?",
     "buttons": {
       "Use the ParScore Machines": "finish('Use ParScore')",
       "Meet with an Instructional Designer": "showPage('ID Topics')",
