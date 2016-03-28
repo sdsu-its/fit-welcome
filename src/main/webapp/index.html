@@ -13,28 +13,57 @@
     <script src="index.js" type="application/javascript"></script>
 </head>
 <body>
-<form onsubmit="login()">
-    <table class="login">
-        <tr>
-            <td class="mainHead">Welcome to the FIT Center!</td>
-        </tr>
-        <tr>
-            <td class="prompt" id="entryMethod">Please Swipe or Type in your
-                <br>REDID to get Started, then press return.
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input class="inputBox" title="REDID" name="id" id="idBox" type="text" required autocomplete="off">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <img id="logo" src="logo.png" alt="ITS Logo">
-            </td>
-        </tr>
-    </table>
-</form>
+<table class="login" id="login">
+    <tr>
+        <td class="mainHead">Welcome to the FIT Center!</td>
+    </tr>
+    <tr>
+        <td class="prompt" id="entryMethod">Please Swipe or Type in your
+            <br>REDID to get Started, then press return.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="login(); return false;">
+                <input class="inputBox" title="REDID" name="id" id="idBox" type="text" required autocomplete="off" pattern="\d*">
+            </form>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <img id="logo" src="logo.png" alt="ITS Logo">
+        </td>
+    </tr>
+</table>
+<table id="appointment" style="display: none">
+    <tr>
+        <td class="pageHead">Hello there <span class="firstName">Jane</span>!</td>
+    </tr>
+    <tr>
+        <td class="pageInfo">It looks like you have an Appointment for <br>
+            <span id="appointmentType">ParScore Scanning</span> scheduled for <span id="appointmentTime">12:15pm</span>.
+            <br>
+            <br>
+            Is this the goal for your visit?
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <form>
+                <table>
+                    <tr>
+                        <td>
+                            <button class="panelButton" type="button" onsubmit="finish('Use ParScore')">Yes!</button>
+                        </td>
+                        <td>
+                            <button class="panelButton" type="button" onsubmit="showPage('index')">No</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </td>
+    </tr>
+</table>
 </body>
 <script type="application/javascript">
     var ua = navigator.userAgent;
