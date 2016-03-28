@@ -1,9 +1,7 @@
 package edu.sdsu.its.fit_welcome;
 
-import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Quote;
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
+import com.google.gson.Gson;
+import edu.sdsu.its.fit_welcome.Models.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 
@@ -22,7 +20,28 @@ import java.util.HashMap;
  */
 @Path("/")
 public class Web {
-    private final Logger Log = Logger.getLogger(getClass());
+    private static final Logger LOGGER = Logger.getLogger(Web.class);
+    private static final Gson GSON = new Gson();
+
+    @Path("login")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(@QueryParam("id") final String uid) {
+        LOGGER.info("Recieved Request: [GET] LOGIN - id = " + uid);
+
+        int id = User.parseSwipe(uid);
+        Staff staff = Staff.getStaff(id);
+        User user = (staff == null) ? User.getUser(id) : null;
+
+        if (user == null && staff == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new errorMessage("User not Found"))).build();
+        }
+
+        Login login = new Login(staff != null ? staff : user, staff != null, Acutiy.getAppt(staff != null ? staff : user));
+        return Response.status(Response.Status.OK).entity(GSON.toJson(login)).build();
+    }
+
 
     /**
      * Welcome Page
@@ -37,7 +56,7 @@ public class Web {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     public Response welcome(@QueryParam("id") final String uid, @QueryParam("skip_sch") final String skipAcuity, @QueryParam("appt_id") final String acuityApptID) {
-        Log.info(String.format("Recieved Request: [GET] WELCOME - id = %s & skip_sch = %s & appt_id = %s", uid, skipAcuity, acuityApptID));
+        LOGGER.info(String.format("Recieved Request: [GET] WELCOME - id = %s & skip_sch = %s & appt_id = %s", uid, skipAcuity, acuityApptID));
 
         int redid = User.parseSwipe(uid);
 
@@ -69,11 +88,11 @@ public class Web {
 
                 return Response.seeOther(redirect).build();
             } catch (URISyntaxException e) {
-                Log.warn("Problem Creating Redirect URI", e);
+                LOGGER.warn("Problem Creating Redirect URI", e);
             }
         }
 
-        Acutiy.Appointment appointment = !"yes".equals(skipAcuity) ? Acutiy.getAppt(staff != null ? staff: user) : null;
+        Acutiy.Appointment appointment = !"yes".equals(skipAcuity) ? Acutiy.getAppt(staff != null ? staff : user) : null;
         if (appointment != null) {
             params.put("TIME", appointment.time);
             params.put("APPTID", appointment.id.toString());
@@ -105,7 +124,7 @@ public class Web {
                                  @QueryParam("source") final String source,
                                  @QueryParam("param") final String param) {
 
-        Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & param - %s", id, goal, hasAppt, appointmentID, source, param));
+        LOGGER.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & param - %s", id, goal, hasAppt, appointmentID, source, param));
 
         final Staff staff = Staff.getStaff(id);
         final User user = (staff == null) ? User.getUser(id) : null;
@@ -134,7 +153,7 @@ public class Web {
 
                 return Response.seeOther(redirect).build();
             } catch (URISyntaxException e) {
-                Log.warn("Problem Creating Redirect URI", e);
+                LOGGER.warn("Problem Creating Redirect URI", e);
             }
         } else if ("Meet an ID".equals(goal)) {
             if (param == null) {
@@ -146,7 +165,7 @@ public class Web {
 
                     return Response.seeOther(redirect).build();
                 } catch (URISyntaxException e) {
-                    Log.warn("Problem Creating Redirect URI", e);
+                    LOGGER.warn("Problem Creating Redirect URI", e);
                 }
             } else {
                 new Event(user, goal, param).logEvent();
@@ -166,13 +185,13 @@ public class Web {
 
                     return Response.seeOther(redirect).build();
                 } catch (URISyntaxException e) {
-                    Log.warn("Problem Creating Redirect URI", e);
+                    LOGGER.warn("Problem Creating Redirect URI", e);
                 }
             } else {
                 new Thread() {
                     @Override
                     public void run() {
-                        Log.info("Starting new Thread to update Acuity Appointment");
+                        LOGGER.info("Starting new Thread to update Acuity Appointment");
                         Acutiy.checkIn(Integer.parseInt(appointmentID));
                     }
                 }.start();
@@ -190,7 +209,7 @@ public class Web {
                 new Thread() {
                     @Override
                     public void run() {
-                        Log.info("Starting new Thread to update Acuity Appointment");
+                        LOGGER.info("Starting new Thread to update Acuity Appointment");
                         Acutiy.checkIn(Integer.parseInt(appointmentID));
                     }
                 }.start();
@@ -215,7 +234,7 @@ public class Web {
 
                     return Response.seeOther(redirect).build();
                 } catch (URISyntaxException e) {
-                    Log.warn("Problem Creating Redirect URI", e);
+                    LOGGER.warn("Problem Creating Redirect URI", e);
                 }
             } else {
                 new Event(staff != null ? staff : user, param, "").logEvent();
@@ -248,7 +267,7 @@ public class Web {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     public Response schedule(@QueryParam("first") final String firstName, @QueryParam("last") final String lastName, @QueryParam("email") final String email) {
-        Log.info(String.format("Recieved Request: [GET] SCHEDULE - first = %s & last - %s & email - %s", firstName, lastName, email));
+        LOGGER.info(String.format("Recieved Request: [GET] SCHEDULE - first = %s & last - %s & email - %s", firstName, lastName, email));
 
 
         final HashMap<String, String> params = new HashMap<String, String>();
@@ -270,7 +289,7 @@ public class Web {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     public Response problemSelect(@QueryParam("id") final String id) {
-        Log.info(String.format("Recieved Request: [GET] PROBLEMSELECT - id = %s", id));
+        LOGGER.info(String.format("Recieved Request: [GET] PROBLEMSELECT - id = %s", id));
 
         final Staff staff = Staff.getStaff(id);
         final User user = (staff == null) ? User.getUser(id) : null;
@@ -293,7 +312,7 @@ public class Web {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     public Response otherSelect(@QueryParam("id") final String id) {
-        Log.info(String.format("Recieved Request: [GET] OTHERSELECT - id = %s", id));
+        LOGGER.info(String.format("Recieved Request: [GET] OTHERSELECT - id = %s", id));
 
         final Staff staff = Staff.getStaff(id);
         final User user = (staff == null) ? User.getUser(id) : null;
@@ -303,6 +322,14 @@ public class Web {
         params.put("FIRST", staff != null ? staff.firstName : user.firstName);
 
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.OTHER, params)).build();
+    }
+
+    public static class errorMessage {
+        String message;
+
+        public errorMessage(String message) {
+            this.message = message;
+        }
     }
 
 }

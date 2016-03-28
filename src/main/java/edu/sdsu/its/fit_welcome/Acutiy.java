@@ -28,7 +28,6 @@ import java.util.List;
  *         Created on 12/12/15.
  */
 public class Acutiy {
-    public static final String CALID = Param.getParam("Acuity", "ParScore Calendar");
     private static final String USERID = Param.getParam("Acuity", "User ID");
     private static final String KEY = Param.getParam("Acuity", "API Key");
     private static final Logger Log = Logger.getLogger(Acutiy.class);
@@ -74,6 +73,7 @@ public class Acutiy {
             }
         }
 
+        Log.debug(String.format("Earliest appointment for User: %d is %s", user.id, earliestAppt != null ? earliestAppt.toString() : "No Appt Found."));
         return earliestAppt;
     }
 
@@ -81,7 +81,7 @@ public class Acutiy {
      * Get the appointment by Acuity's Appointment ID
      *
      * @param id {@link Integer} Appointment ID
-     * @return {@link Appointment} The Appointment that coresponds to that ID
+     * @return {@link Appointment} The Appointment that corresponds to that ID
      */
     public static Appointment getAppt(final Integer id) {
         Appointment result = null;
@@ -115,10 +115,8 @@ public class Acutiy {
                     .setScheme("https")
                     .setHost("acuityscheduling.com/api/v1/")
                     .setPath("appointments")
-                    .setParameter("admin", "true") // Bypasses Required Field Validations.
                     .setParameter("minDate", getCurrentTimeStamp("yyyy-MM-dd"))
                     .setParameter("maxDate", getCurrentTimeStamp("yyyy-MM-dd"))
-                    .setParameter("calendarID", CALID)
                     .setParameter("canceled", "false")
                     .build();
 
@@ -220,6 +218,7 @@ public class Acutiy {
      */
     public static class Appointment {
         public Integer id;
+        public String type;
         public String firstName;
         public String lastName;
         public String email;
@@ -227,5 +226,9 @@ public class Acutiy {
         public String time;
         public String notes;
 
+        @Override
+        public String toString() {
+            return String.format("%s at %s (ID: %d)", type, time, id);
+        }
     }
 }
