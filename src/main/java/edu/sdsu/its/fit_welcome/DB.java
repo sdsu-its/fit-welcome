@@ -300,7 +300,8 @@ public class DB {
      * @param action {@link String} User's Goal
      * @param params {@link String} Notes/Specifications for User's visit
      */
-    public static void logEvent(final String timestamp, final int id, final String action, final String params) {
+    public static void logEvent(final String timestamp, final int id, final String action, String params) {
+        params = params != null ? params : ""; // Set Params to an empty string if it is null, which happens when no value is passed in from the API
         final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", timestamp, id, sanitize(action), sanitize(params));
         executeStatement(sql);
     }

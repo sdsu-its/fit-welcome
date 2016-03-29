@@ -20,7 +20,7 @@ window.onload = function () {
         idBox.focus();
         idBox.select();
     }
-}
+};
 
 function login() {
     var userID = document.getElementById("idBox").value;
@@ -89,11 +89,11 @@ function showPage(pageName) {
     document.getElementById(pageName).style.display = "";
 
     currentPageID = pageName;
-    if (pageName != "loading" && pageHistory[pageHistory.length -1] != pageName) {
+    if (pageName != "loading" && pageHistory[pageHistory.length - 1] != pageName) {
         pageHistory.push(pageName);
     }
 
-    if (pageHistory.length > 2 && pageName != "loading" && pageName != "login") {
+    if (pageHistory.length > 2 && pageName != "loading" && pageName != "login" && pageName != "conf") {
         showFooter();
     } else {
         hideFooter();
@@ -153,7 +153,50 @@ function showAdmin() {
 }
 
 function finish(goal, param) {
-    // TODO
+    var json = '{' +
+        '"owner": {"id": ' + user.id + '},' +
+        '"type": "' + goal + '"';
+
+    if (param != null) {
+        json += ',"params": "' + param + '"';
+    }
+    json += '}';
+
+    console.log(json);
+
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            var response = xmlHttp;
+            console.log(response.status);
+            if (response.status == 201) {
+                console.log(response.responseText);
+                doFinish();
+            }
+            else {
+                alert("Problem Saving Event");
+                doFinish();
+            }
+        }
+    };
+
+    xmlHttp.open('POST', "api/event");
+    xmlHttp.setRequestHeader("Content-type", "application/json");
+    xmlHttp.send(json);
+}
+
+function doFinish() {
+    // TODO Fill in Tags
+
+    pageHistory = [];
+    user = null;
+
+    showPage("conf");
+
+    window.setTimeout(function () {
+        showPage("login");
+    },10000);
 }
 
 function scheduler(appointmentID) {

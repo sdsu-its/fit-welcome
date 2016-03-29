@@ -35,7 +35,7 @@ public class Web {
         User user = (staff == null) ? User.getUser(id) : null;
 
         if (user == null && staff == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new ErrorMessage("User not Found"))).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new SimpleMessage("User not Found"))).build();
         }
 
         Login login = new Login(staff != null ? staff : user, staff != null, Acutiy.getAppt(staff != null ? staff : user));
@@ -58,11 +58,46 @@ public class Web {
 
         Staff staff = Staff.getStaff(id);
         if (staff == null || !staff.clockable) {
-            Response.status(Response.Status.NOT_ACCEPTABLE).entity(GSON.toJson(new ErrorMessage("ID does not have a Clock."))).build();
+            Response.status(Response.Status.NOT_ACCEPTABLE).entity(GSON.toJson(new SimpleMessage("ID does not have a Clock."))).build();
         }
 
         final boolean status = new Clock(staff).getStatus();
         return Response.status(Response.Status.OK).entity(status).build();
+    }
+
+    /**
+     * Toggle the status of a Staff Member's Clock
+     *
+     * @param id {@link int} Staff Member's ID
+     * @return {@link Response} True = User was Clocked In & False = User was Clocked Out
+     */
+    @Path("clock/toggle")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response toggleClock(@QueryParam("id") final int id) {
+        LOGGER.info("Recieved Request: [GET] CLOCK/TOGGLE - id = " + id);
+
+        Staff staff = Staff.getStaff(id);
+        if (staff == null || !staff.clockable) {
+            Response.status(Response.Status.NOT_ACCEPTABLE).entity(GSON.toJson(new SimpleMessage("ID does not have a Clock."))).build();
+        }
+
+        final boolean status = new Clock(staff).toggle();
+        return Response.status(Response.Status.ACCEPTED).entity(status).build();
+    }
+
+    @Path("event")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addEvent(final String payload) {
+        LOGGER.info("Recieved Request: [POST] EVENT - " + payload);
+
+        Event event = GSON.fromJson(payload, Event.class);
+        event.logEvent();
+
+        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
 
@@ -288,10 +323,10 @@ public class Web {
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.OTHER, params)).build();
     }
 
-    public static class ErrorMessage {
+    public static class SimpleMessage {
         String message;
 
-        public ErrorMessage(String message) {
+        public SimpleMessage(String message) {
             this.message = message;
         }
     }
