@@ -1,14 +1,12 @@
 /**
- * Render a JSOn Document to a set of Button Panels
+ * Render a JSON Document to a set of Button Panels
  *
  * Created by tpaulus on 3/27/16.
  */
 
 const buttonTemplate = '<button class="panelButton" type="button" onclick="{{action}}">{{text}}</button>';
 
-window.onload = function () {
-    getMapJSON();
-};
+getMapJSON(); // Generate the Pages
 
 function getMapJSON() {
     var xmlHttp = new XMLHttpRequest();

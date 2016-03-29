@@ -35,7 +35,7 @@ public class Web {
         User user = (staff == null) ? User.getUser(id) : null;
 
         if (user == null && staff == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new errorMessage("User not Found"))).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new ErrorMessage("User not Found"))).build();
         }
 
         Login login = new Login(staff != null ? staff : user, staff != null, Acutiy.getAppt(staff != null ? staff : user));
@@ -44,63 +44,27 @@ public class Web {
 
 
     /**
-     * Welcome Page
+     * Get the status of a Staff Member's Clock
      *
-     * @param uid          {@link String} UserID (Either typed in or Magstripe Encoded)
-     * @param skipAcuity   {@link String} if "yes" Acuity will not be checked for appointments
-     * @param acuityApptID {@link String} Acuity Appointment ID if declined
-     * @return {@link Response} Response
+     * @param id {@link int} Staff Member's ID
+     * @return {@link Response} True = Clocked IN & False = Clocked OUT
      */
-    @Path("welcome")
+    @Path("clock/status")
     @GET
     @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response welcome(@QueryParam("id") final String uid, @QueryParam("skip_sch") final String skipAcuity, @QueryParam("appt_id") final String acuityApptID) {
-        LOGGER.info(String.format("Recieved Request: [GET] WELCOME - id = %s & skip_sch = %s & appt_id = %s", uid, skipAcuity, acuityApptID));
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getClockStatus(@QueryParam("id") final int id) {
+        LOGGER.info("Recieved Request: [GET] CLOCK/STATUS - id = " + id);
 
-        int redid = User.parseSwipe(uid);
-
-        Staff staff = Staff.getStaff(redid);
-        User user = (staff == null) ? User.getUser(redid) : null;
-
-        if (user == null && staff == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(Pages.makePage(Pages.NOT_FOUND, new HashMap<String, String>())).build();
+        Staff staff = Staff.getStaff(id);
+        if (staff == null || !staff.clockable) {
+            Response.status(Response.Status.NOT_ACCEPTABLE).entity(GSON.toJson(new ErrorMessage("ID does not have a Clock."))).build();
         }
 
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
-        params.put("REDID", Integer.toString(redid));
-        params.put("APPTID", acuityApptID != null ? acuityApptID : "");
-
-        if (staff != null && staff.clockable) {
-            final boolean status = new Clock(staff).getStatus();
-            params.put("STATUS", status ? "Clocked In" : "Clocked Out");
-            params.put("VERB", status ? "Out" : "In");
-            params.put("ADMIN", staff.admin ? "" : "style=\"display: none;\"");
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.STAFF_WELCOME, params)).build();
-        } else if (staff != null && staff.admin) {
-            try {
-                final URI redirect = new URIBuilder()
-                        .setPath("admin")
-                        .setParameter("id", Integer.toString(redid))
-                        .build();
-
-                return Response.seeOther(redirect).build();
-            } catch (URISyntaxException e) {
-                LOGGER.warn("Problem Creating Redirect URI", e);
-            }
-        }
-
-        Acutiy.Appointment appointment = !"yes".equals(skipAcuity) ? Acutiy.getAppt(staff != null ? staff : user) : null;
-        if (appointment != null) {
-            params.put("TIME", appointment.time);
-            params.put("APPTID", appointment.id.toString());
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.APPT_FOUND, params)).build();
-        }
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.WELCOME, params)).build();
+        final boolean status = new Clock(staff).getStatus();
+        return Response.status(Response.Status.OK).entity(status).build();
     }
+
 
     /**
      * Confirmation Page
@@ -324,10 +288,10 @@ public class Web {
         return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.OTHER, params)).build();
     }
 
-    public static class errorMessage {
+    public static class ErrorMessage {
         String message;
 
-        public errorMessage(String message) {
+        public ErrorMessage(String message) {
             this.message = message;
         }
     }

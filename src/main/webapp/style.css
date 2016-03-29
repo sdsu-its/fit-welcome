@@ -12,6 +12,8 @@ table {
     margin: 0 auto;
 
     font-size: 1em;
+    text-align: center;
+
 }
 
 button {
@@ -83,10 +85,6 @@ button {
     padding: 1em;
 }
 
-form {
-    text-align: center;
-}
-
 .inputBox {
     align-items: center;
 
@@ -127,15 +125,16 @@ form {
 }
 
 #clock {
-    height: 2em;
-    width: 7em;
+    height: 2.25em;
 
-    font-size: 6.5em;
+    padding: auto;
+    text-transform: uppercase;
+    font-size: 5em;
 }
 
-#clockVerb {
-    font-weight: bold;
-    text-transform: uppercase;
+#clock.disabled {
+    font-size: 4em;
+    color: #666666;
 }
 
 #admin {
@@ -162,4 +161,9 @@ button.full {
 
 input.date {
     width: 18.5em;
+}
+
+.fa-spinner {
+    font-size: 5em;
+    color: #333333;
 }
