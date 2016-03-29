@@ -128,12 +128,9 @@ public class Web {
         final Staff staff = Staff.getStaff(id);
         final User user = (staff == null) ? User.getUser(id) : null;
 
-        final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff != null ? staff.firstName : user.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
 
         if ("staff".equals(source)) {
             boolean new_status = new Clock(staff).toggle();

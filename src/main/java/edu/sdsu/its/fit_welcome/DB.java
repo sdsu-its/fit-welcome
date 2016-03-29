@@ -2,7 +2,6 @@ package edu.sdsu.its.fit_welcome;
 
 import com.opencsv.CSVWriter;
 import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.log4j.Logger;
@@ -307,35 +306,29 @@ public class DB {
     }
 
     /**
-     * Get all Quotes from the DB
+     * Get the total number of Quotes in the DB.
+     * This method assumes that the quotes are have a sequential unique ID!
      *
-     * @return {@link Quote[]} All Quotes
+     * @return {@link int} Number of Quotes in the DB
      */
-    public static Quote[] getQuotes() {
+    public static int getNumQuotes() {
         Connection connection = getConnection();
         Statement statement = null;
-        Quote[] quotes = null;
+        int maxInt = 1;
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM quotes;";
+            final String sql = "SELECT MAX(id) FROM quotes;";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
-            final List<Quote> quoteList = new ArrayList<>();
-
-            while (resultSet.next()) {
-                quoteList.add(new Quote(resultSet.getString("text"), resultSet.getString("author")));
+            if (resultSet.next()) {
+                maxInt = resultSet.getInt(1);
             }
 
-            quotes = new Quote[quoteList.size()];
-
-            for (int q = 0; q < quoteList.size(); q++) {
-                quotes[q] = quoteList.get(q);
-            }
-
+            resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem Adding Action to DB", e);
+            Log.error("Problem querying DB for Max Quote ID", e);
         } finally {
             if (statement != null) {
                 try {
@@ -347,9 +340,47 @@ public class DB {
             }
         }
 
-        return quotes;
+        return maxInt;
     }
 
+    /**
+     * Returns the Quote with the specified ID
+     *
+     * @param quoteNum {@link int} Quote ID
+     * @return {@link Quote.QuoteModel} Quote Model (Author and Text)
+     */
+    public static Quote.QuoteModel getQuote(final int quoteNum) {
+        Connection connection = getConnection();
+        Statement statement = null;
+        Quote.QuoteModel quote = null;
+
+        try {
+            statement = connection.createStatement();
+            final String sql = "SELECT author, text FROM quotes WHERE id = " + quoteNum + ";";
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                quote = new Quote.QuoteModel(resultSet.getString("author"),
+                        resultSet.getString("text"));
+            }
+
+            resultSet.close();
+        } catch (SQLException e) {
+            Log.error("Problem querying DB for Quote by ID", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return quote;
+    }
     /**
      * Clock In the User
      *

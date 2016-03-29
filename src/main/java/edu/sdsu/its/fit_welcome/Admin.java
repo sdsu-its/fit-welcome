@@ -1,7 +1,6 @@
 package edu.sdsu.its.fit_welcome;
 
 import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.http.client.utils.URIBuilder;
@@ -109,12 +108,9 @@ public class Admin {
             return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
         }
 
-        final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
 
         if ("timesheets".equals(reportType) && "bulk".equals(reportParams)) {
             new Thread() {
@@ -192,12 +188,9 @@ public class Admin {
             return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
         }
 
-        final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
 
         final Staff staff1 = Staff.getStaff(userID);
 
@@ -242,12 +235,9 @@ public class Admin {
             return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
         }
 
-        final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
         params.put("ACTION", "Manually Added a Visitor Entry");
 
 
@@ -286,13 +276,10 @@ public class Admin {
         }
 
 
-        final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff.firstName);
 
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
 
         if (userID == null || userID.length() < 0) {
             // Clock out All Users
@@ -349,12 +336,10 @@ public class Admin {
             return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
         }
 
-        final Quote quote = Quote.getRandom();
 
         final HashMap<String, String> params = new HashMap<String, String>();
         params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
+
 
         final Staff staff1 = new Staff(Integer.parseInt(userID), userFirst, userLast, email, clockable.equals("1"), admin.equals("1"), instructional_designer.equals("1"));
         if (!DB.createNewStaff(staff1)) {
