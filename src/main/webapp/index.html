@@ -80,11 +80,15 @@
         <td class="pageHead">Hey <span class="firstName">Jane</span>!</td>
     </tr>
     <tr>
-        <td class="pageSubHead" id="clockText" style="display: none">You are currently <span id="clockStatus">Clocked Out</span>.</td>
+        <td class="pageSubHead" id="clockText" style="display: none">You are currently <span id="clockStatus">Clocked Out</span>.
+        </td>
     </tr>
     <tr>
         <td>
-            <button id="clock" class="disabled" type="button" onclick="toggleClock()" disabled>Clock Unavailable</button>
+            <button id="clock" class="disabled" type="button" onclick="toggleClock()" disabled>Clock Unavailable
+            </button>
+            <!--Button text, style will be set by JS after Clock Status is requested from the server.
+            The button will also be enabled once the information has been fetched from the server.-->
         </td>
     </tr>
     <tr>
@@ -94,4 +98,10 @@
     </tr>
 </table>
 </body>
+<footer>
+    <div id="footerWrapper" style="display: none">
+        <button onclick="back()"><i class="fa fa-chevron-left"></i> Back</button>
+        <!--<button onclick="showPage('index')"><i class="fa fa-home"></i> Home</button>-->
+    </div>
+</footer>
 </html>

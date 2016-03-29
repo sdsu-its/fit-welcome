@@ -89,10 +89,25 @@ function showPage(pageName) {
     document.getElementById(pageName).style.display = "";
 
     currentPageID = pageName;
-    if (pageName != "loading") {
+    if (pageName != "loading" && pageHistory[pageHistory.length -1] != pageName) {
         pageHistory.push(pageName);
     }
+
+    if (pageHistory.length > 2 && pageName != "loading" && pageName != "login") {
+        showFooter();
+    } else {
+        hideFooter();
+    }
 }
+
+function showFooter() {
+    document.getElementById("footerWrapper").style.display = "";
+}
+
+function hideFooter() {
+    document.getElementById("footerWrapper").style.display = "none";
+}
+
 
 function loadClock() {
     var xmlHttp = new XMLHttpRequest();
@@ -146,5 +161,6 @@ function scheduler(appointmentID) {
 }
 
 function back() {
-    // TODO
+    pageHistory.pop(); // Remove the current page from the history
+    showPage(pageHistory.pop()); // Go to the previous page, the removal is used because showPage will add it back.
 }
