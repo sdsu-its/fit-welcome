@@ -4,6 +4,7 @@
  * Created by tpaulus on 3/27/16.
  */
 var user = null;
+var appointment = null;
 
 var currentPageID = "login";
 var pageHistory = ["login"];
@@ -20,6 +21,8 @@ window.onload = function () {
         idBox.focus();
         idBox.select();
     }
+    
+    setQuote();
 };
 
 function login() {
@@ -55,8 +58,9 @@ function doLogin(login) {
     }
 
     if (login.appointment != null) {
-        document.getElementById("appointmentType").innerHTML = login.appointment.type;
-        document.getElementById("appointmentTime").innerHTML = login.appointment.time;
+        appointment = login.appointment;
+        document.getElementById("appointmentType").innerHTML = appointment.type;
+        document.getElementById("appointmentTime").innerHTML = appointment.time;
 
         showPage("appointment")
     } else if (login.isStaff) {
@@ -153,6 +157,22 @@ function showAdmin() {
 }
 
 function finish(goal, param) {
+    var notice = "Let us know if there is anything we can<br>" +
+        "do to make your visit more productive!";
+
+    if (goal == "Use ParScore") {
+        if (appointment == null) {
+            param = "Walk In";
+            notice = "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. <br><br>" +
+                "Please check with the FIT Center Consultant regarding machine availability.";
+        }
+        else {
+            param = "Appointment ID: " + appointment.id;
+        }
+    } else if (goal == "Meet an ID") {
+        notice = "A FIT Consultant will be with you shortly!<br>";
+    }
+
     var json = '{' +
         '"owner": {"id": ' + user.id + '},' +
         '"type": "' + goal + '"';
@@ -172,11 +192,11 @@ function finish(goal, param) {
             console.log(response.status);
             if (response.status == 201) {
                 console.log(response.responseText);
-                doFinish();
+                doFinish('Sounds Good ' + user.firstName + '!', notice);
             }
             else {
                 alert("Problem Saving Event");
-                doFinish();
+                doFinish('Sounds Good ' + user.firstName + '!', notice);
             }
         }
     };
@@ -186,21 +206,59 @@ function finish(goal, param) {
     xmlHttp.send(json);
 }
 
-function doFinish() {
-    // TODO Fill in Tags
-
-    pageHistory = [];
-    user = null;
+function doFinish(confMessage, notice) {
+    document.getElementById("confMessage").innerHTML = confMessage;
+    document.getElementById("confNote").innerHTML = notice;
 
     showPage("conf");
+    pageHistory = [];
+    user = null;
+    document.getElementById("idBox").value = "";
 
     window.setTimeout(function () {
         showPage("login");
-    },10000);
+    }, 10000);
 }
 
 function scheduler(appointmentID) {
     // TODO
+}
+
+function getQuote() {
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            var response = xmlHttp;
+            console.log(response.status);
+            if (response.status == 200) {
+                var quoteJSON = JSON.parse(response.responseText);
+                console.log(quoteJSON);
+                setQuote(quoteJSON.author, quoteJSON.text);
+            }
+        }
+    };
+
+    xmlHttp.open('GET', "api/quote");
+    xmlHttp.send();
+}
+
+function setQuote(author, text) {
+    if (getCookie("quoteAuthor") == "" || getCookie("quoteText") == "") {
+        if (author == null || text == null) {
+            getQuote();
+        }
+        else {
+            setCookie("quoteAuthor", author, getMidnight());
+            setCookie("quoteText", text, getMidnight());
+        }
+    }
+
+    if (author == null) author = getCookie("quoteAuthor");
+    if (text == null) text = getCookie("quoteText");
+
+    document.getElementById("quoteAuthor").innerHTML = author;
+    document.getElementById("quoteText").innerHTML = text;
 }
 
 function back() {

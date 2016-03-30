@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="style.css">
 
     <script src="renderMap.js" type="application/javascript"></script>
+    <script src="cookies.js" type="application/javascript"></script>
     <script src="index.js" type="application/javascript"></script>
 </head>
 <body>
@@ -97,24 +98,25 @@
         </td>
     </tr>
 </table>
-<table id="conf" style="display: none">
+<table class="conf" id="conf" style="display: none">
     <tr>
         <td class="mainHead" id="confMessage">Sounds Good {{FIRST}}!</td>
     </tr>
     <tr>
-        <td class="confNote">{{NOTE}}</td>
+        <td class="prompt" id="confNote">{{NOTE}}</td>
     </tr>
     <tr>
         <td class="quote">
-            <span id="quoteText">{{QUOTE}}</span>
-            <br>~ <span id="quoteAuthor">{{QUOTEAUTHOR}}</span>
+            <span id="quoteText">Books are the blessed chloroform of the mind.</span>
+            <br>~ <span id="quoteAuthor">Oswald Chambers</span>
+            <!--The Random Quote of the Day will be inserted by JS on load.-->
         </td>
     </tr>
 </table>
 </body>
 <footer>
     <div id="footerWrapper" style="display: none">
-        <button onclick="back()"><i class="fa fa-chevron-left"></i> Back</button>
+        <button onclick="back()"><i class="fa fa-chevron-left"></i>&nbsp; Back</button>
     </div>
 </footer>
 </html>
