@@ -5,7 +5,7 @@
     "buttons": {
       "Use the ParScore Machines": "finish('Use ParScore')",
       "Meet with an Instructional Designer": "showPage('ID Topics')",
-      "Schedule a ParScore Appointment": "scheduler('ParScore')",
+      "Schedule a ParScore Appointment": "scheduler(536800)",
       "Take a break in between classes": "finish('Take a break between classes')",
       "Learn how to use a new technology": "finish('Attend a workshop')",
       "Something that is not listed here": "showPage('Other')"

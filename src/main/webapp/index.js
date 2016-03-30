@@ -21,7 +21,7 @@ window.onload = function () {
         idBox.focus();
         idBox.select();
     }
-    
+
     setQuote();
 };
 
@@ -220,8 +220,14 @@ function doFinish(confMessage, notice) {
     }, 10000);
 }
 
+//noinspection JSUnusedGlobalSymbols
 function scheduler(appointmentID) {
-    // TODO
+    document.getElementById("scheduler").src = "https://fitcenter.acuityscheduling.com/schedule.php?appointmentType={{AID}}&first_name={{FIRST}}&last_name={{LAST}}&email={{EMAIL}}"
+        .replace("{{AID}}", appointmentID)
+        .replace("{{FIRST}}", user.firstName)
+        .replace("{{LAST}}", user.lastName)
+        .replace("{{EMAIL}}", user.email);
+    showPage("schedulerContainer");
 }
 
 function getQuote() {
