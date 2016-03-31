@@ -112,8 +112,15 @@ function hideFooter() {
     document.getElementById("footerWrapper").style.display = "none";
 }
 
+function resetClock() {
+    var clock = document.getElementById("clock");
+    clock.innerHTML = "Clock Unavailable";
+    clock.className = "disabled";
+    clock.disabled = "true";
+}
 
 function loadClock() {
+    resetClock();
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.onreadystatechange = function () {
@@ -136,19 +143,36 @@ function loadClock() {
 }
 
 function doLoadClock(clockStatus) {
-    document.getElementById("clockStatus").innerHTML = clockStatus ? "Clocked In" : "Clocked Out";
+    document.getElementById("clockStatus").innerHTML = clockStatus == 'true' ? "Clocked In" : "Clocked Out";
     document.getElementById("clockText").style.display = "";
 
     var clockButton = document.getElementById("clock");
     clockButton.className = ""; // Remove Disabled Class
 
-    clockButton.innerHTML = clockStatus ? "Clock OUT" : "Clock IN";
+    clockButton.innerHTML = clockStatus == 'true' ? "Clock OUT" : "Clock IN";
     clockButton.disabled = false; // Enable the Button
 }
 
 function toggleClock() {
-    alert("Honk!");
-    // TODO
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            var response = xmlHttp;
+            console.log(response.status);
+            if (response.status == 202) {
+                console.log(response.responseText);
+                doFinish("You have been " + (response.responseText == 'true' ? "Clocked In" : "Clocked Out") + " successfully!", "");
+            }
+            else {
+                alert("Problem Clocking In/Out\n" +
+                    "Check Console for Errors");
+            }
+        }
+    };
+
+    xmlHttp.open('GET', "api/clock/toggle?id=" + user.id);
+    xmlHttp.send();
 }
 
 function showAdmin() {
