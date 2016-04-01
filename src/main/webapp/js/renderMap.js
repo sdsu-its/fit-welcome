@@ -5,6 +5,7 @@
  */
 
 const buttonTemplate = '<button class="panelButton" type="button" onclick="{{action}}">{{text}}</button>';
+var json;
 
 getMapJSON(); // Generate the Pages
 
@@ -13,7 +14,8 @@ function getMapJSON() {
 
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
-            renderMap(JSON.parse(xmlHttp.responseText));
+            json = JSON.parse(xmlHttp.responseText);
+            renderMap(json);
         }
     };
 
@@ -41,6 +43,7 @@ function makePage(pageName, pageJSON) {
         var headTR = tbl.insertRow();
         var headTD = headTR.insertCell(0);
         headTD.className = "pageHead";
+        headTD.id = pageName + "-head";
         headTD.colSpan = 2;
         headTD.innerHTML = pageJSON.pageHead;
     }
@@ -49,6 +52,7 @@ function makePage(pageName, pageJSON) {
         var subTR = tbl.insertRow();
         var subTD = subTR.insertCell(0);
         subTD.className = "pageSubHead";
+        subTD.id = pageName + "-sub";
         subTD.colSpan = 2;
         subTD.innerHTML = pageJSON.pageSubHead;
     }

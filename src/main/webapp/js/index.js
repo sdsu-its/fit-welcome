@@ -1,10 +1,14 @@
 /**
- * TODO Docs
+ * Manage Primary User Functions
  *
  * Created by tpaulus on 3/27/16.
  */
 var user = null;
 var appointment = null;
+
+var backDateMode = false;
+var altUser = null;
+var altTime = null;
 
 var currentPageID = "login";
 var pageHistory = ["login"];
@@ -50,34 +54,39 @@ function login() {
 }
 
 function doLogin(login) {
-    user = login.user;
+    if (backDateMode) {
+        document.getElementById("index-head").innerHTML = "MANUAL VISIT MODE";
+        showPage("index");
+    } else {
+        user = login.user;
 
-    for (var spanNum = 0; spanNum < document.getElementsByClassName("firstName").length; spanNum++) {
-        var span = document.getElementsByClassName("firstName")[spanNum];
-        span.innerHTML = user.firstName;
-    }
+        for (var spanNum = 0; spanNum < document.getElementsByClassName("firstName").length; spanNum++) {
+            var span = document.getElementsByClassName("firstName")[spanNum];
+            span.innerHTML = user.firstName;
+        }
 
-    if (login.appointment != null) {
-        appointment = login.appointment;
-        document.getElementById("appointmentType").innerHTML = appointment.type;
-        document.getElementById("appointmentTime").innerHTML = appointment.time;
+        if (login.appointment != null) {
+            appointment = login.appointment;
+            document.getElementById("appointmentType").innerHTML = appointment.type;
+            document.getElementById("appointmentTime").innerHTML = appointment.time;
 
-        showPage("appointment")
-    } else if (login.isStaff) {
-        if (user.clockable) {
-            if (user.admin) {
-                document.getElementById("admin").style.display = "";
+            showPage("appointment")
+        } else if (login.isStaff) {
+            if (user.clockable) {
+                if (user.admin) {
+                    document.getElementById("adminButton").style.display = "";
+                }
+                showPage('staff');
+                loadClock();
+            } else if (user.admin) {
+                showPage('admin');
+            } else {
+                showPage("index");
             }
-            showPage('staff');
-            loadClock();
-        } else if (user.admin) {
-            showAdmin();
-        } else {
+        }
+        else {
             showPage("index");
         }
-    }
-    else {
-        showPage("index");
     }
 }
 
@@ -97,19 +106,35 @@ function showPage(pageName) {
         pageHistory.push(pageName);
     }
 
-    if (pageHistory.length > 2 && pageName != "loading" && pageName != "login" && pageName != "conf") {
-        showFooter();
+    if (pageName == 'admin') {
+        if (pageHistory.length > 2) {
+            showFooter(true, true);
+        } else {
+            showFooter(false, true);
+        }
+    }
+    else if (pageHistory.length > 2 && pageName != "loading" && pageName != "login" && pageName != "conf") {
+        showFooter(true, false);
     } else {
         hideFooter();
     }
 }
 
-function showFooter() {
+function showFooter(showBack, showExit) {
     document.getElementById("footerWrapper").style.display = "";
+
+    if (!showBack) {
+        document.getElementById("backButton").style.display = "none";
+    }
+    if (showExit) {
+        document.getElementById("exitButton").style.display = "";
+    }
 }
 
 function hideFooter() {
     document.getElementById("footerWrapper").style.display = "none";
+    document.getElementById("exitButton").style.display = "none";
+    document.getElementById("backButton").style.display = "";
 }
 
 function resetClock() {
@@ -175,69 +200,108 @@ function toggleClock() {
     xmlHttp.send();
 }
 
-function showAdmin() {
-    // Check User
-    // TODO
-}
-
 function finish(goal, param) {
     var notice = "Let us know if there is anything we can<br>" +
         "do to make your visit more productive!";
 
-    if (goal == "Use ParScore") {
-        if (appointment == null) {
-            param = "Walk In";
-            notice = "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. <br><br>" +
-                "Please check with the FIT Center Consultant regarding machine availability.";
+    var json;
+    var xmlHttp;
+
+    if (backDateMode) {
+        json = '{' +
+            '"owner": {"id": ' + altUser + '},' +
+            '"timeString": "' + altTime + '",' +
+            '"type": "' + goal + '"';
+
+        if (param != null) {
+            json += ',"params": "' + param + '"';
         }
-        else {
-            param = "Appointment ID: " + appointment.id;
-        }
-    } else if (goal == "Meet an ID") {
-        notice = "A FIT Consultant will be with you shortly!<br>";
-    }
+        json += '}';
 
-    var json = '{' +
-        '"owner": {"id": ' + user.id + '},' +
-        '"type": "' + goal + '"';
+        xmlHttp = new XMLHttpRequest();
 
-    if (param != null) {
-        json += ',"params": "' + param + '"';
-    }
-    json += '}';
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                var response = xmlHttp;
+                console.log(response.status);
+                if (response.status == 201) {
+                    console.log(response.responseText);
+                    doFinish("Visit Entry Added", "");
+                }
+                else {
+                    doFinish("An Error Occurred processing your request.", "");
+                }
+            }
+        };
 
-    console.log(json);
+        xmlHttp.open('POST', "api/admin/manualVisit");
+        xmlHttp.setRequestHeader("REQUESTER", user.id);
+        xmlHttp.setRequestHeader("Content-type", "application/json");
+        xmlHttp.send(json);
 
-    var xmlHttp = new XMLHttpRequest();
+    } else {
 
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4) {
-            var response = xmlHttp;
-            console.log(response.status);
-            if (response.status == 201) {
-                console.log(response.responseText);
-                doFinish('Sounds Good ' + user.firstName + '!', notice);
+        if (goal == "Use ParScore") {
+            if (appointment == null) {
+                param = "Walk In";
+                notice = "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. <br><br>" +
+                    "Please check with the FIT Center Consultant regarding machine availability.";
             }
             else {
-                alert("Problem Saving Event");
-                doFinish('Sounds Good ' + user.firstName + '!', notice);
+                param = "Appointment ID: " + appointment.id;
             }
+        } else if (goal == "Meet an ID") {
+            notice = "A FIT Consultant will be with you shortly!<br>";
         }
-    };
 
-    xmlHttp.open('POST', "api/event");
-    xmlHttp.setRequestHeader("Content-type", "application/json");
-    xmlHttp.send(json);
+        json = '{' +
+            '"owner": {"id": ' + user.id + '},' +
+            '"type": "' + goal + '"';
+
+        if (param != null) {
+            json += ',"params": "' + param + '"';
+        }
+        json += '}';
+
+        console.log(json);
+
+        xmlHttp = new XMLHttpRequest();
+
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                var response = xmlHttp;
+                console.log(response.status);
+                if (response.status == 201) {
+                    console.log(response.responseText);
+                    doFinish('Sounds Good ' + user.firstName + '!', notice);
+                }
+                else {
+                    alert("Problem Saving Event");
+                    doFinish('Sounds Good ' + user.firstName + '!', notice);
+                }
+            }
+        };
+
+        xmlHttp.open('POST', "api/event");
+        xmlHttp.setRequestHeader("Content-type", "application/json");
+        xmlHttp.send(json);
+    }
 }
 
+function resetSession() {
+    pageHistory = [];
+    user = null;
+    backDateMode = false;
+    altUser = null;
+    altTime = null;
+    document.getElementById("idBox").value = "";
+}
 function doFinish(confMessage, notice) {
     document.getElementById("confMessage").innerHTML = confMessage;
     document.getElementById("confNote").innerHTML = notice;
 
     showPage("conf");
-    pageHistory = [];
-    user = null;
-    document.getElementById("idBox").value = "";
+    resetSession();
 
     window.setTimeout(function () {
         showPage("login");

@@ -11,6 +11,17 @@
       "Something that is not listed here": "showPage('Other')"
     }
   },
+  "admin": {
+    "pageHead": "Admin Tools",
+    "buttons": {
+      "Manual Time Entry": "showTimeEntry()",
+      "Email Timesheets": "showPage('timesheetReport')",
+      "Manual Visit Entry": "showPage('manualVisit')",
+      "Add a New Staff User": "showPage('newUser')",
+      "Run Usage Report": "showPage('usageReport')",
+      "Force Clock Out all Users": "confirm('Are you sure?'); clockOutAll();"
+    }
+  },
   "ID Topics": {
     "pageHead": "What can we help you with?",
     "buttons": {

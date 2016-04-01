@@ -3,7 +3,8 @@ package edu.sdsu.its.fit_welcome.Models;
 import edu.sdsu.its.fit_welcome.Acutiy;
 
 /**
- * TODO JavaDoc
+ * Models a Login for a User
+ * Includes their designation (user vs. staff), their user information, and their appointment id they have one.
  *
  * @author Tom Paulus
  *         Created on 3/28/16.
