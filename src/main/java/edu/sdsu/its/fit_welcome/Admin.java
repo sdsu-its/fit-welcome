@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Admin Interfaces/Pages
+ * Admin Interfaces
  *
  * @author Tom Paulus
  *         Created on 1/1/16.
