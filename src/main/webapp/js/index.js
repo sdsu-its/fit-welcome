@@ -29,6 +29,10 @@ window.onload = function () {
     setQuote();
 };
 
+function hideKeyboard() {
+    document.activeElement.blur();
+}
+
 function login() {
     var userID = document.getElementById("idBox").value;
     var xmlHttp = new XMLHttpRequest();
