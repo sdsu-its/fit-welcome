@@ -1,18 +1,15 @@
 package edu.sdsu.its.fit_welcome;
 
+import com.google.gson.Gson;
 import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Quote;
+import edu.sdsu.its.fit_welcome.Models.Login;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 
 /**
  * Primary Web Interactions
@@ -22,287 +19,98 @@ import java.util.HashMap;
  */
 @Path("/")
 public class Web {
-    private final Logger Log = Logger.getLogger(getClass());
+    private static final Logger LOGGER = Logger.getLogger(Web.class);
+    private static final Gson GSON = new Gson();
 
-    /**
-     * Welcome Page
-     *
-     * @param uid          {@link String} UserID (Either typed in or Magstripe Encoded)
-     * @param skipAcuity   {@link String} if "yes" Acuity will not be checked for appointments
-     * @param acuityApptID {@link String} Acuity Appointment ID if declined
-     * @return {@link Response} Response
-     */
-    @Path("welcome")
+    @Path("login")
     @GET
     @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response welcome(@QueryParam("id") final String uid, @QueryParam("skip_sch") final String skipAcuity, @QueryParam("appt_id") final String acuityApptID) {
-        Log.info(String.format("Recieved Request: [GET] WELCOME - id = %s & skip_sch = %s & appt_id = %s", uid, skipAcuity, acuityApptID));
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(@QueryParam("id") final String uid) {
+        LOGGER.info("Recieved Request: [GET] LOGIN - id = " + uid);
 
-        int redid = User.parseSwipe(uid);
-
-        Staff staff = Staff.getStaff(redid);
-        User user = (staff == null) ? User.getUser(redid) : null;
+        int id = User.parseSwipe(uid);
+        Staff staff = Staff.getStaff(id);
+        User user = (staff == null) ? User.getUser(id) : null;
 
         if (user == null && staff == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(Pages.makePage(Pages.NOT_FOUND, new HashMap<String, String>())).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new SimpleMessage("User not Found"))).build();
         }
 
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
-        params.put("REDID", Integer.toString(redid));
-        params.put("APPTID", acuityApptID != null ? acuityApptID : "");
+        Login login = new Login(staff != null ? staff : user, staff != null, Acutiy.getAppt(staff != null ? staff : user));
+        return Response.status(Response.Status.OK).entity(GSON.toJson(login)).build();
+    }
 
-        if (staff != null && staff.clockable) {
-            final boolean status = new Clock(staff).getStatus();
-            params.put("STATUS", status ? "Clocked In" : "Clocked Out");
-            params.put("VERB", status ? "Out" : "In");
-            params.put("ADMIN", staff.admin ? "" : "style=\"display: none;\"");
 
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.STAFF_WELCOME, params)).build();
-        } else if (staff != null && staff.admin) {
-            try {
-                final URI redirect = new URIBuilder()
-                        .setPath("admin")
-                        .setParameter("id", Integer.toString(redid))
-                        .build();
+    /**
+     * Get the status of a Staff Member's Clock
+     *
+     * @param id {@link int} Staff Member's ID
+     * @return {@link Response} True = Clocked IN & False = Clocked OUT
+     */
+    @Path("clock/status")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getClockStatus(@QueryParam("id") final int id) {
+        LOGGER.info("Recieved Request: [GET] CLOCK/STATUS - id = " + id);
 
-                return Response.seeOther(redirect).build();
-            } catch (URISyntaxException e) {
-                Log.warn("Problem Creating Redirect URI", e);
-            }
+        Staff staff = Staff.getStaff(id);
+        if (staff == null || !staff.clockable) {
+            Response.status(Response.Status.NOT_ACCEPTABLE).entity(GSON.toJson(new SimpleMessage("ID does not have a Clock."))).build();
         }
 
-        Acutiy.Appointment appointment = !"yes".equals(skipAcuity) ? Acutiy.getAppt(staff != null ? staff: user) : null;
-        if (appointment != null) {
-            params.put("TIME", appointment.time);
-            params.put("APPTID", appointment.id.toString());
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.APPT_FOUND, params)).build();
-        }
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.WELCOME, params)).build();
+        final boolean status = new Clock(staff).getStatus();
+        return Response.status(Response.Status.OK).entity(status).build();
     }
 
     /**
-     * Confirmation Page
+     * Toggle the status of a Staff Member's Clock
      *
-     * @param id            {@link String} User's ID
-     * @param goal          {@link String} User's Goal
-     * @param hasAppt       {@link String} If an Acuity Appointment was found.
-     * @param appointmentID {@link String} Appointment ID for the appointment that was found
-     * @param source        {@link String} Which page the user came from
-     * @param param         {@link String} Problem they are having (Meet with an ID)
-     * @return {@link Response} Response
+     * @param id {@link int} Staff Member's ID
+     * @return {@link Response} True = User was Clocked In & False = User was Clocked Out
      */
-    @Path("conf")
+    @Path("clock/toggle")
     @GET
     @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response confirmation(@QueryParam("id") final String id,
-                                 @QueryParam("goal") final String goal,
-                                 @QueryParam("has_appt") final String hasAppt,
-                                 @QueryParam("apptID") final String appointmentID,
-                                 @QueryParam("source") final String source,
-                                 @QueryParam("param") final String param) {
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response toggleClock(@QueryParam("id") final int id) {
+        LOGGER.info("Recieved Request: [GET] CLOCK/TOGGLE - id = " + id);
 
-        Log.info(String.format("Recieved Request: [GET] CONF - id = %s & goal - %s & has_appt - %s & apptID - %s & source - %s & param - %s", id, goal, hasAppt, appointmentID, source, param));
-
-        final Staff staff = Staff.getStaff(id);
-        final User user = (staff == null) ? User.getUser(id) : null;
-
-        final Quote quote = Quote.getRandom();
-
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
-
-        if ("staff".equals(source)) {
-            boolean new_status = new Clock(staff).toggle();
-
-            params.put("ACTION", new_status ? "Clocked In" : "Clocked Out");
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.STAFF_CONFIRMATION, params)).build();
-        } else if ("Schedule ParScore".equals(goal)) {
-            try {
-                final URI redirect = new URIBuilder()
-                        .setPath("schedule")
-                        .setParameter("first", staff != null ? staff.firstName : user.firstName)
-                        .setParameter("last", staff != null ? staff.lastName : user.lastName)
-                        .setParameter("email", staff != null ? staff.email.toLowerCase() : user.email.toLowerCase())
-                        .build();
-
-                return Response.seeOther(redirect).build();
-            } catch (URISyntaxException e) {
-                Log.warn("Problem Creating Redirect URI", e);
-            }
-        } else if ("Meet an ID".equals(goal)) {
-            if (param == null) {
-                try {
-                    final URI redirect = new URIBuilder()
-                            .setPath("problemSelect")
-                            .setParameter("id", Integer.toString(staff != null ? staff.id : user.id))
-                            .build();
-
-                    return Response.seeOther(redirect).build();
-                } catch (URISyntaxException e) {
-                    Log.warn("Problem Creating Redirect URI", e);
-                }
-            } else {
-                new Event(user, goal, param).logEvent();
-
-                params.put("NOTE", "A FIT Consultant will be with you shortly!<br>");
-                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
-            }
-        } else if ("appt_found".equals(source)) {
-            if ("no".equals(hasAppt.toLowerCase())) {
-                try {
-                    final URI redirect = new URIBuilder()
-                            .setPath("welcome")
-                            .setParameter("id", id)
-                            .setParameter("skip_sch", "yes")
-                            .setParameter("appt_id", appointmentID)
-                            .build();
-
-                    return Response.seeOther(redirect).build();
-                } catch (URISyntaxException e) {
-                    Log.warn("Problem Creating Redirect URI", e);
-                }
-            } else {
-                new Thread() {
-                    @Override
-                    public void run() {
-                        Log.info("Starting new Thread to update Acuity Appointment");
-                        Acutiy.checkIn(Integer.parseInt(appointmentID));
-                    }
-                }.start();
-
-                new Event(user, goal, "Appointment ID: " + appointmentID).logEvent();
-
-                params.put("NOTE", "Let us know if there is anything we can<br>\n" +
-                        "            do to make your visit more productive!");
-                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
-            }
-        } else if ("Use ParScore".equals(goal)) {
-            if (appointmentID != null && appointmentID.length() > 0) {   // Catch Users who decline ParScore at first, but then select Par Score
-                new Event(user, goal, "Appointment ID: " + appointmentID).logEvent();
-
-                new Thread() {
-                    @Override
-                    public void run() {
-                        Log.info("Starting new Thread to update Acuity Appointment");
-                        Acutiy.checkIn(Integer.parseInt(appointmentID));
-                    }
-                }.start();
-
-                params.put("NOTE", "Let us know if there is anything we can<br>\n" +
-                        "            do to make your visit more productive!");
-                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
-            } else {
-                new Event(user, goal, "Walk In").logEvent();
-                params.put("NOTE", "ParScore Scanning is in High Demand!</ br> We recommend that you schedule an appointment ahead of time. " +
-                        "<br><br>Please check with the FIT Center Consultant regarding machine availability.");
-
-                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
-            }
-        } else if ("Other".equals(goal)) {
-            if (param == null) {
-                try {
-                    final URI redirect = new URIBuilder()
-                            .setPath("otherSelect")
-                            .setParameter("id", Integer.toString(staff != null ? staff.id : user.id))
-                            .build();
-
-                    return Response.seeOther(redirect).build();
-                } catch (URISyntaxException e) {
-                    Log.warn("Problem Creating Redirect URI", e);
-                }
-            } else {
-                new Event(staff != null ? staff : user, param, "").logEvent();
-
-                params.put("NOTE", "Let us know if there is anything we can<br>\n" +
-                        "            do to make your visit more productive!");
-                return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
-            }
-        } else {
-            new Event(staff != null ? staff : user, goal, "").logEvent();
-
-            params.put("NOTE", "Let us know if there is anything we can<br>\n" +
-                    "            do to make your visit more productive!");
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.CONFIRMATION, params)).build();
+        Staff staff = Staff.getStaff(id);
+        if (staff == null || !staff.clockable) {
+            Response.status(Response.Status.NOT_ACCEPTABLE).entity(GSON.toJson(new SimpleMessage("ID does not have a Clock."))).build();
         }
 
-        return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
+        final boolean status = new Clock(staff).toggle();
+        return Response.status(Response.Status.ACCEPTED).entity(status).build();
     }
 
     /**
-     * Schedule Acuity Appointment Page
+     * Add a new Event (An event is when a Visitor Checks-In)
      *
-     * @param firstName {@link String} User's First Name
-     * @param lastName  {@link String} User's Last Name
-     * @param email     {@link String} User's Email
-     * @return {@link Response} Response
+     * @param payload {@link String} JSON Payload {@see Models.Event}
+     * @return {@link Response} Completion Message
      */
-    @Path("schedule")
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response schedule(@QueryParam("first") final String firstName, @QueryParam("last") final String lastName, @QueryParam("email") final String email) {
-        Log.info(String.format("Recieved Request: [GET] SCHEDULE - first = %s & last - %s & email - %s", firstName, lastName, email));
+    @Path("event")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addEvent(final String payload) {
+        LOGGER.info("Recieved Request: [POST] EVENT - " + payload);
 
+        Event event = GSON.fromJson(payload, Event.class);
+        event.logEvent();
 
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", firstName);
-        params.put("LAST", lastName);
-        params.put("EMAIL", email);
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.SCHEDULE, params)).build();
+        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
-    /**
-     * Problem Selection Page
-     *
-     * @param id {@link String} User's ID
-     * @return {@link Response} Response
-     */
-    @Path("problemSelect")
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response problemSelect(@QueryParam("id") final String id) {
-        Log.info(String.format("Recieved Request: [GET] PROBLEMSELECT - id = %s", id));
+    public static class SimpleMessage {
+        String message;
 
-        final Staff staff = Staff.getStaff(id);
-        final User user = (staff == null) ? User.getUser(id) : null;
-
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("REDID", Integer.toString(staff != null ? staff.id : user.id));
-        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MEET_ID, params)).build();
-    }
-
-    /**
-     * Other Selection Page
-     *
-     * @param id {@link String} User's ID
-     * @return {@link Response} Response
-     */
-    @Path("otherSelect")
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response otherSelect(@QueryParam("id") final String id) {
-        Log.info(String.format("Recieved Request: [GET] OTHERSELECT - id = %s", id));
-
-        final Staff staff = Staff.getStaff(id);
-        final User user = (staff == null) ? User.getUser(id) : null;
-
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("REDID", Integer.toString(staff != null ? staff.id : user.id));
-        params.put("FIRST", staff != null ? staff.firstName : user.firstName);
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.OTHER, params)).build();
+        public SimpleMessage(String message) {
+            this.message = message;
+        }
     }
 
 }

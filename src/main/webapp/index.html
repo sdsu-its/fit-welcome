@@ -8,22 +8,31 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="white">
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
+
+    <script src="js/renderMap.js" type="application/javascript"></script>
+    <script src="js/cookies.js" type="application/javascript"></script>
+    <script src="js/index.js" type="application/javascript"></script>
+    <script src="js/admin.js" type="application/javascript"></script>
+    <script src="https://d3gxy7nm8y4yjr.cloudfront.net/js/embed.js" type="text/javascript"></script>
+    <!--Acuity Scheduler iFrame Script-->
 </head>
 <body>
-<table class="index">
+<table class="login" id="login">
     <tr>
         <td class="mainHead">Welcome to the FIT Center!</td>
     </tr>
     <tr>
         <td class="prompt" id="entryMethod">Please Swipe or Type in your
-            <br>REDID to get Started, then press return.</span>
+            <br>REDID to get Started, then press return.
         </td>
     </tr>
     <tr>
         <td>
-            <form action="pages/welcome">
-                <input class="inputBox" title="REDID" name="id" id="idBox" type="text" required autocomplete="off">
+            <form onsubmit="hideKeyboard(); showPage('loading'); login(); return false;">
+                <input class="inputBox" title="REDID" name="id" id="idBox" type="text" required autocomplete="off"
+                       pattern="\d*">
             </form>
         </td>
     </tr>
@@ -33,20 +42,326 @@
         </td>
     </tr>
 </table>
-
-<script type="application/javascript">
-    var ua = navigator.userAgent;
-    var entryMethod = document.getElementById("entryMethod");
-    var idBox = document.getElementById("idBox");
-
-    if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
-        entryMethod.innerHTML = "Please Type in your REDID<br>" +
-                "to get started, then press go.";
-    } else {
-        idBox.focus ();
-        idBox.select ();
-    }
-</script>
-
+<table id="loading" style="display: none">
+    <tr>
+        <td class="pageHead">One Moment Please...</td>
+    </tr>
+    <tr>
+        <td class="center" style="padding-top: 4em">
+            <i class="fa fa-spinner fa-pulse"></i>
+        </td>
+    </tr>
+</table>
+<table id="appointment" style="display: none">
+    <tr>
+        <td class="pageHead">Hello there <span class="firstName">Jane</span>!</td>
+    </tr>
+    <tr>
+        <td class="pageInfo">It looks like you have an Appointment for <br>
+            <span id="appointmentType">ParScore Scanning</span> scheduled for <span id="appointmentTime">12:15pm</span>.
+            <br>
+            <br>
+            Is this the goal for your visit?
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>
+                        <button class="panelButton" type="button" onclick="finish('Use ParScore')">Yes!</button>
+                    </td>
+                    <td>
+                        <button class="panelButton" type="button" onclick="showPage('index')">No</button>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<div id="schedulerContainer" style="display: none">
+    <iframe id="scheduler"
+            width="100%" height="800" frameBorder="0"></iframe>
+</div>
+<table id="staff" style="display: none">
+    <tr>
+        <td class="pageHead">Hey <span class="firstName">Jane</span>!</td>
+    </tr>
+    <tr>
+        <td class="pageSubHead" id="clockText" style="display: none">You are currently <span id="clockStatus">Clocked Out</span>.
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button id="clock" class="disabled" type="button" onclick="toggleClock()" disabled>Clock Unavailable
+            </button>
+            <!--Button text, style will be set by JS after Clock Status is requested from the server.
+            The button will also be enabled once the information has been fetched from the server.-->
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button id="adminButton" type="button" onclick="showPage('admin')" style="display: none">Admin</button>
+        </td>
+    </tr>
+</table>
+<table class="conf" id="conf" style="display: none">
+    <tr>
+        <td class="mainHead" id="confMessage">Sounds Good {{FIRST}}!</td>
+    </tr>
+    <tr>
+        <td class="prompt" id="confNote">{{NOTE}}</td>
+    </tr>
+    <tr>
+        <td class="quote">
+            <span id="quoteText">Books are the blessed chloroform of the mind.</span>
+            <br>~ <span id="quoteAuthor">Oswald Chambers</span>
+            <!--The Random Quote of the Day will be inserted by JS on load.-->
+        </td>
+    </tr>
+</table>
+<table id="manualTime" style="display: none">
+    <tr>
+        <td class="pageSubHead">Manual Time Entry</td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="addTimeEntry(); return false;" id="manual-time-form">
+                <table>
+                    <tr>
+                        <td>
+                            User:
+                        </td>
+                        <td>
+                            <select class="inputBox" id="clockableUsers" title="Staff Member Select" required>
+                                <option value="" style="display:none;" selected disabled>Select User</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Type:
+                        </td>
+                        <td>
+                            <select class="inputBox" id="clockAction" title="Clock Action Select" required>
+                                <option value="" style="display:none;" selected disabled>Select Action</option>
+                                <option value="true">Clock In</option>
+                                <option value="false">Clock Out</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Date/Time:
+                        </td>
+                        <td>
+                            <input class="date inputBox" type="datetime-local" title="Action Time" id="clockTime"
+                                   required>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Submit" onclick="return confirm('Are you sure?')">Add
+                    Entry
+                </button>
+            </form>
+        </td>
+    </tr>
+</table>
+<table id="timesheetReport" style="display: none">
+    <tr>
+        <td class="pageSubHead">Select Date Range for Timesheet Report</td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="runTimesheetReport(); return false;" id="timesheet-report-form">
+                <table>
+                    <tr>
+                        <td>
+                            Start Date:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="Start Date" type="date" id="ts-start" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            End Date:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="End Date" type="date" id="ts-end" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Type:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="Report Type" name="report_params" id="ts-type">
+                                <option name="Bulk" value="false">Bulk Report (Emailed to You)</option>
+                                <option name="Individual" value="true">Individual Report (Emailed to Staff)
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Submit">Run Report</button>
+            </form>
+        </td>
+    </tr>
+</table>
+<table id="manualVisit" style="display: none">
+    <tr>
+        <td class="pageSubHead">Manual Time Entry</td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="manualVisit(); return false;" id="manual-visit-form">
+                <table>
+                    <tr>
+                        <td>
+                            Visitor ID:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="REDID" id="visit-user" type="text" required
+                                   autocomplete="off" value="999999999">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Date/Time:
+                        </td>
+                        <td>
+                            <input class="date inputBox" title="Date" type="datetime-local" id="visit-date" required>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Continue">Continue to Goal Select
+                </button>
+            </form>
+        </td>
+    </tr>
+</table>
+<table id="newUser" style="display:none;">
+    <tr>
+        <td class="pageSubHead">Create new Staff User</td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="newStaff(); return false;" id="new-staff-form">
+                <table>
+                    <tr>
+                        <td>
+                            User ID:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="User ID" type="number" id="ns-id" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            First Name:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="First Name" type="text" id="ns-first" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Last Name:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="Last Name" type="text" id="ns-last" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Email Address:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="Email Address" type="email" id="ns-email" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Clockable:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="Clockable" id="ns-clockable" required>
+                                <option value="" style="display:none;" selected disabled>Select</option>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Admin:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="Admin" id="ns-admin" required>
+                                <option value="" style="display:none;" selected disabled>Select</option>
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Instructional Designer:
+                        </td>
+                        <td>
+                            <select class="inputBox" title="Instructional Designer" id="ns-designer" required>
+                                <option value="" style="display:none;" selected disabled>Select</option>
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Submit" onclick="return confirm('Are you sure?')">
+                    Create User
+                </button>
+            </form>
+        </td>
+    </tr>
+</table>
+<table id="usageReport" style="display: none">
+    <tr>
+        <td class="pageSubHead">Select Date Range for Usage Report</td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="runUsageReport(); return false;" id="usage-report-form">
+                <table>
+                    <tr>
+                        <td>
+                            Start Date:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="Start Date" type="date" id="ur-start" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            End Date:
+                        </td>
+                        <td>
+                            <input class="inputBox" title="End Date" type="date" id="ur-end" required>
+                        </td>
+                    </tr>
+                </table>
+                <button class="submitButton" type="submit" title="Submit">Run Report</button>
+            </form>
+        </td>
+    </tr>
+</table>
 </body>
+<footer>
+    <div id="footerWrapper" style="display: none">
+        <button onclick="back()" id="backButton"><i class="fa fa-chevron-left"></i>&nbsp; Back</button>
+        <button onclick="resetSession(); showPage('login');" id="exitButton" style="display:none;"><i
+                class="fa fa-sign-out fa-rotate-180"></i>&nbsp; Log Out
+        </button>
+    </div>
+</footer>
 </html>

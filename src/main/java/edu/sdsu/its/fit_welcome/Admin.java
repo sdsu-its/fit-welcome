@@ -1,10 +1,9 @@
 package edu.sdsu.its.fit_welcome;
 
+import com.google.gson.Gson;
 import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Quote;
 import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
-import org.apache.http.client.utils.URIBuilder;
+import edu.sdsu.its.fit_welcome.Models.TimeEntry;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -13,16 +12,12 @@ import org.joda.time.format.DateTimeFormatter;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Admin Interfaces/Pages
+ * Admin Interfaces
  *
  * @author Tom Paulus
  *         Created on 1/1/16.
@@ -30,339 +25,215 @@ import java.util.regex.Pattern;
 @Path("admin")
 public class Admin {
     private static Logger Log = Logger.getLogger(Admin.class);
+    private static Gson GSON = new Gson();
 
     /**
-     * Admin Page
+     * Get a list of all Clockable Staff
+     * Used by the Manual Clock In/Out Admin Page
      *
-     * @param id          {@link String} User's ID
-     * @param adminAction {@link String} Requested Action. If null options page is displayed.
-     * @return {@link Response} Response
+     * @param requester {@link String} Admin's ID
+     * @return {@link Response} List of all Clockable Staff
      */
+    @Path("clockableStaff")
     @GET
     @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response admin(@QueryParam("id") final String id, @QueryParam("action") final String adminAction) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN - id = %s & action - %s", id, adminAction));
-
-        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getClockableStaff(@HeaderParam("REQUESTER") final String requester) {
+        Log.info("Recieved Request: [GET] CLOCKABLESTAFF - Header:Requester - " + requester);
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
+            Log.warn("Unauthorized Request to CLOCKABLESTAFF - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("REDID", id);
+        Staff[] clockableStaff = DB.getAllStaff("WHERE clockable = 1");
+        return Response.status(Response.Status.OK).entity(GSON.toJson(clockableStaff)).build();
+    }
 
-        if (adminAction == null) {
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN, params)).build();
-        } else if ("manual time".equals(adminAction)) {
-            params.put("STAFFUSERS", Pages.arrayToList(Staff.getAllStaff("WHERE clockable = 1")));
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MANUAL_TIME, params)).build();
-        } else if ("manual visit".equals(adminAction)) {
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.MANUAL_EVENT, params)).build();
-        } else if ("email timesheets".equals(adminAction)) {
-            params.put("REPORT", "Staff Timesheets");
-            params.put("RTYPE", "timesheets");
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_DATE_PICKER, params)).build();
-        } else if ("new staff".equals(adminAction)) {
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.NEW_USER, params)).build();
-        } else if ("run report".equals(adminAction)) {
-            params.put("REPORT", "Usage Report");
-            params.put("RTYPE", "usage");
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_DATE_PICKER, params)).build();
-        } else if ("clock out all".equals(adminAction)) {
-            try {
-                final URI redirect = new URIBuilder()
-                        .setPath("admin/clock_out_users")
-                        .setParameter("id", id) // Admin User ID for Authentication
-                        .build();
+    /**
+     * Adds a Time Entry for a Staff User
+     *
+     * @param requester {@link String} Admin's ID
+     * @param payload   {@link String} {@see Models.TimeEntry} TimeEntry JSON
+     * @return {@link Response}
+     */
+    @Path("timeEntry")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addTimeEntry(@HeaderParam("REQUESTER") final String requester, final String payload) {
+        Log.info("Recieved Request: [POST] TIMEENTRY - Header:Requester - " + requester + " & Payload: " + payload);
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
+        if (staff == null || !staff.admin) {
+            Log.warn("Unauthorized Request to TIMEENTRY - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+        }
 
-                return Response.seeOther(redirect).build();
-            } catch (URISyntaxException e) {
-                Log.warn("Problem Creating Redirect URI", e);
+        TimeEntry entry = GSON.fromJson(payload, TimeEntry.class);
+
+        if (entry.direction) { // Clock In
+            Log.info(String.format("Adding Manual Clock In Entry for %d at %s", entry.user.id, entry.getDate()));
+            DB.clockIn(entry.user.id, "STR_TO_DATE('" + entry.getDate() + "','%Y-%m-%dT%H:%i')");
+        } else { // Clock Out
+            Log.info(String.format("Adding Manual Clock Out Entry for %d at %s", entry.user.id, entry.getDate()));
+            DB.clockOut(entry.user.id, "STR_TO_DATE('" + entry.getDate() + "','%Y-%m-%dT%H:%i')");
+        }
+
+        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new Web.SimpleMessage("Clock Record Added Successfully"))).build();
+    }
+
+
+    /**
+     * Clock Out all Staff Users who are currently clocked in
+     *
+     * @param requester {@link String} Admin's ID
+     * @return {@link Response} Status Message
+     */
+    @Path("clockOutAll")
+    @POST
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response clockOutAll(@HeaderParam("REQUESTER") final String requester) {
+        Log.info("Recieved Request: [POST] CLOCKOUTALL - Header:Requester - " + requester);
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
+        if (staff == null || !staff.admin) {
+            Log.warn("Unauthorized Request to CLOCKOUTALL - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+        }
+
+        for (Staff s : DB.getAllStaff("WHERE clockable = 1")) {
+            Clock clock = new Clock(s);
+            if (clock.getStatus()) {
+                Log.info(String.format("Clocking Out %s", s.firstName));
+                clock.toggle();
+            } else {
+                Log.debug(String.format("Skipping %s, already clocked out", s.firstName));
             }
         }
 
-        return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
-
+        return Response.status(Response.Status.ACCEPTED).entity(GSON.toJson(new Web.SimpleMessage("All Users have been Clocked Out"))).build();
     }
 
     /**
-     * Reports Pages
+     * Run a TimeSheet Report.
+     * Reports are emailed to the respective parties once they have been generated.
      *
-     * @param id           {@link String} User's ID
-     * @param reportType   {@link String} Which Type of report to Run.
-     *                     Either 'timesheets' or 'usage'
-     * @param reportParams {@link String} Additional Report Parameters
-     * @param startDate    {@link String} Start Date for the Report
-     * @param endDate      {@link String} End Date for the Report
-     * @return {@link Response} Response
+     * @param requester  {@link String} Admin's ID
+     * @param startDate  {@link String} HTML date-local formatted date for Start of Report
+     * @param endDate    {@link String} HTML date-local formatted date for End of Report
+     * @param individual {@link Boolean} If the Report should be sent to each staff member
+     * @return {@link Response} Status Message
      */
-    @Path("report")
+    @Path("timesheetReport")
     @GET
     @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response report(@QueryParam("id") final String id, @QueryParam("report_type") final String reportType, @QueryParam("report_params") final String reportParams, @QueryParam("start") final String startDate, @QueryParam("end") final String endDate) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN/REPORT - id = %s & report_type - %s & report_params - %s & start - %s & end - %s", id, reportType, reportParams, startDate, endDate));
-
-        final Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response timesheetReport(@HeaderParam("REQUESTER") final String requester, @QueryParam("startDate") final String startDate, @QueryParam("endDate") final String endDate, @QueryParam("individual") final Boolean individual) {
+        Log.info(String.format("Recieved Request: [GET] TIMESHEETREPORT - Header:Requester - %s & startDate - %s & endDat - %s & individual - %b", requester, startDate, endDate, individual));
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
+            Log.warn("Unauthorized Request to TIMESHEETREPORT - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
-        final Quote quote = Quote.getRandom();
+        Report.TimesheetReport timesheetReport = new Report.TimesheetReport(Staff.getStaff(requester), startDate, endDate, individual);
+        new Thread(timesheetReport).start();
 
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
-
-        if ("timesheets".equals(reportType) && "bulk".equals(reportParams)) {
-            new Thread() {
-                @Override
-                public void run() {
-                    Log.info("Starting new Thread to Generate Timesheets");
-
-                    final Staff[] allClockableStaff = DB.getAllStaff("WHERE clockable = 1");
-                    File[] timesheets = new File[allClockableStaff.length];
-                    for (int s = 0; s < allClockableStaff.length; s++) {
-                        final int staffId = allClockableStaff[s].id;
-                        final String staffLast = allClockableStaff[s].lastName;
-                        timesheets[s] = Timesheet.make(DB.exportClockIOs(staffId, startDate, endDate), staffLast);
-                    }
-
-                    new SendEmail().emailFile("Staff Timesheets", staff.firstName, timesheets).send(staff.email);
-                }
-            }.start();
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_CONF, params)).build();
-        } else if ("timesheets".equals(reportType) && "individual".equals(reportParams)) {
-            new Thread() {
-                @Override
-                public void run() {
-                    Log.info("Starting new Thread to Generate Timesheets");
-
-                    final Staff[] allClockableStaff = DB.getAllStaff("WHERE clockable = 1");
-                    for (Staff clockableStaff : allClockableStaff) {
-                        File[] timesheets = new File[1];
-
-                        Log.info(String.format("Sending Individual Timesheet to %s %s", clockableStaff.firstName, clockableStaff.lastName));
-                        timesheets[0] = Timesheet.make(DB.exportClockIOs(clockableStaff.id, startDate, endDate), "Timesheet");
-                        new SendEmail().emailFile("Your Latest Timesheet", clockableStaff.firstName, timesheets).send(clockableStaff.email);
-                    }
-                }
-            }.start();
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_CONF, params)).build();
-        } else if ("usage".equals(reportType)) {
-            new Thread() {
-                @Override
-                public void run() {
-                    Log.info("Starting new Thread to Generate Usage Report");
-
-                    new SendEmail().emailFile("Events Report", staff.firstName, new File[]{DB.exportEvents(startDate, endDate, "events")}).send(staff.email);
-                }
-            }.start();
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.REPORT_CONF, params)).build();
-        }
-
-        return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
+        return Response.status(Response.Status.OK).entity(GSON.toJson(new Web.SimpleMessage("Timesheet Report Generated - Will be Emailed"))).build();
     }
 
     /**
-     * Manual Time Entry Page
+     * Runs a Usage Report.
+     * Reports are emailed to the respective parties once they have been generated.
      *
-     * @param id     {@link String} User's ID
-     * @param userID {@link String} ID of user who will be clocked in/out
-     * @param action {@link String} Action to be performed.
-     *               Either: 'clockIn' or 'clockOut'
-     * @param date   {@link String} Date and Time the action should be performed
-     *               In HTML datetime-locale format
-     * @return {@link Response} Response
+     * @param requester {@link String} Admin's ID
+     * @param startDate {@link String} HTML date-local formatted date for Start of Report
+     * @param endDate   {@link String} HTML date-local formatted date for End of Report
+     * @return {@link Response} Status Message
      */
-    @Path("manual_time")
+    @Path("usageReport")
     @GET
     @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response manualTime(@QueryParam("id") final String id, @QueryParam("user") final String userID, @QueryParam("action") final String action, @QueryParam("date") final String date) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN/MANUAL_TIME - id = %s & userID - %s & action - %s & date - %s", id, userID, action, date));
-
-        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response usageReport(@HeaderParam("REQUESTER") final String requester, @QueryParam("startDate") final String startDate, @QueryParam("endDate") final String endDate) {
+        Log.info(String.format("Recieved Request: [GET] USAGEREPORT - Header:Requester - %s & startDate - %s & endDat - %s", requester, startDate, endDate));
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
+            Log.warn("Unauthorized Request to USAGEREPORT - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
-        final Quote quote = Quote.getRandom();
+        Report.UsageReport usageReport = new Report.UsageReport(Staff.getStaff(requester), startDate, endDate);
+        new Thread(usageReport).start();
 
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
+        return Response.status(Response.Status.OK).entity(GSON.toJson(new Web.SimpleMessage("Usage Report Generated - Will be Emailed"))).build();
+    }
 
-        final Staff staff1 = Staff.getStaff(userID);
 
+    /**
+     * Adds a Visit to the DB that has been entered after the visit occured
+     *
+     * @param requester {@link String} Admin's ID
+     * @param payload   {@link String} {@see Models.Event} Event JSON
+     * @return {@link Response} Status Message
+     */
+    @Path("manualVisit")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response manualVisit(@HeaderParam("REQUESTER") final String requester, final String payload) {
+        Log.info(String.format("Recieved Request: [POST] MANUALVISIT - Header:Requester - %s & Payload - %s ", requester, payload));
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
+        if (staff == null || !staff.admin) {
+            Log.warn("Unauthorized Request to MANUALVISIT - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+        }
+
+        Event event = GSON.fromJson(payload, Event.class); // Make Sure to set timeString
+        event.params = (event.params == null || event.params.length() == 0) ? "Back Dated" : event.params + ", Back Dated"; // Add Back Dated Note to Event, without overwriting existing data
         final String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}";
 
         final Pattern r = Pattern.compile(pattern);
-        final Matcher m = r.matcher(date);
-        m.find();
-
-        if ("clockIn".equals(action)) {
-            DB.clockIn(Integer.parseInt(userID), "STR_TO_DATE('" + m.group() + "','%Y-%m-%dT%H:%i')");
-            params.put("ACTION", String.format("Manually Clocked In %s %s", staff1.firstName, staff1.lastName));
-        } else if ("clockOut".equals(action)) {
-            DB.clockOut(Integer.parseInt(userID), "STR_TO_DATE('" + m.group() + "','%Y-%m-%dT%H:%i')");
-            params.put("ACTION", String.format("Manually Clocked Out %s %s", staff1.firstName, staff1.lastName));
-        } else {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid Request").build();
+        final Matcher m = r.matcher(event.timeString);
+        if (!m.find()) {
+            Log.warn("Problem matching time to RegEx Format");
+            Log.debug("Input Date/Time - " + event.timeString);
+            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new Web.SimpleMessage("Error: Improperly Formatted Date String"))).build();
         }
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
-    }
-
-    /**
-     * Manual Event Entry
-     *
-     * @param id     {@link String} Admin's ID
-     * @param userID {@link String} Visitor's ID
-     * @param action {@link String} Visitor's Action
-     * @param date   {@link String} Date and Time the action should be performed
-     *               In HTML datetime-locale format
-     * @return {@link Response} Response
-     */
-    @Path("manual_event")
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response manualEvent(@QueryParam("id") final String id, @QueryParam("user") final String userID, @QueryParam("action") final String action, @QueryParam("date") final String date) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN/MANUAL_EVENT - id = %s & userID - %s & action - %s & date - %s", id, userID, action, date));
-
-        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
-        if (staff == null || !staff.admin) {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
-        }
-
-        final Quote quote = Quote.getRandom();
-
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
-        params.put("ACTION", "Manually Added a Visitor Entry");
-
-
-        final String pattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}";
-
-        final Pattern r = Pattern.compile(pattern);
-        final Matcher m = r.matcher(date);
-        m.find();
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
         DateTime dt = formatter.parseDateTime(m.group().replace("T", " ")); //Remove Stupid T in HTML DateTime-Locale time
+        event.timeString = new Timestamp(dt.getMillis()).toString();
 
-        new Event(User.getUser(userID), new Timestamp(dt.getMillis()).toString(), action, "Back Dated").logEvent();
-
-        return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+        event.logEvent();
+        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new Web.SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
     /**
-     * Clock out some/all users via admin panel
+     * Adds a new Staff Member to the system
      *
-     * @param id     {@link String} Admin ID
-     * @param userID {@link String} User to Clock Out,
-     *               Leave blank to clock out all
-     * @return {@link Response} Response
+     * @param requester {@link String} Admin's ID
+     * @param payload   {@link String} {@see Models.Staff} Staff JSON
+     * @return {@link Response} Status Message
      */
-    @Path("clock_out_users")
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response clockOut(@QueryParam("id") String id, @QueryParam("userID") String userID) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN/CLOCK_OUT_USERS - id = %s & userID - %s", id, userID));
-
-        Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
+    @Path("newStaff")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response newStaff(@HeaderParam("REQUESTER") final String requester, final String payload) {
+        Log.info(String.format("Recieved Request: [POST] NEWSTAFF - Header:Requester - %s & Payload - %s ", requester, payload));
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
+            Log.warn("Unauthorized Request to NEWSTAFF - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
-
-        final Quote quote = Quote.getRandom();
-
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff.firstName);
-
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
-
-        if (userID == null || userID.length() < 0) {
-            // Clock out All Users
-            for (Staff s : DB.getAllStaff("WHERE clockable = 1")) {
-                Clock clock = new Clock(s);
-                if (clock.getStatus()) {
-                    Log.info(String.format("Clocking Out %s forcefully", s.firstName));
-                    clock.toggle();
-                }
-            }
-            params.put("ACTION", "Force Clocked out all Users");
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+        Staff newStaff = GSON.fromJson(payload, Staff.class);
+        if (!DB.createNewStaff(newStaff)) {
+            Log.warn(String.format("Cannot Create Staff Member (%s %s) ID already exists in DB", newStaff.firstName, newStaff.lastName));
+            return Response.status(Response.Status.BAD_REQUEST).entity(GSON.toJson(new Web.SimpleMessage("ID Already Exists for a Staff Member"))).build();
         } else {
-            final Staff s = Staff.getStaff(userID);
-            Clock clock = new Clock(s);
-            if (clock.getStatus()) {
-                Log.info(String.format("Clocking Out %s forcefully", s.firstName));
-                clock.toggle();
-            }
-            params.put("ACTION", String.format("Force Clocked out %s", s.firstName));
-
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
-        }
-    }
-
-    /**
-     * New Staff User Creation Page
-     *
-     * @param id                     {@link String} User's ID
-     * @param userID                 {@link String} New User's ID
-     * @param userFirst              {@link String} New User's First Name
-     * @param userLast               {@link String} New User's Last Name
-     * @param email                  {@link String} New User's Email Address
-     * @param clockable              {@link String}
-     *                               Either: '0' or '1'
-     * @param admin                  {@link String}
-     *                               Either: '0' or '1'
-     * @param instructional_designer {@link String}
-     *                               Either: '0' or '1'
-     * @return {@link Response} Response
-     */
-    @Path("create_user")
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Produces(MediaType.TEXT_HTML)
-    public Response createUser(@QueryParam("id") final String id, @QueryParam("user_id") final String userID, @QueryParam("user_first") final String userFirst,
-                               @QueryParam("user_last") final String userLast, @QueryParam("email") final String email, @QueryParam("clockable") final String clockable, @QueryParam("admin") final String admin,
-                               @QueryParam("instructional_designer") final String instructional_designer) {
-        Log.info(String.format("Recieved Request: [GET] ADMIN/CREATE_USER - id = %s & user_id - %s & user_first - %s & user_last - %s & clockable - %s & admin - %s", id, userID, userFirst, userLast, clockable, admin));
-
-        final Staff staff = id != null ? Staff.getStaff(Integer.parseInt(id)) : null;
-        if (staff == null || !staff.admin) {
-            return Response.status(Response.Status.FORBIDDEN).entity(Pages.makePage(Pages.FORBIDDEN, new HashMap<String, String>())).build();
-        }
-
-        final Quote quote = Quote.getRandom();
-
-        final HashMap<String, String> params = new HashMap<String, String>();
-        params.put("FIRST", staff.firstName);
-        params.put("QUOTE", quote.text);
-        params.put("QUOTEAUTHOR", quote.author);
-
-        final Staff staff1 = new Staff(Integer.parseInt(userID), userFirst, userLast, email, clockable.equals("1"), admin.equals("1"), instructional_designer.equals("1"));
-        if (!DB.createNewStaff(staff1)) {
-            params.put("ACTION", "Entered an ID that already exists");
-            return Response.status(Response.Status.BAD_REQUEST).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
-        } else {
-            params.put("ACTION", "successfully created a new Staff user");
-            return Response.status(Response.Status.OK).entity(Pages.makePage(Pages.ADMIN_CONF, params)).build();
+            return Response.status(Response.Status.CREATED).entity(GSON.toJson(new Web.SimpleMessage("Staff Member Created"))).build();
         }
     }
 }

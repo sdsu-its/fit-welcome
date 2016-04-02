@@ -38,6 +38,8 @@ __Emails__ is used by the FollowUp module to track who was sent emails when.
 
 __Important Note:__ information in the __Staff__ table has priority over information in the __users__ table; this is done to allow normal users to be changed to staff users without the need to remove them from the primary users table.
 
+#### Both
+Run the below commands in both your production and testing/staging databases.
 ```
 CREATE TABLE users
 (
@@ -86,7 +88,21 @@ CREATE TABLE email
 INSERT INTO users VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.edu', 0);
 ```
 
+#### Testing/Staging
+Run the set of commands below in your testing/staging database __in addition to__ the commands listed above.
+```
+INSERT INTO staff VALUES (123456789, 'Test', 'Staff', 'nobody@blackboard.sdsu.edu', 1, 0, 0);
+INSERT INTO staff VALUES (123123123, 'Test', 'Admin', 'nobody@blackboard.sdsu.edu', 0, 1, 0);
+```
+
 ### KeyServer Setup
+You will need to create two applications in the key server, one that will have the information for your production system, the
+other with your testing configuration.
+
+The name of the app that you want to use needs to be set as the `WELCOME_APP` environment variable.
+You will also need to set the `KSPATH` and `KSKEY` environment variables to their corresponding values.
+
+#### Production
 - `db-password` = Database Password
 - `db-url` = jdbc:mysql://db_host:3306/db_name _replace db_host, db_name and possibly the port with your MySQL server info_
 -	`db-user` = Database Username
@@ -95,7 +111,28 @@ INSERT INTO users VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.e
 -	`followup_survey_link` = Survey Link for the User, use the string `{{ event_id }}` to fill in the Event ID.
 Example: [http://www.bing.com/images/search?q={{ event_id }}](http://www.bing.com/images/search?q={{ event_id }})
 -	`followup_unsubscribe` = Unsubscribe Link, use `{{ email }}` to substitute the email.
-Example:  [http://your_domian_with_context/pages/followup/unsubscribe?e={{ email }}](http://your_domian_with_context/pages/followup/unsubscribe?e={{ email }})
+Example:  [http://your_domian_with_context/followup/unsubscribe.html?email={{ email }}](http://your_domian_with_context/followup/unsubscribe.html?email={{ email }})
+
+#### Testing/Staging
+Make sure that at least the `db_name` is different than your production settings.
+- `db-password` = Database Password
+- `db-url` = jdbc:mysql://db_host:3306/db_name _replace db_host, db_name and possibly the port with your MySQL server info_
+-	`db-user` = Database Username
+
+#### Email (`fit_email`)
+Create an additional application with the email credentials.
+- `host`
+- `post`
+- `username`
+- `password`
+- `from_email`
+- `from_name`
+
+#### Acuity (`Acuity`)
+Finally, create a fourth application with the Acuity Scheduling configuration information.
+- `ParScore Calendar` = The ID of the calendar you want to use to auto-detect appointments
+- `User ID`
+- `API Key`
 
 ### Acuity Setup
 One small addition needs to be made to the Acuity Scheduler. By default, the Client Scheduling page of Acuity is not setup to process multiple sessions in the same window. To fix this, we need to add a small snippet of code to the Confirmation Page. This can be done by enabling _Custom Conversion Tracking_ (Under Import/Export/Syncing).

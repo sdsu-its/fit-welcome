@@ -1,0 +1,47 @@
+{
+  "index": {
+    "pageHead": "Welcome <span class='firstName'>Jane</span>!",
+    "pageSubHead": "What do you hope to accomplish today?",
+    "buttons": {
+      "Use the ParScore Machines": "finish('Use ParScore')",
+      "Meet with an Instructional Designer": "showPage('ID Topics')",
+      "Schedule a ParScore Appointment": "scheduler(536800)",
+      "Take a break in between classes": "finish('Take a break between classes')",
+      "Learn how to use a new technology": "finish('Attend a workshop')",
+      "Something that is not listed here": "showPage('Other')"
+    }
+  },
+  "admin": {
+    "pageHead": "Admin Tools",
+    "buttons": {
+      "Manual Time Entry": "showTimeEntry()",
+      "Email Timesheets": "showPage('timesheetReport')",
+      "Manual Visit Entry": "showPage('manualVisit')",
+      "Add a New Staff User": "showPage('newUser')",
+      "Run Usage Report": "showPage('usageReport')",
+      "Force Clock Out all Users": "confirm('Are you sure?'); clockOutAll();"
+    }
+  },
+  "ID Topics": {
+    "pageHead": "What can we help you with?",
+    "buttons": {
+      "Blackboard": "finish('Meet an ID', 'Blackboard')",
+      "i>Clicker&reg;": "finish('Meet an ID', 'iClickers')",
+      "Web Conferencing": "finish('Meet an ID', 'Web Conferencing')",
+      "Turnitin&reg;": "finish('Meet an ID', 'Turnitin')",
+      "Respondus": "finish('Meet an ID', 'Respondus')",
+      "Course Design": "finish('Meet an ID', 'Course Design')",
+      "Something Else": "finish('Meet an ID', 'Other')"
+    }
+  },
+  "Other": {
+    "pageHead": "Are We Getting Warmer?",
+    "buttons": {
+      "Informal Office": "finish('In-between Office')",
+      "Use the Internet": "finish('Use the Internet')",
+      "Printing/Scanning": "finish('Printing/Scanning')",
+      "Meet with Colleagues": "finish('Meet with Colleagues')",
+      "Something Completely Different": "finish('Other')"
+    }
+  }
+}

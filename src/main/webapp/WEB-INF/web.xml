@@ -23,7 +23,7 @@
 
     <servlet-mapping>
         <servlet-name>edu.sdsu.its.fit_welcome</servlet-name>
-        <url-pattern>/pages/*</url-pattern>
+        <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
