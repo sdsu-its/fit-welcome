@@ -58,6 +58,7 @@ function doLogin(login) {
         document.getElementById("index-head").innerHTML = "MANUAL VISIT MODE";
         showPage("index");
     } else {
+        document.getElementById("index-head").innerHTML = json['index']['pageHead'];
         user = login.user;
 
         for (var spanNum = 0; spanNum < document.getElementsByClassName("firstName").length; spanNum++) {
