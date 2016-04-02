@@ -111,7 +111,7 @@ You will also need to set the `KSPATH` and `KSKEY` environment variables to thei
 -	`followup_survey_link` = Survey Link for the User, use the string `{{ event_id }}` to fill in the Event ID.
 Example: [http://www.bing.com/images/search?q={{ event_id }}](http://www.bing.com/images/search?q={{ event_id }})
 -	`followup_unsubscribe` = Unsubscribe Link, use `{{ email }}` to substitute the email.
-Example:  [http://your_domian_with_context/pages/followup/unsubscribe?e={{ email }}](http://your_domian_with_context/pages/followup/unsubscribe?e={{ email }})
+Example:  [http://your_domian_with_context/followup/unsubscribe.html?email={{ email }}](http://your_domian_with_context/followup/unsubscribe.html?email={{ email }})
 
 #### Testing/Staging
 Make sure that at least the `db_name` is different than your production settings.
