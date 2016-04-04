@@ -43,8 +43,7 @@ function showTimeEntry() {
     if (clockableStaff.length == 0) {
         clockableUsersSet = false;
         getClockableStaff();
-    }
-    if (!clockableUsersSet) {
+    } else if (!clockableUsersSet) {
         var select = document.getElementById('clockableUsers');
         for (var s = 0; s < clockableStaff.length; s++) {
             var staff = clockableStaff[s];
