@@ -41,6 +41,7 @@ function getClockableStaff() {
 
 function showTimeEntry() {
     if (clockableStaff.length == 0) {
+        clockableUsersSet = false;
         getClockableStaff();
     }
     if (!clockableUsersSet) {
@@ -53,9 +54,8 @@ function showTimeEntry() {
             select.appendChild(opt);
         }
         clockableUsersSet = true;
+        showPage('manualTime');
     }
-
-    showPage('manualTime');
 }
 
 function addTimeEntry() {
