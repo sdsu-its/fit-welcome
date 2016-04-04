@@ -75,5 +75,7 @@ function makePage(pageName, pageJSON) {
         }
     }
 
-    document.body.appendChild(tbl); // Add the table to the Body
+    var body = document.body;
+    body = body != null ? body : document.getElementsByTagName("body")[0];
+    body.appendChild(tbl); // Add the table to the Body
 }
