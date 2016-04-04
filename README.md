@@ -91,8 +91,9 @@ INSERT INTO users VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.e
 #### Testing/Staging
 Run the set of commands below in your testing/staging database __in addition to__ the commands listed above.
 ```
-INSERT INTO staff VALUES (123456789, 'Test', 'Staff', 'nobody@blackboard.sdsu.edu', 1, 0, 0);
-INSERT INTO staff VALUES (123123123, 'Test', 'Admin', 'nobody@blackboard.sdsu.edu', 0, 1, 0);
+INSERT INTO users VALUES (100000001, 'Test', 'User', 'unique_email@blackboard.sdsu.edu', 1);
+INSERT INTO staff VALUES (123456789, 'Test', 'Staff', 'staff@blackboard.sdsu.edu', 1, 0, 0);
+INSERT INTO staff VALUES (123123123, 'Test', 'Admin', 'admin@blackboard.sdsu.edu', 0, 1, 0);
 ```
 
 ### KeyServer Setup

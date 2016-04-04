@@ -25,7 +25,7 @@ import static org.junit.Assert.fail;
  *         Created on 3/27/16.
  */
 public class TestDB {
-    final static int TEST_USER_ID = 999999999;
+    final static int TEST_USER_ID = 100000001;
     final static int TEST_STAFF_ID = 123456789;
     final static int TEST_ADMIN_ID = 123123123;
     final static Logger LOGGER = Logger.getLogger(TestDB.class);
