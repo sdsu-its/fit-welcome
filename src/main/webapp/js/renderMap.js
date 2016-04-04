@@ -7,8 +7,6 @@
 const buttonTemplate = '<button class="panelButton" type="button" onclick="{{action}}">{{text}}</button>';
 var json;
 
-getMapJSON(); // Generate the Pages
-
 function getMapJSON() {
     var xmlHttp = new XMLHttpRequest();
 
@@ -75,7 +73,5 @@ function makePage(pageName, pageJSON) {
         }
     }
 
-    var body = document.body;
-    body = body != null ? body : document.getElementsByTagName("body")[0];
-    body.appendChild(tbl); // Add the table to the Body
+    document.body.appendChild(tbl); // Add the table to the Body
 }

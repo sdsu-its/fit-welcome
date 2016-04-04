@@ -26,6 +26,7 @@ window.onload = function () {
         idBox.select();
     }
 
+    getMapJSON(); // Generate the Pages
     setQuote();
 };
 
