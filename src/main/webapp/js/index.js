@@ -79,7 +79,7 @@ function doLogin(login) {
             showPage("appointment")
         } else if (login.isStaff) {
             if (user.clockable) {
-                if (user.admin) {
+                if (user.admin || user.admin == "true") {
                     document.getElementById("adminButton").style.display = "";
                 }
                 showPage('staff');

@@ -54,6 +54,8 @@ function showTimeEntry() {
         }
         clockableUsersSet = true;
         showPage('manualTime');
+    } else {
+        showPage('manualTime');
     }
 }
 
@@ -91,23 +93,26 @@ function addTimeEntry() {
 
 //noinspection JSUnusedGlobalSymbols
 function clockOutAll() {
-    var xmlHttp = new XMLHttpRequest();
+    if (confirm('Are you sure?')) {
 
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4) {
-            var response = xmlHttp;
-            console.log(response.status);
-            if (response.status == 202) {
-                doFinish("You have successfully Clocked Out all Staff Users", "");
-            } else {
-                doFinish("An Error Occurred processing your request.", "");
+        var xmlHttp = new XMLHttpRequest();
+
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                var response = xmlHttp;
+                console.log(response.status);
+                if (response.status == 202) {
+                    doFinish("You have successfully Clocked Out all Staff Users", "");
+                } else {
+                    doFinish("An Error Occurred processing your request.", "");
+                }
             }
-        }
-    };
+        };
 
-    xmlHttp.open('POST', "api/admin/clockOutAll");
-    xmlHttp.setRequestHeader("REQUESTER", user.id);
-    xmlHttp.send();
+        xmlHttp.open('POST', "api/admin/clockOutAll");
+        xmlHttp.setRequestHeader("REQUESTER", user.id);
+        xmlHttp.send();
+    }
 }
 
 function runTimesheetReport() {
