@@ -14,6 +14,8 @@ var loggedIn = false;
 var userID = 0;
 var ready = false;
 
+var events = [];
+
 window.onload = function () {
     // Select the ID Input Area automatically on NON-iPads
     var ua = navigator.userAgent;
@@ -58,7 +60,7 @@ function checkLogin(userID) {
         }
     };
 
-    xmlHttp.open('GET', "../pages/live/getEvents?id=" + userID);
+    xmlHttp.open('GET', "../api/live/getEvents?id=" + userID);
     xmlHttp.send();
 }
 
@@ -97,10 +99,10 @@ function setReady() {
  * Load Recent Events
  */
 function loadEvents() {
-    get("../pages/live/getEvents");
+    get("../api/live/getEvents");
     window.setInterval(function () {
         if (ready) {
-            get("../pages/live/getEvents");
+            get("../api/live/getEvents");
         }
     }, refreshRate);
 }
@@ -174,13 +176,18 @@ function get(url) {
  * @param params (String) Parameters for Visit
  */
 function insert(eventID, name, time, goal, params) {
-    var table = document.getElementById("events");
-    var row = table.insertRow(1);
-    row.id = "e-" + eventID;
+    if (events.indexOf(eventID) != -1) {
+        console.log("Event Already Added to Page");
+    } else {
+        var table = document.getElementById("events");
+        var row = table.insertRow(1);
+        row.id = "e-" + eventID;
 
-    row.insertCell(0).innerHTML = name;
-    row.insertCell(1).innerHTML = time;
-    row.insertCell(2).innerHTML = goal;
-    row.insertCell(3).innerHTML = params;
+        row.insertCell(0).innerHTML = name;
+        row.insertCell(1).innerHTML = time;
+        row.insertCell(2).innerHTML = goal;
+        row.insertCell(3).innerHTML = params;
 
+        events.push(eventID);
+    }
 }

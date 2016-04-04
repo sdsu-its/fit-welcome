@@ -189,3 +189,7 @@ input.date {
     font-size: 5em;
     color: #333333;
 }
+
+#events {
+    text-align: left;
+}
