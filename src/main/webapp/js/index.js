@@ -297,6 +297,7 @@ function finish(goal, param) {
 function resetSession() {
     pageHistory = [];
     user = null;
+    appointment = null;
     backDateMode = false;
     altUser = null;
     altTime = null;
