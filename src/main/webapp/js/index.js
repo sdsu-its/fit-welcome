@@ -81,6 +81,8 @@ function doLogin(login) {
             if (user.clockable) {
                 if (user.admin || user.admin == "true") {
                     document.getElementById("adminButton").style.display = "";
+                } else {
+                    document.getElementById("adminButton").style.display = "none";
                 }
                 showPage('staff');
                 loadClock();
