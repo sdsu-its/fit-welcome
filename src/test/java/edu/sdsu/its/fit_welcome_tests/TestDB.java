@@ -5,6 +5,7 @@ import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import edu.sdsu.its.fit_welcome.Param;
+import edu.sdsu.its.fit_welcome.Quote;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -168,5 +169,22 @@ public class TestDB {
         List<Event> eventList = DB.getEventsSince(0);
         assertTrue(eventList != null && eventList.size() > 0);
         LOGGER.debug("Query for Events Returned - " + Arrays.toString(eventList.toArray()));
+    }
+
+    @Test
+    public void quote() {
+        LOGGER.info("Retrieving Daily Quote from DB");
+        final int numQuotes = DB.getNumQuotes();
+        LOGGER.debug(String.format("DB contains %d quote(s).", numQuotes));
+        assertTrue("No Quotes in DB", numQuotes > 0);
+
+        Quote.QuoteModel quote = DB.getQuote(numQuotes);
+        assertTrue("Quote Return is Null", quote != null);
+
+        LOGGER.debug(String.format("Retrieved \"%s\" & Author = \"%s\"", quote.text, quote.author));
+        assertTrue("Quote text is blank or null", quote.text != null && quote.text.length() > 0);
+        assertTrue("Quote author is blank or null", quote.author != null && quote.author.length() > 0);
+
+
     }
 }
