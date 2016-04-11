@@ -102,6 +102,12 @@ public class Web {
         Event event = GSON.fromJson(payload, Event.class);
         event.logEvent();
 
+        if (event.params.contains("Appointment ID:")) {
+            String appointmentID = event.params.replace("Appointment ID:", "").replaceAll(" ", "");
+            LOGGER.debug(String.format("Checking In User: %d for appointment with ID: %s", event.owner.id, appointmentID));
+            Acutiy.checkIn(Integer.parseInt(appointmentID));
+        }
+
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 

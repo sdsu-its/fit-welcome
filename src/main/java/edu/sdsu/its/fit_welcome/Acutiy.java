@@ -7,6 +7,7 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import edu.sdsu.its.fit_welcome.Models.User;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
 import org.joda.time.LocalTime;
@@ -31,6 +32,8 @@ public class Acutiy {
     private static final String USERID = Param.getParam("Acuity", "User ID");
     private static final String KEY = Param.getParam("Acuity", "API Key");
     private static final Logger Log = Logger.getLogger(Acutiy.class);
+    private static final int FUZZY_THRESHOLD = 2;
+
 
     private static String getCurrentTimeStamp(final String pattern) {
         // See https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html for Format of Pattern
@@ -51,9 +54,19 @@ public class Acutiy {
         final List<Appointment> appointmentsForUser = new ArrayList<Appointment>();
 
         for (Appointment appointment : appointments) {
+            if (appointment.notes.toLowerCase().contains("Checked in".toLowerCase())) {
+                Log.debug(String.format("Disregarding Appointment (ID: %d) - Already Checked In", appointment.id));
+                // Already CheckedIn
+                continue;
+            }
+
             if (appointment.firstName.equals(user.firstName) &&
-                    appointment.lastName.equals(user.lastName) &&
-                    !appointment.notes.toLowerCase().contains("Checked in".toLowerCase())) {
+                    appointment.lastName.equals(user.lastName)) {
+                Log.debug(String.format("Direct Match found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
+                appointmentsForUser.add(appointment);
+            } else if (StringUtils.getLevenshteinDistance(appointment.firstName, user.firstName) <= FUZZY_THRESHOLD &&
+                    StringUtils.getLevenshteinDistance(appointment.lastName, user.lastName) <= FUZZY_THRESHOLD) {
+                Log.debug(String.format("Fuzzy Match found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
                 appointmentsForUser.add(appointment);
             }
         }
