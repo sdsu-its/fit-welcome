@@ -138,7 +138,6 @@ Create an additional application with the email credentials.
 
 #### Acuity (`Acuity`)
 Finally, create a fourth application with the Acuity Scheduling configuration information.
-- `ParScore Calendar` = The ID of the calendar you want to use to auto-detect appointments
 - `User ID`
 - `API Key`
 

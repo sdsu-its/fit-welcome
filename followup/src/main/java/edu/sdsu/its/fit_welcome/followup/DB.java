@@ -87,7 +87,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            final String sql = "SELECT * FROM bbusers WHERE id = " + id + ";";
+            final String sql = "SELECT * FROM users WHERE id = " + id + ";";
             Log.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
