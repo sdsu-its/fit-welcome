@@ -101,7 +101,6 @@ public class Web {
         LOGGER.info("Recieved Request: [POST] EVENT - " + payload);
 
         Event event = GSON.fromJson(payload, Event.class);
-        event.logEvent();
 
         if (event.params != null && event.params.contains("Appointment ID:")) {
             String appointmentID = event.params.replace("Appointment ID:", "").replaceAll(" ", "");
