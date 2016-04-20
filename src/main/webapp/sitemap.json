@@ -19,6 +19,7 @@
       "Manual Visit Entry": "showPage('manualVisit')",
       "Add a New Staff User": "showPage('newUser')",
       "Run Usage Report": "showPage('usageReport')",
+      "Manage Appointment Maps" : "showAppointmentMap()",
       "Force Clock Out all Users": "clockOutAll();"
     }
   },

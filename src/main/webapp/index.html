@@ -69,7 +69,7 @@
             <table>
                 <tr>
                     <td>
-                        <button class="panelButton" type="button" onclick="finish('Use ParScore')">Yes!</button>
+                        <button class="panelButton" type="button" onclick="finish('Acuity Appointment')">Yes!</button>
                     </td>
                     <td>
                         <button class="panelButton" type="button" onclick="showPage('index')">No</button>
@@ -352,6 +352,31 @@
                 </table>
                 <button class="submitButton" type="submit" title="Submit">Run Report</button>
             </form>
+        </td>
+    </tr>
+</table>
+<table id="appointmentMap" style="display: none">
+    <tr>
+        <td class="pageSubHead">Select Date Range for Usage Report</td>
+    </tr>
+    <tr>
+        <td>
+            <table id="appointmentTypeMap" style="border-collapse: collapse;">
+                <tr class="header">
+                    <th>Appointment Name</th>
+                    <th>Goal Text</th>
+                    <th>Parameters</th>
+                </tr>
+                <!--JS Will populate the table with entries-->
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button class="submitButton" type="submit" title="Submit" onclick="setAppointmentMap()"><i
+                    class="fa fa-floppy-o" aria-hidden="true"></i>
+                &nbsp; Save &amp; Finish
+            </button>
         </td>
     </tr>
 </table>

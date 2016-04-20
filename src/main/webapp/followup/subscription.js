@@ -1,5 +1,5 @@
 /**
- * TODO Docs
+ * Manages Follow Up email Subscriptions
  *
  * Created by tpaulus on 4/1/16.
  */

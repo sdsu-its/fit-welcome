@@ -208,3 +208,88 @@ function newStaff() {
     xmlHttp.setRequestHeader("REQUESTER", user.id);
     xmlHttp.send(json);
 }
+
+//noinspection JSUnusedGlobalSymbols
+function showAppointmentMap() {
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            var response = xmlHttp;
+            console.log(response.status);
+            if (response.status == 200) {
+                var json = JSON.parse(response.responseText);
+                console.log(json);
+                doShowAppointmentMap(json);
+            }
+        }
+    };
+
+    xmlHttp.open('GET', "api/acuity/appointmentMap");
+    xmlHttp.setRequestHeader("REQUESTER", user.id);
+    xmlHttp.send();
+}
+
+function doShowAppointmentMap(json) {
+    var table = document.getElementById("appointmentTypeMap");
+    for (var at = 0; at < json.length; at++) {
+        var type = json[at];
+        var row = table.insertRow();
+        var typeText = row.insertCell(0);
+        typeText.innerHTML = type.name;
+
+        var goal = row.insertCell(1);
+        goal.innerHTML = '<input class="inputBox goals" title="Goal Text for ' + type.name + '" id="goal-' + type.id + '" value="' + type.eventText + '">';
+
+        var param = row.insertCell(2);
+        param.innerHTML = '<input class="inputBox params" title="Param Text for ' + type.name + '" id="param-' + type.id + '" value="' + type.eventParams + '">';
+    }
+    showPage("appointmentMap");
+}
+
+function setAppointmentMap() {
+    var json = '[\n';
+    for (var g = 0; g < document.getElementsByClassName("goals").length; g++) {
+        var goal = document.getElementsByClassName("goals")[g];
+        var typeID = goal.id.replace("goal-", "");
+        var goalText = goal.value;
+        var paramText = document.getElementById("param-" + typeID).value;
+        json += '{"id": ' + typeID + ',\n';
+        json += '"eventText": "' + goalText + '",\n';
+        json += '"eventParams": "' + paramText + '"\n';
+        json += '}';
+        if (g != document.getElementsByClassName("goals").length - 1) {
+            json += ',';
+        }
+    }
+    json += ']';
+
+    var xmlHttp = new XMLHttpRequest();
+
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            var response = xmlHttp;
+            console.log(response.status);
+            if (response.status == 202) {
+                doFinish("Appointment Map Updated Successfully!", "");
+            } else {
+                doFinish("An Error Occurred processing your request.", "");
+            }
+            clearAppointmentMap();
+        }
+    };
+
+    xmlHttp.open('POST', "api/acuity/appointmentMap");
+    xmlHttp.setRequestHeader("Content-type", "application/json");
+    xmlHttp.setRequestHeader("REQUESTER", user.id);
+    xmlHttp.send(json);
+}
+
+function clearAppointmentMap() {
+    var table = document.getElementById("appointmentTypeMap");
+    var rows = table.rows;
+    var i = rows.length;
+    while (--i) {
+        table.deleteRow(i);
+    }
+}

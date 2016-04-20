@@ -381,6 +381,7 @@ public class DB {
 
         return quote;
     }
+
     /**
      * Clock In the User
      *
@@ -638,5 +639,56 @@ public class DB {
         }
 
         return events;
+    }
+
+    /**
+     * Get Appointment Matches from the DB
+     *
+     * @param appointmentType {@link Acutiy.AppointmentType} Appointment Type from Acuity API
+     * @return {@link Acutiy.AppointmentType} Appointment Type with Event Params
+     */
+    public static Acutiy.AppointmentType getAppointmentTypeMatch(Acutiy.AppointmentType appointmentType) {
+        final String sql = "SELECT event_text, event_params FROM meetings WHERE acuity_id = " + appointmentType.id + ";";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+
+        try {
+            statement = connection.createStatement();
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                appointmentType.eventText = resultSet.getString("event_text");
+                appointmentType.eventParams = resultSet.getString("event_params");
+            } else {
+                appointmentType.eventText = "";
+                appointmentType.eventParams = "";
+            }
+        } catch (SQLException e) {
+            Log.error("Problem retrieving Acuity Appointment Matches entries from DB", e);
+            appointmentType.eventText = "";
+            appointmentType.eventParams = "";
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return appointmentType;
+    }
+
+    public static void setAppointmentTypeMatch(Acutiy.AppointmentType appointmentType) {
+        final String sql = "INSERT INTO meetings (acuity_id, event_text, event_params) VALUES \n" +
+                "  (" + appointmentType.id + ", '" + sanitize(appointmentType.eventText) + "', '" + sanitize(appointmentType.eventParams) + "')\n" +
+                "ON DUPLICATE KEY UPDATE\n" +
+                "  acuity_id    = VALUES(acuity_id),\n" +
+                "  event_text   = VALUES(event_text),\n" +
+                "  event_params = VALUES(event_params);";
+        executeStatement(sql);
     }
 }

@@ -105,8 +105,14 @@ public class Web {
         if (event.params != null && event.params.contains("Appointment ID:")) {
             String appointmentID = event.params.replace("Appointment ID:", "").replaceAll(" ", "");
             LOGGER.debug(String.format("Checking In User: %d for appointment with ID: %s", event.owner.id, appointmentID));
-            Acutiy.checkIn(Integer.parseInt(appointmentID));
+            Acutiy.Appointment appointment = Acutiy.checkIn(Integer.parseInt(appointmentID));
+            Acutiy.AppointmentType appointmentType = DB.getAppointmentTypeMatch(new Acutiy.AppointmentType(appointment.appointmentTypeID));
+
+            event.type = appointmentType.eventText;
+            event.params = appointmentType.eventParams + ", " + event.params;
         }
+
+        event.logEvent();
 
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }

@@ -21,6 +21,7 @@ window.onload = function () {
     if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
         entryMethod.innerHTML = "Please Type in your REDID<br>" +
             "to get started, then press go.";
+        
     } else {
         idBox.focus();
         idBox.select();
@@ -248,7 +249,6 @@ function finish(goal, param) {
         xmlHttp.send(json);
 
     } else {
-
         if (goal == "Use ParScore") {
             if (appointment == null) {
                 param = "Walk In";
@@ -256,10 +256,14 @@ function finish(goal, param) {
                     "Please check with the FIT Center Consultant regarding machine availability.";
             }
             else {
-                param = "Appointment ID: " + appointment.id;
+                goal = "Acuity Appointment";
             }
         } else if (goal == "Meet an ID") {
             notice = "A FIT Consultant will be with you shortly!<br>";
+        }
+
+        if (goal == "Acuity Appointment") {
+            param = "Appointment ID: " + appointment.id;
         }
 
         json = '{' +

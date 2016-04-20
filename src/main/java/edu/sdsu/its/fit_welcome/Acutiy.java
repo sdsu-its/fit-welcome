@@ -6,6 +6,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -14,7 +15,9 @@ import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
@@ -28,6 +31,7 @@ import java.util.List;
  * @author Tom Paulus
  *         Created on 12/12/15.
  */
+@Path("acuity")
 public class Acutiy {
     private static final String USERID = Param.getParam("Acuity", "User ID");
     private static final String KEY = Param.getParam("Acuity", "API Key");
@@ -152,10 +156,12 @@ public class Acutiy {
      * Check-in User for Specified Appointment
      *
      * @param appointmentID {@link Integer} Acuity AppointmentID
+     * @return {@link Appointment} Updated Appointment
      */
-    public static void checkIn(final Integer appointmentID) {
+    public static Appointment checkIn(final Integer appointmentID) {
         final Appointment appointment = getAppt(appointmentID);
         final Appointment newAppointment = new Appointment();
+        Appointment result;
 
         final String checkInText = "Checked in at " + getCurrentTimeStamp("hh:mma");
         newAppointment.notes = checkInText + ((appointment.notes.length() > 0) ? "\n" + appointment.notes : ""); // Checked In at TIME (\n Original Note) - if exists
@@ -171,14 +177,18 @@ public class Acutiy {
 
             final Gson gson = new Gson();
             ClientResponse response = put(uri, gson.toJson(newAppointment));
+            result = gson.fromJson(response.getEntity(String.class), Appointment.class);
 
         } catch (URISyntaxException e) {
             Log.error("Could not formulate Acuity Schedule Request", e);
+            result = null;
         }
+
+        return result;
     }
 
     /**
-     * Make HTTP Get requests and return the Response form the Server.
+     * Make HTTP Get request and return the Response form the Server.
      *
      * @param uri {@link URI} URI used to make get Request.
      * @return {@link ClientResponse} Response from get Request.
@@ -206,6 +216,13 @@ public class Acutiy {
         return response;
     }
 
+    /**
+     * Make an HTTP Put request and return the Response form the Server.
+     *
+     * @param uri {@link URI} URI used to make get Request.
+     * @param payload {@link String} PUT Payload
+     * @return {@link ClientResponse} Response from Server
+     */
     private static ClientResponse put(final URI uri, final String payload) {
         Log.info("Making put request to: " + uri.toString());
 
@@ -227,11 +244,86 @@ public class Acutiy {
     }
 
     /**
+     * Get all of the appointments currently offered in Acuity
+     *
+     * @return {@link AppointmentType[]} All AppointmentTypes
+     */
+    public AppointmentType[] getAppointmentTypes() {
+        final URI uri;
+        AppointmentType[] result = null;
+        try {
+            uri = new URIBuilder()
+                    .setScheme("https")
+                    .setHost("acuityscheduling.com/api/v1/appointment-types")
+                    .setParameter("deleted", "false")
+                    .build();
+
+            final Gson gson = new Gson();
+            ClientResponse response = get(uri);
+            result = gson.fromJson(response.getEntity(String.class), AppointmentType[].class);
+        } catch (URISyntaxException e) {
+            Log.error("Could not formulate Acuity Schedule Request", e);
+        }
+        if (result != null) {
+            for (int at = 0; at < result.length; at++) {
+                result[at] = DB.getAppointmentTypeMatch(result[at]);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get the Appointment Mapping.
+     * {@see getAppointmentTypes()}
+     *
+     * @return {@link Response} JSON Array of All Appointment Types with their Mapping
+     */
+    @Path("appointmentMap")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAppointmentMap() {
+        Gson gson = new Gson();
+        return Response.status(Response.Status.OK).entity(gson.toJson(getAppointmentTypes())).build();
+    }
+
+    /**
+     * Set the Appointment Mapping.
+     * Requires Admin Level User.
+     *
+     * @param requester {@link String} Requester's ID
+     * @param payload {@link String} JSON Array of AppointmentTypes
+     * @return {@link Response} Completion Status or Error Message
+     */
+    @Path("appointmentMap")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setAppointmentMap(@HeaderParam("REQUESTER") final String requester, final String payload) {
+        Log.info(String.format("Recieved Request: [POST] ACUITY/APPOINTMENTMAP - Requester: %s & Payload: %s", requester, payload));
+        Gson gson = new Gson();
+
+        Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
+        if (staff == null || !staff.admin) {
+            Log.warn("Unauthorized Request to POST ACUITY/APPOINTMENTMAP - ID: " + requester);
+            return Response.status(Response.Status.FORBIDDEN).entity(gson.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+        }
+
+        AppointmentType[] appointmentTypes = gson.fromJson(payload, AppointmentType[].class);
+        for (AppointmentType appointmentType : appointmentTypes) {
+            DB.setAppointmentTypeMatch(appointmentType);
+        }
+        return Response.status(Response.Status.ACCEPTED).entity(gson.toJson(new Web.SimpleMessage("Success"))).build();
+    }
+
+    /**
      * Models an appointment in Acuity
      */
     public static class Appointment {
         public Integer id;
         public String type;
+        public Integer appointmentTypeID;
         public String firstName;
         public String lastName;
         public String email;
@@ -242,6 +334,21 @@ public class Acutiy {
         @Override
         public String toString() {
             return String.format("%s at %s (ID: %d)", type, time, id);
+        }
+    }
+
+    /**
+     * Models an appointment type in Acuity
+     */
+    public static class AppointmentType {
+        public Integer id;
+        public String name;
+
+        public String eventText;
+        public String eventParams;
+
+        public AppointmentType(Integer id) {
+            this.id = id;
         }
     }
 }
