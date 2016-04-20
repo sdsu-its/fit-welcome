@@ -26,7 +26,8 @@ public class Web {
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(@QueryParam("id") final String uid) {
+    public Response login(@QueryParam("id") String uid) {
+        uid = uid.replace(" ", "+"); // Re Encode Spaces as + signs
         LOGGER.info("Recieved Request: [GET] LOGIN - id = " + uid);
 
         int id = User.parseSwipe(uid);
@@ -109,7 +110,8 @@ public class Web {
             Acutiy.AppointmentType appointmentType = DB.getAppointmentTypeMatch(new Acutiy.AppointmentType(appointment.appointmentTypeID));
 
             event.type = appointmentType.eventText;
-            event.params = appointmentType.eventParams + ", " + event.params;
+            if (appointmentType.eventParams != null && appointmentType.eventParams.length() > 0)
+                event.params = appointmentType.eventParams + ", " + event.params;
         }
 
         event.logEvent();
