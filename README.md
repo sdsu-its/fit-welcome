@@ -29,14 +29,16 @@ FIT Welcome also uses [Key Server](https://github.com/sdsu-its/key-server) to ac
 ### DB Config
 To setup the various tables that FIT Welcome uses, run the code below in the Database that will be used with FIT Welcome.
 
-All Primary Users (Faculty, TAs, etc.) should be in the __users__ Table.
-__Clock__ is used to store Clock In/Out events.
-__Events__ stores all check-in information, as well as any additional information that is relevant to that check-in.
-__Quotes__ stores a list of quotes that are displayed on the confirmation pages. These quotes can be anything you like! (A good source for quotes is [Brainy Quote](http://www.brainyquote.com/)).
-The __Staff__ stores information for all staff users.
-__Emails__ is used by the FollowUp module to track who was sent emails when.
+#### Table Breakdown
+- __users__ is where all Primary Users (Faculty, TAs, etc.) should be stored.
+- __clock__ is used to store Clock In/Out events.
+- __events__ stores all check-in information, as well as any additional information that is relevant to that check-in.
+- __quotes__ stores a list of quotes that are displayed on the confirmation pages. These quotes can be anything you like! (A good source for quotes is [Brainy Quote](http://www.brainyquote.com/)).
+- __staff__ stores information for all staff users.
+- __meeting__ saves the values that should be saved in the event log for each Acuity Appointment Type. These values are set in the Admin Panel.
+- __emails__ is used by the FollowUp module to track who was sent emails when.
 
-__Important Note:__ information in the __Staff__ table has priority over information in the __users__ table; this is done to allow normal users to be changed to staff users without the need to remove them from the primary users table.
+__Important Note:__ information in the __staff__ table has priority over information in the __users__ table; this is done to allow normal users to be changed to staff users without the need to remove them from the primary users table.
 
 #### Both
 Run the below commands in both your production and testing/staging databases.
@@ -78,6 +80,11 @@ CREATE TABLE staff
     clockable TINYINT(1),
     admin TINYINT(1),
     instructional_designer TINYINT(1)
+);
+CREATE TABLE meetings (
+  `acuity_id`    INT PRIMARY KEY NOT NULL,
+  `event_text`   TEXT,
+  `event_params` TEXT
 );
 CREATE TABLE email
 (
