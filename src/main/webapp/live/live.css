@@ -122,3 +122,7 @@ table.editButtons button {
     animation: flashing 1s infinite;
     /* IE 10+ */
 }
+
+tr.header > td, th {
+    text-align: left;
+}
