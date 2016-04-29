@@ -31,6 +31,16 @@ window.onload = function () {
     setQuote();
 };
 
+document.onkeypress = function () {
+    const inputBox = document.getElementById("idBox");
+
+    if (currentPageID == "login") {
+        var value = inputBox.value;
+        inputBox.select();
+        inputBox.value = value;
+    }
+};
+
 function hideKeyboard() {
     document.activeElement.blur();
 }
