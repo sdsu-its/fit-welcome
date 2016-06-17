@@ -13,6 +13,8 @@ var altTime = null;
 var currentPageID = "login";
 var pageHistory = ["login"];
 
+var requestInProgress = false;
+
 window.onload = function () {
     var ua = navigator.userAgent;
     var entryMethod = document.getElementById("entryMethod");
@@ -220,6 +222,13 @@ function toggleClock() {
 }
 
 function finish(goal, param) {
+    if (requestInProgress) {
+        console.log("Request In Progress, Ignoring Request");
+        return false;
+    }
+
+    requestInProgress = true;
+
     var notice = "Let us know if there is anything we can<br>" +
         "do to make your visit more productive!";
 
@@ -317,6 +326,7 @@ function resetSession() {
     backDateMode = false;
     altUser = null;
     altTime = null;
+    requestInProgress = false;
     document.getElementById("idBox").value = "";
 }
 function doFinish(confMessage, notice) {
@@ -324,6 +334,7 @@ function doFinish(confMessage, notice) {
     document.getElementById("confNote").innerHTML = notice;
 
     showPage("conf");
+    requestInProgress = false;
     resetSession();
 
     window.setTimeout(function () {
