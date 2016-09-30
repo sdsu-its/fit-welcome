@@ -344,11 +344,12 @@ function doFinish(confMessage, notice) {
 
 //noinspection JSUnusedGlobalSymbols
 function scheduler(appointmentID) {
-    document.getElementById("scheduler").src = "https://fitcenter.acuityscheduling.com/schedule.php?appointmentType={{AID}}&first_name={{FIRST}}&last_name={{LAST}}&email={{EMAIL}}"
+    document.getElementById("scheduler").src = "https://fitcenter.acuityscheduling.com/schedule.php?appointmentType={{AID}}&first_name={{FIRST}}&last_name={{LAST}}&email={{EMAIL}}&field:2114596={{REDID}}"
         .replace("{{AID}}", appointmentID)
         .replace("{{FIRST}}", user.firstName)
         .replace("{{LAST}}", user.lastName)
-        .replace("{{EMAIL}}", user.email);
+        .replace("{{EMAIL}}", user.email)
+        .replace("{{REDID}}", user.id);
     showPage("schedulerContainer");
 }
 

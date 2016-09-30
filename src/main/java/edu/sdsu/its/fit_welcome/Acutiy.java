@@ -36,7 +36,7 @@ public class Acutiy {
     private static final String USERID = Param.getParam("Acuity", "User ID");
     private static final String KEY = Param.getParam("Acuity", "API Key");
     private static final Logger Log = Logger.getLogger(Acutiy.class);
-    private static final int FUZZY_THRESHOLD = 2;
+    private static final int FUZZY_THRESHOLD = 3;
 
 
     private static String getCurrentTimeStamp(final String pattern) {
@@ -44,6 +44,43 @@ public class Acutiy {
         SimpleDateFormat sdfDate = new SimpleDateFormat(pattern);
         Date now = new Date();
         return sdfDate.format(now);
+    }
+
+    private static boolean apptMatch(final Appointment appointment, final User user) {
+        boolean match = false;
+        // Check by ID
+        for (Appointment.Form f : appointment.forms) {
+            for (Appointment.Value v : f.values) {
+                if (v.name.contains("RedID") && v.value != null && v.value.length() > 0) {
+                    int userID;
+                    try {
+                        userID = Integer.valueOf(v.value);
+                    } catch (NumberFormatException e) {
+                        Log.warn("Invalid RedID Format");
+                        continue;
+                    }
+                    if (userID == user.id) {
+                        Log.debug(String.format("Direct Match by ID found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
+                        match = true;
+                        break;
+                    }
+                }
+            }
+            if (match) break;
+        }
+
+        // Check by Name
+        if (!match && appointment.firstName.equals(user.firstName) &&
+                appointment.lastName.equals(user.lastName)) {
+            Log.debug(String.format("Direct Match by Name found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
+            match = true;
+        } else if (StringUtils.getLevenshteinDistance(appointment.firstName, user.firstName) <= FUZZY_THRESHOLD &&
+                StringUtils.getLevenshteinDistance(appointment.lastName, user.lastName) <= FUZZY_THRESHOLD) {
+            Log.debug(String.format("Fuzzy Match found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
+            match = true;
+        }
+
+        return match;
     }
 
     /**
@@ -64,13 +101,7 @@ public class Acutiy {
                 continue;
             }
 
-            if (appointment.firstName.equals(user.firstName) &&
-                    appointment.lastName.equals(user.lastName)) {
-                Log.debug(String.format("Direct Match found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
-                appointmentsForUser.add(appointment);
-            } else if (StringUtils.getLevenshteinDistance(appointment.firstName, user.firstName) <= FUZZY_THRESHOLD &&
-                    StringUtils.getLevenshteinDistance(appointment.lastName, user.lastName) <= FUZZY_THRESHOLD) {
-                Log.debug(String.format("Fuzzy Match found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
+            if (apptMatch(appointment, user)) {
                 appointmentsForUser.add(appointment);
             }
         }
@@ -219,7 +250,7 @@ public class Acutiy {
     /**
      * Make an HTTP Put request and return the Response form the Server.
      *
-     * @param uri {@link URI} URI used to make get Request.
+     * @param uri     {@link URI} URI used to make get Request.
      * @param payload {@link String} PUT Payload
      * @return {@link ClientResponse} Response from Server
      */
@@ -293,7 +324,7 @@ public class Acutiy {
      * Requires Admin Level User.
      *
      * @param requester {@link String} Requester's ID
-     * @param payload {@link String} JSON Array of AppointmentTypes
+     * @param payload   {@link String} JSON Array of AppointmentTypes
      * @return {@link Response} Completion Status or Error Message
      */
     @Path("appointmentMap")
@@ -330,10 +361,22 @@ public class Acutiy {
         public String date;
         public String time;
         public String notes;
+        public Form[] forms;
 
         @Override
         public String toString() {
             return String.format("%s at %s (ID: %d)", type, time, id);
+        }
+
+        class Form {
+            public Value[] values;
+        }
+
+        class Value {
+            public int id;
+            public int fieldID;
+            public String value;
+            public String name;
         }
     }
 
