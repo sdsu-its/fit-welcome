@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.3.1] - 2016-11-04 - _Pasco_
+### Fixed
+ - Issue [#33](https://bitbucket.org/sdsu-its/fit-welcome/issues/33/http-status-500) - Improved Logging for Errors in regard to the Database Connections.
+
 ## [2.3.0] - 2016-11-04 - _Rockcastle_
 ### Added
  - Added Vault Driver to manage sensitive keys, like passwords, database credentials, etc. With this, new Environment Variables are needed. For information on how to configure Vault and AppRoles, take a look at our Online Documentation: https://sdsu-its.gitbooks.io/vault/content/
