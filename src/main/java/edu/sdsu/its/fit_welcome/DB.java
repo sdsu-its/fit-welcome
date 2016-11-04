@@ -45,6 +45,8 @@ public class DB {
                         db_url,
                         db_user,
                         db_pass);
+            } else {
+                Log.warn("Not all DB Credentials retrieved from Vault");
             }
         } catch (Exception e) {
             Log.fatal("Problem Initializing DB Connection", e);
@@ -212,6 +214,7 @@ public class DB {
      */
     public static Staff getStaff(final int id) {
         Connection connection = getConnection();
+        assert connection != null;
         Statement statement = null;
         Staff staff = null;
 
