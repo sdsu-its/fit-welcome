@@ -36,9 +36,9 @@ public class DB {
         Connection conn = null;
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            final String db_url = Vault.getParam("fit_welcome", "db-url");
-            final String db_user = Vault.getParam("fit_welcome", "db-user");
-            final String db_pass = Vault.getParam("fit_welcome", "db-password");
+            final String db_url = Vault.getParam("db-url");
+            final String db_user = Vault.getParam("db-user");
+            final String db_pass = Vault.getParam("db-password");
 
             if (db_url != null && db_user != null && db_pass != null) {
                 conn = DriverManager.getConnection(
