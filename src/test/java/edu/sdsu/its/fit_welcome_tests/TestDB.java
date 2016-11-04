@@ -4,8 +4,8 @@ import edu.sdsu.its.fit_welcome.DB;
 import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
-import edu.sdsu.its.fit_welcome.Param;
 import edu.sdsu.its.fit_welcome.Quote;
+import edu.sdsu.its.fit_welcome.Vault;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -36,17 +36,17 @@ public class TestDB {
      */
     @Test
     public void checkParams() {
-        final String db_url = Param.getParam("db-url");
-        LOGGER.debug("KS.db-url = " + db_url);
+        final String db_url = Vault.getParam("db-url");
+        LOGGER.debug("Vault.db-url = " + db_url);
         assertTrue("URL is Empty", db_url != null && db_url.length() > 0);
         assertTrue("Invalid URL", db_url.startsWith("jdbc:mysql://"));
 
-        final String db_user = Param.getParam("db-user");
-        LOGGER.debug("KS.db-user = " + db_user);
+        final String db_user = Vault.getParam("db-user");
+        LOGGER.debug("Vault.db-user = " + db_user);
         assertTrue("Username is Empty", db_user != null && db_user.length() > 0);
 
-        final String db_password = Param.getParam("db-password");
-        LOGGER.debug("KS.db-password = " + db_password);
+        final String db_password = Vault.getParam("db-password");
+        LOGGER.debug("Vault.db-password = " + db_password);
         assertTrue("Password is Empty", db_password != null && db_password.length() > 0);
     }
 

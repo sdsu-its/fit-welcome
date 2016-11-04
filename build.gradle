@@ -26,7 +26,9 @@ dependencies {
     // Web Requests (Outbound)
     compile 'com.google.code.gson:gson:2.5'
     compile 'org.apache.httpcomponents:httpclient:4.4'
-    compile('com.sun.jersey:jersey-client:1.19') { exclude(module: 'jsr311-api') }
+
+    //Vault
+    compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
 
     compile 'org.apache.commons:commons-email:1.4'
     compile 'com.opencsv:opencsv:3.6'

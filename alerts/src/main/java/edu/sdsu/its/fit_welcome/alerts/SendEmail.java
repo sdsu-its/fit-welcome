@@ -60,12 +60,14 @@ public class SendEmail {
      * @return {@link SendEmail} Instance of SendEmail
      */
     public SendEmail emailNotification(final Staff staff) {
-        mEmail.setHostName(Param.getParam("fit_email", "host"));
-        mEmail.setSmtpPort(Integer.parseInt(Param.getParam("fit_email", "port")));
-        mEmail.setAuthenticator(new DefaultAuthenticator(Param.getParam("fit_email", "username"), Param.getParam("fit_email", "password")));
-        mEmail.setSSLOnConnect(Boolean.parseBoolean(Param.getParam("fit_email", "ssl")));
+        mEmail.setHostName(Vault.getParam("fit_email", "host"));
+        final String port = Vault.getParam("fit_email", "port");
+        assert port != null;
+        mEmail.setSmtpPort(Integer.parseInt(port));
+        mEmail.setAuthenticator(new DefaultAuthenticator(Vault.getParam("fit_email", "username"), Vault.getParam("fit_email", "password")));
+        mEmail.setSSLOnConnect(Boolean.parseBoolean(Vault.getParam("fit_email", "ssl")));
         try {
-            mEmail.setFrom(Param.getParam("fit_email", "from_email"), Param.getParam("fit_email", "from_name"));
+            mEmail.setFrom(Vault.getParam("fit_email", "from_email"), Vault.getParam("fit_email", "from_name"));
             mEmail.setSubject("[ITS FIT Center] Notice of Non-Clock Out");
             mEmail.setHtmlMsg(makeAlertMessage(staff.firstName));
 

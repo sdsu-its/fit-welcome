@@ -18,9 +18,6 @@ import java.util.List;
  */
 @SuppressWarnings({"SqlNoDataSourceInspection", "SqlResolve"})
 public class DB {
-    private static final String db_url = Param.getParam("fit_welcome", "db-url");
-    private static final String db_user = Param.getParam("fit_welcome", "db-user");
-    private static final String db_password = Param.getParam("fit_welcome", "db-password");
     private static final Logger Log = Logger.getLogger(DB.class);
 
     /**
@@ -33,8 +30,16 @@ public class DB {
         Connection conn = null;
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            conn = DriverManager.getConnection(db_url, db_user, db_password);
-        } catch (Exception e) {
+            final String db_url = Vault.getParam("fit_welcome", "db-url");
+            final String db_user = Vault.getParam("fit_welcome", "db-user");
+            final String db_pass = Vault.getParam("fit_welcome", "db-password");
+
+            if (db_url != null && db_user != null && db_pass != null) {
+                conn = DriverManager.getConnection(
+                        db_url,
+                        db_user,
+                        db_pass);
+            }        } catch (Exception e) {
             Log.fatal("Problem Initializing DB Connection", e);
             System.exit(69);
         }

@@ -84,13 +84,7 @@ function doLogin(login) {
             span.innerHTML = user.firstName;
         }
 
-        if (login.appointment != null) {
-            appointment = login.appointment;
-            document.getElementById("appointmentType").innerHTML = appointment.type;
-            document.getElementById("appointmentTime").innerHTML = appointment.time;
-
-            showPage("appointment")
-        } else if (login.isStaff) {
+        if (login.isStaff) {
             if (user.clockable) {
                 if (user.admin || user.admin == "true") {
                     document.getElementById("adminButton").style.display = "";
@@ -104,8 +98,13 @@ function doLogin(login) {
             } else {
                 showPage("index");
             }
-        }
-        else {
+        } else if (login.appointment != null) {
+            appointment = login.appointment;
+            document.getElementById("appointmentType").innerHTML = appointment.type;
+            document.getElementById("appointmentTime").innerHTML = appointment.time;
+
+            showPage("appointment")
+        } else {
             showPage("index");
         }
     }

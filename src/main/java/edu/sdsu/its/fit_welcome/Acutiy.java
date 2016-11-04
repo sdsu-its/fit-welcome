@@ -1,11 +1,9 @@
 package edu.sdsu.its.fit_welcome;
 
 import com.google.gson.Gson;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.commons.lang3.StringUtils;
@@ -33,8 +31,8 @@ import java.util.List;
  */
 @Path("acuity")
 public class Acutiy {
-    private static final String USERID = Param.getParam("Acuity", "User ID");
-    private static final String KEY = Param.getParam("Acuity", "API Key");
+    private static final String USERID = Vault.getParam("Acuity", "User ID");
+    private static final String KEY = Vault.getParam("Acuity", "API Key");
     private static final Logger Log = Logger.getLogger(Acutiy.class);
     private static final int FUZZY_THRESHOLD = 3;
 
@@ -92,7 +90,7 @@ public class Acutiy {
      */
     public static Appointment getAppt(final User user) {
         final Appointment[] appointments = getToday();
-        final List<Appointment> appointmentsForUser = new ArrayList<Appointment>();
+        final List<Appointment> appointmentsForUser = new ArrayList<>();
 
         for (Appointment appointment : appointments) {
             if (appointment.notes.toLowerCase().contains("Checked in".toLowerCase())) {
@@ -140,10 +138,10 @@ public class Acutiy {
                     .setPath(id.toString())
                     .build();
 
-            final ClientResponse response = get(uri);
+            final HttpResponse response = get(uri);
 
             final Gson gson = new Gson();
-            result = gson.fromJson(response.getEntity(String.class), Appointment.class);
+            result = gson.fromJson(response.getBody().toString(), Appointment.class);
         } catch (URISyntaxException e) {
             Log.error("Could not formulate URI to fetch Acuity Appointment", e);
         }
@@ -168,11 +166,11 @@ public class Acutiy {
                     .setParameter("canceled", "false")
                     .build();
 
-            final ClientResponse response = get(uri);
+            final HttpResponse response = get(uri);
             Log.debug(String.format("Get Request to Acuity for Today's Events returned (%s) - %s", response.getStatus(), response.toString()));
 
             final Gson gson = new Gson();
-            result = gson.fromJson(response.getEntity(String.class), Appointment[].class);
+            result = gson.fromJson(response.getBody().toString(), Appointment[].class);
 
 
         } catch (URISyntaxException e) {
@@ -207,8 +205,8 @@ public class Acutiy {
                     .build();
 
             final Gson gson = new Gson();
-            ClientResponse response = put(uri, gson.toJson(newAppointment));
-            result = gson.fromJson(response.getEntity(String.class), Appointment.class);
+            HttpResponse response = put(uri, gson.toJson(newAppointment));
+            result = gson.fromJson(response.getBody().toString(), Appointment.class);
 
         } catch (URISyntaxException e) {
             Log.error("Could not formulate Acuity Schedule Request", e);
@@ -222,24 +220,19 @@ public class Acutiy {
      * Make HTTP Get request and return the Response form the Server.
      *
      * @param uri {@link URI} URI used to make get Request.
-     * @return {@link ClientResponse} Response from get Request.
+     * @return {@link HttpResponse} Response from get Request.
      */
-    private static ClientResponse get(final URI uri) {
+    private static HttpResponse get(final URI uri) {
         Log.info("Making a get request to: " + uri.toString());
 
-        final Client client = Client.create();
-        client.addFilter(new HTTPBasicAuthFilter(USERID, KEY));
-        final WebResource webResource = client.resource(uri);
-
-        ClientResponse response;
+        HttpResponse response;
 
         try {
-            response = webResource.accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-            if (response.getStatus() != 200) {
-                Log.error("Error Connecting to Acuity - HTTP Error Code " + response.getStatus());
-                Log.info("Request returned - " + response.getEntity(String.class));
-            }
-        } catch (UniformInterfaceException e) {
+            response = Unirest
+                    .get(uri.toString())
+                    .basicAuth(USERID, KEY)
+                    .asJson();
+        } catch (UnirestException e) {
             response = null;
             Log.error("Error connecting to Acuity Server", e);
         }
@@ -252,23 +245,27 @@ public class Acutiy {
      *
      * @param uri     {@link URI} URI used to make get Request.
      * @param payload {@link String} PUT Payload
-     * @return {@link ClientResponse} Response from Server
+     * @return {@link HttpResponse} Response from Server
      */
-    private static ClientResponse put(final URI uri, final String payload) {
+    private static HttpResponse put(final URI uri, final String payload) {
         Log.info("Making put request to: " + uri.toString());
 
-        final Client client = Client.create();
-        client.addFilter(new HTTPBasicAuthFilter(USERID, KEY));
-        final WebResource webResource = client.resource(uri);
+        HttpResponse response;
 
-        ClientResponse response;
+        try {
+            response = Unirest
+                    .put(uri.toString())
+                    .basicAuth(USERID, KEY)
+                    .body(payload)
+                    .asJson();
+        } catch (UnirestException e) {
+            response = null;
+            Log.error("Error connecting to Acuity Server", e);
+        }
 
-        response = webResource.accept(MediaType.WILDCARD_TYPE).entity(payload).put(ClientResponse.class);
-
-        if (response.getStatus() != 200) {
+        if (response != null && response.getStatus() != 200) {
             Log.error("Error Connecting to Acuity - HTTP Error Code" + response.getStatus());
-            Log.info("Request Returned - " + response.getEntity(String.class));
-
+            Log.info("Request Returned - " + response.getBody().toString());
         }
 
         return response;
@@ -290,8 +287,8 @@ public class Acutiy {
                     .build();
 
             final Gson gson = new Gson();
-            ClientResponse response = get(uri);
-            result = gson.fromJson(response.getEntity(String.class), AppointmentType[].class);
+            HttpResponse response = get(uri);
+            result = gson.fromJson(response.getBody().toString(), AppointmentType[].class);
         } catch (URISyntaxException e) {
             Log.error("Could not formulate Acuity Schedule Request", e);
         }

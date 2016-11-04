@@ -1,7 +1,5 @@
 package edu.sdsu.its.fit_welcome;
 
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.EmailAttachment;
 import org.apache.commons.mail.EmailException;
@@ -21,12 +19,12 @@ import java.util.Scanner;
  */
 public class SendEmail {
     final HtmlEmail mEmail = new HtmlEmail();
-    private static final String emailHost = Param.getParam("fit_email", "host");
-    private static final String emailPort = Param.getParam("fit_email", "port");
-    private static final String emailUser = Param.getParam("fit_email", "username");
-    private static final String emailPass = Param.getParam("fit_email", "password");
-    private static final String emailFromAdd = Param.getParam("fit_email", "from_email");
-    private static final String emailFromName = Param.getParam("fit_email", "from_name");
+    private static final String emailHost = Vault.getParam("fit_email", "host");
+    private static final String emailPort = Vault.getParam("fit_email", "port");
+    private static final String emailUser = Vault.getParam("fit_email", "username");
+    private static final String emailPass = Vault.getParam("fit_email", "password");
+    private static final String emailFromAdd = Vault.getParam("fit_email", "from_email");
+    private static final String emailFromName = Vault.getParam("fit_email", "from_name");
 
     /**
      * Read file from Local File System
@@ -84,9 +82,10 @@ public class SendEmail {
         }
 
         mEmail.setHostName(emailHost);
+        assert emailPort != null;
         mEmail.setSmtpPort(Integer.parseInt(emailPort));
         mEmail.setAuthenticator(new DefaultAuthenticator(emailUser, emailPass));
-        mEmail.setSSLOnConnect(Boolean.parseBoolean(Param.getParam("fit_email", "ssl")));
+        mEmail.setSSLOnConnect(Boolean.parseBoolean(Vault.getParam("fit_email", "ssl")));
         try {
             mEmail.setFrom(emailFromAdd, emailFromName);
             mEmail.setSubject("[FIT WELCOME]  " + reportType);

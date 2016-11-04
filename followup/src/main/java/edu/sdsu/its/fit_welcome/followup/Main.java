@@ -35,7 +35,7 @@ public class Main {
             Duration sinceEmail = DB.lastEmailed(user.id);
             Log.info(String.format("It has been %s days since %s %s was last Emailed", sinceEmail.getStandardDays(), user.firstName, user.lastName));
 
-            final Duration maxEmailFreq = new Duration(Integer.parseInt(Param.getParam("fit_welcome", "followup_max")) * 86400000);  // 86400000 milliseconds in 1 day
+            final Duration maxEmailFreq = new Duration(Integer.parseInt(Vault.getParam("fit_welcome", "followup_max")) * 86400000);  // 86400000 milliseconds in 1 day
             return sinceEmail.isLongerThan(maxEmailFreq);
         } else {
             Log.info(String.format("%s %s has unsubscribed from all FIT Emails", user.firstName, user.lastName));
@@ -44,7 +44,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        final Event[] events = DB.exportEvents(Integer.parseInt(Param.getParam("fit_welcome", "followup_freshness")));
+        final Event[] events = DB.exportEvents(Integer.parseInt(Vault.getParam("fit_welcome", "followup_freshness")));
         for (Event e : events) {
             if (!emailsSent.contains(e.user.email)) {
                 if (canEmail(e.user)) {

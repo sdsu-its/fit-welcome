@@ -23,4 +23,8 @@ dependencies {
     compile 'mysql:mysql-connector-java:5.1.38'
     compile 'org.apache.httpcomponents:httpclient:4.4'
     compile 'org.apache.commons:commons-email:1.4'
+
+    //Vault
+    compile 'com.google.code.gson:gson:2.5'
+    compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
 }
