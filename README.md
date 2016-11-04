@@ -23,7 +23,7 @@ __FollowUp__ is an additional optional module that is run independently as a Jav
  - ___Full Param List is below!___
 
 
-FIT Welcome also uses [Key Server](https://github.com/sdsu-its/key-server) to access credentials for various tools and services (DataBase, APIs, Email, etc.)
+FIT Welcome also uses [Vault](https://vaultproject.io) to access credentials for various tools and services (DataBase, APIs, Email, etc.)
 
 
 ### DB Config
@@ -103,12 +103,12 @@ INSERT INTO staff VALUES (123456789, 'Test', 'Staff', 'staff@blackboard.sdsu.edu
 INSERT INTO staff VALUES (123123123, 'Test', 'Admin', 'admin@blackboard.sdsu.edu', 0, 1, 0);
 ```
 
-### KeyServer Setup
-You will need to create two applications in the key server, one that will have the information for your production system, the
-other with your testing configuration.
+### Vault Setup
+You will need to create two secrets in the vault, one that will have the information for your production system, the
+other with your testing configuration. Information on how to setup Vault and AppRoles can be found at: https://sdsu-its.gitbooks.io/vault/content/
 
 The name of the app that you want to use needs to be set as the `WELCOME_APP` environment variable.
-You will also need to set the `KSPATH` and `KSKEY` environment variables to their corresponding values.
+You will also need to set the `VAULT_ADDR`, `VAULT_ROLE` and `VAULT_SECRET` environment variables to their corresponding values.
 
 #### Production
 - `db-password` = Database Password
@@ -136,7 +136,7 @@ Create an additional application with the email credentials.
 - `from_email`
 - `from_name`
 
-#### Acuity (`Acuity`)
+#### Acuity (`acuity`)
 Finally, create a fourth application with the Acuity Scheduling configuration information.
 - `User ID`
 - `API Key`
