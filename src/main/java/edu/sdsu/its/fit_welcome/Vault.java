@@ -77,6 +77,7 @@ public class Vault {
             }
 
             token = response.getToken();
+            if (token == null) token = getToken();
         }
         return token;
     }
