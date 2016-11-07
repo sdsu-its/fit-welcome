@@ -68,15 +68,22 @@ public class Vault {
             }
 
             Response response = gson.fromJson(vaultResponse.getBody().toString(), Response.class);
-            LOGGER.info("Renewed Vault Token");
-            if (!token.equals(response.getToken())) {
-                LOGGER.info("Token has changed");
-                LOGGER.debug(String.format("New Token: %s", response.getToken()));
+            if (vaultResponse.getStatus() != 200) {
+                LOGGER.warn(String.format("Problem Renewing Token HTTP Status: %d", vaultResponse.getStatus()));
+                token = null;
             } else {
-                LOGGER.debug("Token was not changed during renew");
+
+                LOGGER.info("Renewed Vault Token");
+                if (!token.equals(response.getToken())) {
+                    LOGGER.info("Token has changed");
+                    LOGGER.debug(String.format("New Token: %s", response.getToken()));
+                } else {
+                    LOGGER.debug("Token was not changed during renew");
+                }
+
+                token = response.getToken();
             }
 
-            token = response.getToken();
             if (token == null) token = getToken();
         }
         return token;

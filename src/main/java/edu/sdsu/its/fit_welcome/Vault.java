@@ -12,7 +12,7 @@ import java.util.HashMap;
  * Manages Requests that go to the Vault, which stores all sensitive key data, like API Keys, Password, etc.
  * An AppRole ID and Secret ID are required for the connection to be established. All "Application Names" are expected
  * to be stored under the "secret" backend.
- *
+ * <p>
  * Uses "VAULT_ADDR", "VAULT_ROLE", "VAULT_SECRET", and "WELCOME_APP" environment variables to set the Vault Configuration.
  *
  * @author Tom Paulus
@@ -68,15 +68,22 @@ public class Vault {
             }
 
             Response response = gson.fromJson(vaultResponse.getBody().toString(), Response.class);
-            LOGGER.info("Renewed Vault Token");
-            if (!token.equals(response.getToken())) {
-                LOGGER.info("Token has changed");
-                LOGGER.debug(String.format("New Token: %s", response.getToken()));
+            if (vaultResponse.getStatus() != 200) {
+                LOGGER.warn(String.format("Problem Renewing Token HTTP Status: %d", vaultResponse.getStatus()));
+                token = null;
             } else {
-                LOGGER.debug("Token was not changed during renew");
+
+                LOGGER.info("Renewed Vault Token");
+                if (!token.equals(response.getToken())) {
+                    LOGGER.info("Token has changed");
+                    LOGGER.debug(String.format("New Token: %s", response.getToken()));
+                } else {
+                    LOGGER.debug("Token was not changed during renew");
+                }
+
+                token = response.getToken();
             }
 
-            token = response.getToken();
             if (token == null) token = getToken();
         }
         return token;
