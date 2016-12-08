@@ -36,6 +36,8 @@ public class Vault {
             HttpResponse vaultResponse;
 
             try {
+                LOGGER.debug("Requesting New Token via AppRole");
+
                 vaultResponse = Unirest
                         .post(VAULT_ADDR + "v1/auth/approle/login")
                         .body(gson.toJson(request))
@@ -56,8 +58,11 @@ public class Vault {
 
             token = response.getToken();
         } else {
-            HttpResponse vaultResponse = null;
+            HttpResponse vaultResponse;
             try {
+                LOGGER.debug("Reviewing Token via Renew Request to Vault");
+                LOGGER.debug(String.format("Current Token: %s", token));
+
                 vaultResponse = Unirest
                         .post(VAULT_ADDR + "v1/auth/token/renew-self")
                         .header("X-Vault-Token", token)
@@ -123,6 +128,7 @@ public class Vault {
         Gson gson = new Gson();
 
         try {
+            LOGGER.debug(String.format("Requesting Secret Node: \"%s\" Value: \"%s\" from Vault", applicationName, parameterName));
             vaultResponse = Unirest
                     .get(VAULT_ADDR + "v1/secret/" + applicationName.toLowerCase())
                     .header("X-Vault-Token", getToken())
