@@ -306,11 +306,12 @@ public class DB {
      *
      * @param id     {@link int} Users's ID
      * @param action {@link String} User's Goal
+     * @param locale {@link String} Originating Kiosk's Locale
      * @param params {@link String} Notes/Specifications for User's visit
      */
-    public static void logEvent(final String timestamp, final int id, final String action, String params) {
+    public static void logEvent(final String timestamp, final int id, final String action, final String locale, String params) {
         params = params != null ? params : ""; // Set Params to an empty string if it is null, which happens when no value is passed in from the API
-        final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, params) VALUE ('%s', %d, '%s', '%s')", timestamp, id, sanitize(action), sanitize(params));
+        final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, locale, params) VALUE ('%s', %d, '%s', '%s', '%s')", timestamp, id, sanitize(action), sanitize(locale), sanitize(params));
         executeStatement(sql);
     }
 
@@ -631,7 +632,12 @@ public class DB {
                 final User user = User.getUser(redID);
                 final Staff staff = user != null ? null : Staff.getStaff(redID);
 
-                events.add(new Event(resultSet.getInt("ID"), user != null ? user : staff, new DateTime(resultSet.getTimestamp("TIMESTAMP")), resultSet.getString("action"), resultSet.getString("params")));
+                events.add(new Event(resultSet.getInt("ID"),
+                        user != null ? user : staff,
+                        new DateTime(resultSet.getTimestamp("TIMESTAMP")),
+                        resultSet.getString("action"),
+                        resultSet.getString("locale"),
+                        resultSet.getString("params")));
             }
 
         } catch (SQLException e) {

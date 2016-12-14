@@ -43,6 +43,18 @@ document.onkeypress = function () {
     }
 };
 
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+
+    // ex: var foo = getParameterByName('foo');
+}
+
 function hideKeyboard() {
     document.activeElement.blur();
 }
@@ -238,7 +250,8 @@ function finish(goal, param) {
         json = '{' +
             '"owner": {"id": ' + altUser + '},' +
             '"timeString": "' + altTime + '",' +
-            '"type": "' + goal + '"';
+            '"type": "' + goal + '",' +
+            '"locale": "' + getLocale() + '"';
 
         if (param != null) {
             json += ',"params": "' + param + '"';
@@ -286,7 +299,8 @@ function finish(goal, param) {
 
         json = '{' +
             '"owner": {"id": ' + user.id + '},' +
-            '"type": "' + goal + '"';
+            '"type": "' + goal + '",' +
+            '"locale": "' + getLocale() + '"';
 
         if (param != null) {
             json += ',"params": "' + param + '"';

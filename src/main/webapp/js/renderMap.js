@@ -7,28 +7,64 @@
 const buttonTemplate = '<button class="panelButton" type="button" onclick="{{action}}">{{text}}</button>';
 var json;
 
+function getLocale() {
+    var locale = getParameterByName("locale");
+    if (!locale || locale.length < 1) {
+        locale = getCookie("locale");
+    }
+    return locale;
+}
+
 function getMapJSON() {
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
             json = JSON.parse(xmlHttp.responseText);
+            updateIndex(getLocale(), json);
             renderMap(json);
         }
     };
 
-    xmlHttp.open('GET', "sitemap.json");
+    xmlHttp.open('GET', "locales/" + getLocale() + "/sitemap.json");
     xmlHttp.send();
+}
+
+function getType(p) {
+    if (Array.isArray(p)) return 'array';
+    else if (typeof p == 'string') return 'string';
+    else if (p != null && typeof p == 'object') return 'object';
+    else return 'other';
 }
 
 function renderMap(json) {
     for (var pageName in json) {
-        if (!json.hasOwnProperty(pageName)) {
+        if (!json.hasOwnProperty(pageName) || getType(json[pageName]) == 'string') {
             //The current property is not a direct property of json
             continue;
         }
         makePage(pageName, json[pageName]);
     }
+}
+
+function updateIndex(locale, json) {
+    document.title = json.title;
+
+    var heads = document.getElementsByClassName("mainHead");
+    for (var h = 0; h < heads.length; h++) {
+        var head = heads[h];
+        head.innerHTML = json.mainHead;
+    }
+
+    var touchIconLink = document.createElement('link');
+    touchIconLink.type = 'image/x-icon';
+    touchIconLink.rel = 'apple-touch-icon';
+    touchIconLink.href = "locales/" + locale + "/apple-touch-icon.png";
+    document.getElementsByTagName('head')[0].appendChild(touchIconLink);
+
+    document.getElementById("logo").src = "locales/" + locale + "/logo.png";
+
+    setCookie("locale", locale);
 }
 
 function makePage(pageName, pageJSON) {

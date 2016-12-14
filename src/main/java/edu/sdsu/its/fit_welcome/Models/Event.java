@@ -18,6 +18,7 @@ public class Event {
     public DateTime time;
     public String timeString;
     public String type;
+    public String locale;
     public String params;
 
     public boolean notify;
@@ -28,11 +29,12 @@ public class Event {
         this.params = params;
     }
 
-    public Event(int id, User owner, DateTime time, String type, String params) {
+    public Event(int id, User owner, DateTime time, String type, String locale, String params) {
         this.id = id;
         this.owner = owner;
         this.time = time;
         this.type = type;
+        this.locale = locale;
         this.params = params;
     }
 
@@ -44,6 +46,6 @@ public class Event {
     }
 
     public void logEvent() {
-        DB.logEvent(timeString != null ? timeString : new Timestamp(new java.util.Date().getTime()).toString(), owner.id, type, params);
+        DB.logEvent(timeString != null ? timeString : new Timestamp(new java.util.Date().getTime()).toString(), owner.id, type, locale, params);
     }
 }
