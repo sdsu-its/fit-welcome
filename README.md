@@ -25,6 +25,10 @@ __FollowUp__ is an additional optional module that is run independently as a Jav
 
 FIT Welcome also uses [Vault](https://vaultproject.io) to access credentials for various tools and services (DataBase, APIs, Email, etc.)
 
+### Locales
+Locales allow for different kiosks to show different options based on the URL parameter, `locale`. The default local can be set by modifying `renderMap.js` in `webapps/js`, and changing the `defaultLocale` constant at the top of the file. The default is set to FIT by default.
+
+The locales folder in `webapps` houses all of the sitemaps, as well as assets for every locale. The name of the folder is the name of the locale that will be used by the Web Interface. Each folder should contain `apple-touch-icon.png`, `logo.png`, and `sitemap.json`.
 
 ### DB Config
 To setup the various tables that FIT Welcome uses, run the code below in the Database that will be used with FIT Welcome.
