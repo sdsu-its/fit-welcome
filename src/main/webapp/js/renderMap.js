@@ -7,10 +7,17 @@
 const buttonTemplate = '<button class="panelButton" type="button" onclick="{{action}}">{{text}}</button>';
 var json;
 
+const defaultLocale = "FIT";
+
 function getLocale() {
     var locale = getParameterByName("locale");
     if (!locale || locale.length < 1) {
         locale = getCookie("locale");
+        if (!locale || locale.length < 1) {
+            console.warn("Using the Default Locale - Consider setting via \"?locale=\"");
+            console.log("Default Locale: " + defaultLocale);
+            locale = defaultLocale;
+        }
     }
     return locale;
 }
