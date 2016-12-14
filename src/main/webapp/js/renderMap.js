@@ -70,6 +70,8 @@ function updateIndex(locale, json) {
     document.getElementsByTagName('head')[0].appendChild(touchIconLink);
 
     document.getElementById("logo").src = "locales/" + locale + "/logo.png";
+    document.getElementsByTagName("body")[0].style.display = ""; // Show the Body when Updates are Complete
+
 
     setCookie("locale", locale);
 }
