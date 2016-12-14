@@ -1,4 +1,6 @@
 {
+  "title": "FIT Welcome",
+  "mainHead": "Welcome to the FIT Center!",
   "index": {
     "pageHead": "Welcome <span class='firstName'>Jane</span>!",
     "pageSubHead": "What do you hope to accomplish today?",
