@@ -162,7 +162,7 @@ public class TestDB {
     @Test
     public void events() throws InterruptedException {
         LOGGER.info("Creating new Event");
-        DB.logEvent(new Timestamp(new java.util.Date().getTime()).toString(), TEST_USER_ID, "Test Action", "Params");
+        DB.logEvent(new Timestamp(new java.util.Date().getTime()).toString(), TEST_USER_ID, "Test Action", "UT","Params");
 
         TimeUnit.SECONDS.sleep(1);
 
