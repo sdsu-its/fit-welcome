@@ -386,18 +386,18 @@ function getQuote() {
 }
 
 function setQuote(author, text) {
-    if (getCookie("quoteAuthor") == "" || getCookie("quoteText") == "") {
+    if (Cookies.get("quoteAuthor") == "" || Cookies.get("quoteText") == "") {
         if (author == null || text == null) {
             getQuote();
         }
         else {
-            setCookie("quoteAuthor", author, getMidnight());
-            setCookie("quoteText", text, getMidnight());
+            Cookies.set("quoteAuthor", author, { expires: 1 });
+            Cookies.set("quoteText", text, { expires: 1 });
         }
     }
 
-    if (author == null) author = getCookie("quoteAuthor");
-    if (text == null) text = getCookie("quoteText");
+    if (author == null) author = Cookies.get("quoteAuthor");
+    if (text == null) text = Cookies.get("quoteText");
 
     document.getElementById("quoteAuthor").innerHTML = author;
     document.getElementById("quoteText").innerHTML = text;
