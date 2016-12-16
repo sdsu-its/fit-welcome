@@ -457,12 +457,27 @@ public class DB {
      * @param fileName {@link String} File Name for the Report. Do NOT include .csv
      * @return {@link File} File object for the Report CSV
      */
-    public static File exportEvents(final String start, final String end, final String fileName) {
+    public static File exportEvents(final String start, final String end, final List<String> locales, final String fileName) {
+        String localesList = "";
+
+        if (locales == null) {
+            localesList = "TRUE";
+        } else if (locales.size() > 1) {
+            for (String locale : locales) {
+                localesList += String.format("locale ='%s' OR ", locale);
+            }
+            localesList = localesList.substring(0, localesList.length() - 4);
+        } else {
+            localesList = "locale = '" + locales.get(0) + "'";
+        }
+
+
         final String sql = "SELECT *\n" +
                 "FROM events\n" +
                 "WHERE\n" +
                 "  TIMESTAMP BETWEEN STR_TO_DATE('" + start + "', '%Y-%m-%d') AND\n" +
                 "  DATE_ADD(STR_TO_DATE('" + end + "', '%Y-%m-%d'), INTERVAL 1 DAY)\n" +
+                "  AND (" + localesList + ")\n" +
                 "ORDER BY TIMESTAMP ASC;";
 
         try {
@@ -705,5 +720,39 @@ public class DB {
                 "  event_text   = VALUES(event_text),\n" +
                 "  event_params = VALUES(event_params);";
         executeStatement(sql);
+    }
+
+    /**
+     * Get a list of all Logged Locales. An event must have been loged for the locale to be included in the listing.
+     *
+     * @return {@link List} List of Locales
+     */
+    public static List getLocales() {
+        final String sql = "SELECT DISTINCT locale FROM events;";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+
+        ArrayList<String> result = new ArrayList<>();
+
+        try {
+            statement = connection.createStatement();
+            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) result.add(resultSet.getString(1));
+        } catch (SQLException e) {
+            Log.error("Problem retrieving Locales from DB", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return result;
     }
 }

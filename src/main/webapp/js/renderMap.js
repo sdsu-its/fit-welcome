@@ -80,7 +80,7 @@ function makePage(pageName, pageJSON) {
     var tbl = document.createElement('table');
     tbl.style.display = 'none';
     tbl.id = pageName;
-    tbl.className = "panel";
+    tbl.className = "view";
 
     if (pageJSON.pageHead != null) {
         var headTR = tbl.insertRow();

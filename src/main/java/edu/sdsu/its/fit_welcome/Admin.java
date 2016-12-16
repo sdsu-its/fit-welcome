@@ -13,6 +13,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,18 +153,22 @@ public class Admin {
      * @return {@link Response} Status Message
      */
     @Path("usageReport")
-    @GET
+    @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response usageReport(@HeaderParam("REQUESTER") final String requester, @QueryParam("startDate") final String startDate, @QueryParam("endDate") final String endDate) {
-        Log.info(String.format("Recieved Request: [GET] USAGEREPORT - Header:Requester - %s & startDate - %s & endDat - %s", requester, startDate, endDate));
+    public Response usageReport(@HeaderParam("REQUESTER") final String requester,
+                                @QueryParam("startDate") final String startDate,
+                                @QueryParam("endDate") final String endDate,
+                                final String payload) {
+        Log.info(String.format("Recieved Request: [POST] USAGEREPORT - Header:Requester - %s & startDate - %s & endDat - %s - %s",
+                requester, startDate, endDate, payload));
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to USAGEREPORT - ID: " + requester);
             return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
-        Report.UsageReport usageReport = new Report.UsageReport(Staff.getStaff(requester), startDate, endDate);
+        Report.UsageReport usageReport = new Report.UsageReport(Staff.getStaff(requester), startDate, endDate, GSON.fromJson(payload, ArrayList.class));
         new Thread(usageReport).start();
 
         return Response.status(Response.Status.OK).entity(GSON.toJson(new Web.SimpleMessage("Usage Report Generated - Will be Emailed"))).build();

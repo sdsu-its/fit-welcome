@@ -6,15 +6,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="white">
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="style.css">
-
-    <script src="js/renderMap.js" type="application/javascript"></script>
-    <script src="js/cookies.js" type="application/javascript"></script>
-    <script src="js/index.js" type="application/javascript"></script>
-    <script src="js/admin.js" type="application/javascript"></script>
-    <!--Acuity Scheduler iFrame Script-->
-    <script src="https://d3gxy7nm8y4yjr.cloudfront.net/js/embed.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/tt.css">
 </head>
 <body style="display: none">
 <table class="login" id="login">
@@ -347,6 +344,14 @@
                             <input class="inputBox" title="End Date" type="date" id="ur-end" required>
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            Locales:
+                        </td>
+                        <td>
+                            <input class="form-control inputBox" type="text" title="Locales" multiple data-role="tagsinput" id="locales-select">
+                        </td>
+                    </tr>
                 </table>
                 <button class="submitButton" type="submit" title="Submit">Run Report</button>
             </form>
@@ -386,5 +391,22 @@
         </button>
     </div>
 </footer>
+
+<script src="https://d3gxy7nm8y4yjr.cloudfront.net/js/embed.js" type="text/javascript"></script>
+<!--Acuity Scheduler iFrame Script-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" type="text/javascript"></script>
+<script src="js/bootstrap-tagsinput.min.js" type="text/javascript"></script>
+<script src="js/typeahead.js" type="text/javascript"></script>
+<script src="js/js.cookie.js" type="text/javascript"></script>
+
+<script src="js/renderMap.js" type="application/javascript"></script>
+<script src="js/cookies.js" type="application/javascript"></script>
+<script src="js/index.js" type="application/javascript"></script>
+<script src="js/admin.js" type="application/javascript"></script>
+
+<script>
+    usageReport();
+</script>
+
 </body>
 </html>

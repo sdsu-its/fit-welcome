@@ -4,6 +4,7 @@ import edu.sdsu.its.fit_welcome.Models.Staff;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Runs Various Reports based on Staff and Visitor activity.
@@ -76,16 +77,19 @@ public class Report {
         public final String startDate;
         public final String endDate;
 
-        public UsageReport(Staff requester, String startDate, String endDate) {
+        public List locales;
+
+        public UsageReport(Staff requester, String startDate, String endDate, List locales) {
             this.requester = requester;
             this.startDate = startDate;
             this.endDate = endDate;
+            this.locales = locales;
         }
 
         @Override
         public void run() {
             LOGGER.info("Starting Usage Report Thread");
-            final File[] eventsCSV = {DB.exportEvents(startDate, endDate, "events")};
+            final File[] eventsCSV = {DB.exportEvents(startDate, endDate, locales, "events")};
             new SendEmail().emailFile("Events Report", requester.firstName, eventsCSV).send(requester.email);
         }
     }

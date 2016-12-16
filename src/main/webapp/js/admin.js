@@ -144,6 +144,7 @@ function runTimesheetReport() {
 function runUsageReport() {
     var startDate = document.getElementById("ur-start").value;
     var endDate = document.getElementById("ur-end").value;
+    var locales = $("#locales-select").tagsinput('items');
 
     var xmlHttp = new XMLHttpRequest();
 
@@ -153,6 +154,7 @@ function runUsageReport() {
             console.log(response.status);
             if (response.status == 200) {
                 doFinish("Your report is being run and will be emailed when complete", "");
+                $("#locales-select").tagsinput('removeAll'); // Clear the Locale Selector
             }
             else {
                 doFinish("An Error Occurred processing your request.", "");
@@ -161,9 +163,9 @@ function runUsageReport() {
         }
     };
 
-    xmlHttp.open('GET', "api/admin/usageReport?startDate=" + startDate + "&endDate=" + endDate);
+    xmlHttp.open('POST', "api/admin/usageReport?startDate=" + startDate + "&endDate=" + endDate);
     xmlHttp.setRequestHeader("REQUESTER", user.id);
-    xmlHttp.send();
+    xmlHttp.send(JSON.stringify(locales));
 }
 
 function manualVisit() {
@@ -232,6 +234,14 @@ function showAppointmentMap() {
 
 function doShowAppointmentMap(json) {
     var table = document.getElementById("appointmentTypeMap");
+
+    var tableHeaderRowCount = 1;
+    var rowCount = table.rows.length;
+    for (var i = tableHeaderRowCount; i < rowCount; i++) {
+        // Delete Rows in Table, Less Header
+        table.deleteRow(tableHeaderRowCount);
+    }
+
     for (var at = 0; at < json.length; at++) {
         var type = json[at];
         var row = table.insertRow();
@@ -292,4 +302,29 @@ function clearAppointmentMap() {
     while (--i) {
         table.deleteRow(i);
     }
+}
+
+function usageReport() {
+    var locales = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        prefetch: {
+            url: 'api/locales',
+            filter: function (list) {
+                return $.map(list, function (locale) {
+                    return {name: locale};
+                });
+            }
+        }
+    });
+    locales.initialize();
+
+    $('#locales-select').tagsinput({
+        typeaheadjs: {
+            name: 'locales',
+            displayKey: 'name',
+            valueKey: 'name',
+            source: locales.ttAdapter()
+        }
+    });
 }
