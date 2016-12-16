@@ -12,7 +12,7 @@ const defaultLocale = "FIT";
 function getLocale() {
     var locale = getParameterByName("locale");
     if (!locale || locale.length < 1) {
-        locale = getCookie("locale");
+        locale = Cookies.get("locale");
         if (!locale || locale.length < 1) {
             console.warn("Using the Default Locale - Consider setting via \"?locale=\"");
             console.log("Default Locale: " + defaultLocale);
@@ -72,8 +72,8 @@ function updateIndex(locale, json) {
     document.getElementById("logo").src = "locales/" + locale + "/logo.png";
     document.getElementsByTagName("body")[0].style.display = ""; // Show the Body when Updates are Complete
 
-
-    setCookie("locale", locale);
+    Cookies.remove("locale");
+    Cookies.set("locale", locale);
 }
 
 function makePage(pageName, pageJSON) {
