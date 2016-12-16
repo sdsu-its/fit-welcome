@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
  - Different Kiosks can different displays via Locales. The locale is set via a URL param of the format `?locale=LOCALE`, and is
  saved in a cookie to ensure consistency after refreshes. Different App Logos, Titles, and Sitemaps can be defined for each locale.
+ - Added option to filter locales when exporting events.
 
 ### Changed
+ - Migrated JS Cookies Lib from a homeb built version, to [js.cookie](https://github.com/js-cookie/js-cookie).
  - The DB schema for the events table has been changed to accommodate for Kiosk's Locale. Run the following SQL command in your DB to add the table, and set the locale for past events.
  ```
  ALTER TABLE events ADD COLUMN (locale TEXT);
