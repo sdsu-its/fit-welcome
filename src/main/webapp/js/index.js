@@ -112,8 +112,8 @@ function doLogin(login) {
             }
         } else if (login.appointment != null) {
             appointment = login.appointment;
-            document.getElementById("appointmentType").innerHTML = appointment.type;
-            document.getElementById("appointmentTime").innerHTML = appointment.time;
+            $('#appointmentType').text(appointment.type);
+            $('#appointmentTime').text(appointment.time);
 
             showPage("appointment")
         } else {

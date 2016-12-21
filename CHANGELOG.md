@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  ALTER TABLE events ADD COLUMN (locale TEXT);
  UPDATE events SET locale = '<LOCALE>';
  ```
+### Fixed
+ - Issue [FW-5](http://morden.sdsu.edu:9000/issue/FW-5) - Escaped Appointment Name in Appointment Found View.
 
 ## [2.3.1] - 2016-11-04 - _Pasco_
 ### Fixed
