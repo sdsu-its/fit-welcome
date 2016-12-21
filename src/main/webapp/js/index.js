@@ -386,7 +386,7 @@ function getQuote() {
 }
 
 function setQuote(author, text) {
-    if (Cookies.get("quoteAuthor") == "" || Cookies.get("quoteText") == "") {
+    if (Cookies.get("quoteAuthor") == null || Cookies.get("quoteText") == null) {
         if (author == null || text == null) {
             getQuote();
         }
