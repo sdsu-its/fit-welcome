@@ -19,6 +19,7 @@
         </init-param>
 
         <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
     </servlet>
     <listener>
         <listener-class>edu.sdsu.its.fit_welcome.Init</listener-class>

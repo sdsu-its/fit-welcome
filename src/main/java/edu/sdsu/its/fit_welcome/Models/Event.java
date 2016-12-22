@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 /**
  * Models a FIT Center Event (When someone comes in to do something)
- *  - Intentionally Vague
+ * - Intentionally Vague
  *
  * @author Tom Paulus
  *         Created on 12/20/15.
@@ -45,7 +45,21 @@ public class Event {
         this.params = params;
     }
 
-    public void logEvent() {
-        DB.logEvent(timeString != null ? timeString : new Timestamp(new java.util.Date().getTime()).toString(), owner.id, type, locale, params);
+    public Event logEvent() {
+        timeString = timeString != null ? timeString : new Timestamp(new java.util.Date().getTime()).toString();
+        time = DateTime.now();
+        id = DB.logEvent(timeString, owner.id, type, locale, params);
+        return this;
+    }
+
+    public void completeOwner() {
+        if (owner.firstName == null ||
+                owner.firstName.isEmpty() ||
+                owner.lastName == null ||
+                owner.lastName.isEmpty()) {
+            // Complete the owner only if necessary
+            this.owner = DB.getUser(owner.id);
+        }
+
     }
 }
