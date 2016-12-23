@@ -21,13 +21,7 @@ public class Event {
     public String locale;
     public String params;
 
-    public boolean notify;
-
-    public Event(User owner, String type, String params) {
-        this.owner = owner;
-        this.type = type;
-        this.params = params;
-    }
+    public boolean notify = false;
 
     public Event(int id, User owner, DateTime time, String type, String locale, String params) {
         this.id = id;
@@ -35,13 +29,6 @@ public class Event {
         this.time = time;
         this.type = type;
         this.locale = locale;
-        this.params = params;
-    }
-
-    public Event(User owner, String timeString, String type, String params) {
-        this.owner = owner;
-        this.timeString = timeString;
-        this.type = type;
         this.params = params;
     }
 

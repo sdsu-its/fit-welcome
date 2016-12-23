@@ -5,7 +5,7 @@
  */
 
 const refreshRate = 2500; // Refresh event list every X milliseconds
-const flashDuration = 4000; // How long a notified row should flash
+const flashDuration = 5000; // How long a notified row should flash
 var notifyChime = new Audio("Alert.mp3");
 
 var latestEvent = 0;
@@ -33,6 +33,10 @@ window.onload = function () {
  * @returns {boolean} Always false to prevent refresh
  */
 function login() {
+    var submitButton = document.getElementsByClassName("submitButton")[0];
+    submitButton.innerHTML = '<i class="fa fa-spinner fa-pulse"></i> Loading...';
+    submitButton.disabled = true;
+
     userID = document.getElementById("userID").value;
     getPastEvents(userID);
     return false; // Used to not change page
@@ -54,6 +58,10 @@ function setLogIn() {
  * Update document to display non-successful login
  */
 function setBadCred() {
+    var submitButton = document.getElementsByClassName("submitButton")[0];
+    submitButton.innerHTML = 'Continue';
+    submitButton.disabled = false;
+
     document.getElementById("badCred").style.display = "";
     document.getElementById("userID").value = "";
 }
@@ -75,7 +83,6 @@ function setReady() {
 function loadEvents() {
     SSEsource = new EventSource("../api/live/stream");
     SSEsource.onmessage = function (event) {
-        console.log(event);
         var obj = JSON.parse(event.data);
 
         insert(obj.id, obj.owner.firstName + ' ' + obj.owner.lastName, obj.timeString, obj.type, obj.params);
@@ -129,38 +136,26 @@ function getPastEvents(userID) {
 
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
-            if (xmlHttp.readyState == 4) {
-                var response = xmlHttp;
-                console.log(response.status);
-                if (response.status != 403) {
-                    setLogIn();
+            if (xmlHttp.status != 403) {
+                setLogIn();
+                var responseJSON = JSON.parse(xmlHttp.responseText);
+                console.info("Server returned " + responseJSON.length + " events");
+                for (var i = 0; i < responseJSON.length; i++) {
+                    var obj = responseJSON[i];
 
-                    var responseJSON = JSON.parse(xmlHttp.responseText);
-                    console.info("Server returned " + response.length + " events");
-                    for (var i = 0; i < responseJSON.length; i++) {
-                        var obj = responseJSON[i];
-                        console.log(obj);
-
-                        if (latestEvent < obj.id) {
-                            latestEvent = obj.id;
-                        }
-
-                        insert(obj.id, obj.owner.firstName + ' ' + obj.owner.lastName, obj.timeString, obj.type, obj.params);
-
-                        if (obj.notify && ready) {
-                            notify(obj.id);
-                        }
+                    if (latestEvent < obj.id) {
+                        latestEvent = obj.id;
                     }
 
-
-                    loadEvents();
-                    window.setInterval(checkStream, refreshRate);
-                    setReady();
-
+                    insert(obj.id, obj.owner.firstName + ' ' + obj.owner.lastName, obj.timeString, obj.type, obj.params);
                 }
-                else {
-                    setBadCred();
-                }
+                setReady();
+
+                loadEvents();
+                window.setInterval(checkStream, refreshRate);
+            }
+            else {
+                setBadCred();
             }
         }
     };
