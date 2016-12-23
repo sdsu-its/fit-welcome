@@ -23,7 +23,7 @@ window.onload = function () {
     if (ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
         entryMethod.innerHTML = "Please Type in your REDID<br>" +
             "to get started, then press go.";
-        
+
     } else {
         idBox.focus();
         idBox.select();
@@ -150,6 +150,8 @@ function showPage(pageName) {
     } else {
         hideFooter();
     }
+
+    setQuote(); // Update the Quote, so that if the finish page is shown, it is updated.
 }
 
 function showFooter(showBack, showExit) {
@@ -372,10 +374,9 @@ function getQuote() {
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
             var response = xmlHttp;
-            console.log(response.status);
+            console.log("Updating Quote!");
             if (response.status == 200) {
                 var quoteJSON = JSON.parse(response.responseText);
-                console.log(quoteJSON);
                 setQuote(quoteJSON.author, quoteJSON.text);
             }
         }
@@ -386,18 +387,20 @@ function getQuote() {
 }
 
 function setQuote(author, text) {
-    if (Cookies.get("quoteAuthor") == null || Cookies.get("quoteText") == null) {
+    var now = new Date().getTime();
+    if (sessionStorage.quoteAuthor == null || sessionStorage.quoteText == null || sessionStorage.holdQuotesTill < now) {
         if (author == null || text == null) {
             getQuote();
         }
         else {
-            Cookies.set("quoteAuthor", author, { expires: 1 });
-            Cookies.set("quoteText", text, { expires: 1 });
+            sessionStorage.quoteAuthor = author;
+            sessionStorage.quoteText = text;
+            sessionStorage.holdQuotesTill = now + 6 * 60 * 60 * 1000;
         }
     }
 
-    if (author == null) author = Cookies.get("quoteAuthor");
-    if (text == null) text = Cookies.get("quoteText");
+    if (author == null) author = sessionStorage.quoteAuthor;
+    if (text == null) text = sessionStorage.quoteText;
 
     document.getElementById("quoteAuthor").innerHTML = author;
     document.getElementById("quoteText").innerHTML = text;
