@@ -27,11 +27,17 @@ public class Vault {
     final private static Logger LOGGER = Logger.getLogger(Vault.class);
 
     private static String token = null;
+    private static Long tokenExpires = null;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private static Integer renewalEpsilon = 120; // Number of Seconds before the token expires, before we renew it
+
 
     private static String getToken() {
         Gson gson = new Gson();
 
-        if (token == null) {
+        if (token == null || (tokenExpires != null && tokenExpires < System.currentTimeMillis() / 1000)) {
+            // We don't have a token, or it has expired
             AppRoleTokenRequest request = new AppRoleTokenRequest(ROLE_ID, SECRET_ID);
             HttpResponse vaultResponse;
 
@@ -57,7 +63,14 @@ public class Vault {
             LOGGER.debug(String.format("Token: %s", response.getToken()));
 
             token = response.getToken();
+            if (response.auth.renewable)
+                tokenExpires = response.auth.lease_duration + System.currentTimeMillis() / 1000;
+            else tokenExpires = null;
+        } else if (tokenExpires != null && tokenExpires - renewalEpsilon > System.currentTimeMillis() / 1000) {
+            // Token is Valid, and will not expire soon
+            return token;
         } else {
+            // Renew the Token
             HttpResponse vaultResponse;
             try {
                 LOGGER.debug("Reviewing Token via Renew Request to Vault");
@@ -87,10 +100,13 @@ public class Vault {
                 }
 
                 token = response.getToken();
+                if (response.auth.renewable)
+                    tokenExpires = response.auth.lease_duration + System.currentTimeMillis() / 1000;
+                else tokenExpires = null;
             }
-
-            if (token == null) token = getToken();
+            if (token == null) token = getToken(); // We failed to renew the token, let's get a new one.
         }
+
         return token;
     }
 
@@ -162,6 +178,8 @@ public class Vault {
 
         private static class Auth {
             String client_token;
+            Integer lease_duration;
+            Boolean renewable;
         }
     }
 

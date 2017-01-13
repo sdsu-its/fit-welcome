@@ -6,6 +6,7 @@ import edu.sdsu.its.fit_welcome.Models.Login;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -100,7 +101,7 @@ public class Web {
     public Response addEvent(final String payload) {
         LOGGER.info("Recieved Request: [POST] EVENT - " + payload);
 
-        Event event = GSON.fromJson(payload, Event.class);
+        final Event event = GSON.fromJson(payload, Event.class);
 
         if (event.params != null && event.params.contains("Appointment ID:")) {
             String appointmentID = event.params.replace("Appointment ID:", "").replaceAll(" ", "");
@@ -113,7 +114,14 @@ public class Web {
                 event.params = appointmentType.eventParams + ", " + event.params;
         }
 
-        event.logEvent();
+
+        Thread thread = new Thread() {
+            public void run() {
+                LOGGER.debug("Broadcasting new event");
+                Live.broadcastEvent(event.logEvent());
+            }
+        };
+        thread.start();
 
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }

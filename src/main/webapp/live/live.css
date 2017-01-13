@@ -126,3 +126,7 @@ table.editButtons button {
 tr.header > td, th {
     text-align: left;
 }
+
+#events {
+    text-align: left;
+}

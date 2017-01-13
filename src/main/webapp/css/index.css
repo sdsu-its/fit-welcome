@@ -22,29 +22,6 @@ footer {
     padding-bottom: 3em;
 }
 
-table {
-    align-items: center;
-    margin: 0 auto;
-
-    font-size: 1em;
-    text-align: center;
-}
-
-button {
-    align-items: center;
-
-    margin: .75em;
-    padding: .25em;
-
-    text-align: center;
-
-    background: lightgray;
-    border: 1px solid black;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-}
-
 footer button {
     padding: .5em;
     margin-right: 1em;
@@ -91,10 +68,6 @@ button.full {
 .fa-spinner {
     font-size: 5em;
     color: #333333;
-}
-
-#events {
-    text-align: left;
 }
 
 .header {
