@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 
 /**
  * Primary Web Interactions
@@ -117,8 +118,12 @@ public class Web {
 
         Thread thread = new Thread() {
             public void run() {
-                LOGGER.debug("Broadcasting new event");
-                Live.broadcastEvent(event.logEvent());
+                try {
+                    LOGGER.debug("Broadcasting new event");
+                    Live.broadcastEvent(event.logEvent());
+                } catch (Exception e) {
+                    LOGGER.warn("Problem Broadcasting Event", e);
+                }
             }
         };
         thread.start();
