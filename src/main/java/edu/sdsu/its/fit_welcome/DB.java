@@ -308,11 +308,42 @@ public class DB {
      * @param action {@link String} User's Goal
      * @param locale {@link String} Originating Kiosk's Locale
      * @param params {@link String} Notes/Specifications for User's visit
+     * @return {link int} Created Event ID
      */
-    public static void logEvent(final String timestamp, final int id, final String action, final String locale, String params) {
+    public static int logEvent(final String timestamp, final int id, final String action, final String locale, String params) {
         params = params != null ? params : ""; // Set Params to an empty string if it is null, which happens when no value is passed in from the API
         final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, locale, params) VALUE ('%s', %d, '%s', '%s', '%s')", timestamp, id, sanitize(action), sanitize(locale), sanitize(params));
-        executeStatement(sql);
+
+        Statement statement = null;
+        Connection connection = getConnection();
+        int eventID = 0;
+
+        try {
+            statement = connection.createStatement();
+            Log.info(String.format("Executing SQL Statement - \"%s\"", sql));
+            statement.execute(sql);
+            ResultSet resultSet = statement.executeQuery("SELECT `AUTO_INCREMENT`\n" +
+                    "FROM INFORMATION_SCHEMA.TABLES\n" +
+                    "WHERE TABLE_SCHEMA = DATABASE()\n" +
+                    "AND TABLE_NAME = 'events';");
+            if (resultSet.next()) {
+                eventID = resultSet.getInt(1);
+            }
+            resultSet.close();
+        } catch (SQLException e) {
+            Log.error("Problem Creating New Event \"" + sql + "\"", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    Log.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return eventID;
     }
 
     /**

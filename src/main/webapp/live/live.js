@@ -5,7 +5,7 @@
  */
 
 const refreshRate = 2500; // Refresh event list every X milliseconds
-const flashDuration = 4000; // How long a notified row should flash
+const flashDuration = 5000; // How long a notified row should flash
 var notifyChime = new Audio("Alert.mp3");
 
 var latestEvent = 0;
@@ -15,6 +15,7 @@ var userID = 0;
 var ready = false;
 
 var events = [];
+var SSEsource = null;
 
 window.onload = function () {
     // Select the ID Input Area automatically on NON-iPads
@@ -32,36 +33,13 @@ window.onload = function () {
  * @returns {boolean} Always false to prevent refresh
  */
 function login() {
+    var submitButton = document.getElementsByClassName("submitButton")[0];
+    submitButton.innerHTML = '<i class="fa fa-spinner fa-pulse"></i> Loading...';
+    submitButton.disabled = true;
+
     userID = document.getElementById("userID").value;
-    checkLogin(userID);
-
+    getPastEvents(userID);
     return false; // Used to not change page
-}
-
-/**
- * Check the user's ID
- *
- * @param userID {int} User's Supplied ID
- */
-function checkLogin(userID) {
-    var xmlHttp = new XMLHttpRequest();
-
-    xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4) {
-            var response = xmlHttp;
-            console.log(response.status);
-            if (response.status != 403) {
-                setLogIn();
-                loadEvents();
-            }
-            else {
-                setBadCred();
-            }
-        }
-    };
-
-    xmlHttp.open('GET', "../api/live/getEvents?id=" + userID);
-    xmlHttp.send();
 }
 
 /**
@@ -80,6 +58,10 @@ function setLogIn() {
  * Update document to display non-successful login
  */
 function setBadCred() {
+    var submitButton = document.getElementsByClassName("submitButton")[0];
+    submitButton.innerHTML = 'Continue';
+    submitButton.disabled = false;
+
     document.getElementById("badCred").style.display = "";
     document.getElementById("userID").value = "";
 }
@@ -96,15 +78,28 @@ function setReady() {
 }
 
 /**
- * Load Recent Events
+ * Load Events via Server Sent Events
  */
 function loadEvents() {
-    get("../api/live/getEvents");
-    window.setInterval(function () {
-        if (ready) {
-            get("../api/live/getEvents");
+    SSEsource = new EventSource("../api/live/stream");
+    SSEsource.onmessage = function (event) {
+        var obj = JSON.parse(event.data);
+
+        insert(obj.id, obj.owner.firstName + ' ' + obj.owner.lastName, obj.timeString, obj.type, obj.params);
+
+        if (obj.notify && ready) {
+            notify(obj.id);
         }
-    }, refreshRate);
+    };
+}
+
+/**
+ * Check if the Stream is closed, and if so, recreate and open it.
+ */
+function checkStream() {
+    if (SSEsource.readyState == 2) {  // CLOSED == 2
+        loadEvents();
+    }
 }
 
 /**
@@ -131,38 +126,41 @@ function flashRow(rowId) {
 }
 
 /**
- * Make an HTTP GET Request
+ * Get Historical Events. The number is determined by the Server.
+ * This also checks if the user has entered a valid ID, which is supplied as a param.
  *
- * @param url (String) URL to which the request should be made
+ * @param userID (String) User ID, must be listed as Staff in the DB
  */
-function get(url) {
+function getPastEvents(userID) {
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.onreadystatechange = function () {
         if (xmlHttp.readyState == 4) {
-            var response = JSON.parse(xmlHttp.responseText);
-            console.info("Last Fetch Returned " + response.length + " events");
+            if (xmlHttp.status != 403) {
+                setLogIn();
+                var responseJSON = JSON.parse(xmlHttp.responseText);
+                console.info("Server returned " + responseJSON.length + " events");
+                for (var i = 0; i < responseJSON.length; i++) {
+                    var obj = responseJSON[i];
 
-            for (var i = 0; i < response.length; i++) {
-                var obj = response[i];
-                console.log(obj);
+                    if (latestEvent < obj.id) {
+                        latestEvent = obj.id;
+                    }
 
-                if (latestEvent < obj.id) {
-                    latestEvent = obj.id;
+                    insert(obj.id, obj.owner.firstName + ' ' + obj.owner.lastName, obj.timeString, obj.type, obj.params);
                 }
+                setReady();
 
-                insert(obj.id, obj.owner.firstName + ' ' + obj.owner.lastName, obj.timeString, obj.type, obj.params);
-
-                if (obj.notify && ready) {
-                    notify(obj.id);
-                }
+                loadEvents();
+                window.setInterval(checkStream, refreshRate);
             }
-
-            setReady()
+            else {
+                setBadCred();
+            }
         }
     };
 
-    xmlHttp.open('GET', url + "?id=" + userID + "&last=" + latestEvent);
+    xmlHttp.open('GET', "../api/live/getEvents" + "?id=" + userID);
     xmlHttp.send();
 }
 

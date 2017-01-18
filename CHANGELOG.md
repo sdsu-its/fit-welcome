@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.1] - 2016-12-22 - _Kane_
+### Changed
+ - Switched the Live Dashboard from frequent polling to Server Sent Events (SSE). This reduced both server and DB load, as well as reduces network traffic.
+ - Optimized Vault Token renewal. The token expiry time is tracked and the token is only renwed before it expires. This significantly improves load times.
+ - UI improvements to Live dashboard.
+
+### Fixed
+- Issue [FW-6](http://morden.sdsu.edu:9000/issue/FW-6) Fixed Live Page styling which was broken when various CSS elements were moved to a commons file, `common.css`.
+
 ## [2.4.0] - 2016-12-14 - _Harper_
 ### Added
  - Different Kiosks can different displays via Locales. The locale is set via a URL param of the format `?locale=LOCALE`, and is
@@ -11,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  - Added option to filter locales when exporting events.
 
 ### Changed
- - Migrated JS Cookies Lib from a homeb built version, to [js.cookie](https://github.com/js-cookie/js-cookie).
+ - Migrated JS Cookies Lib from a home-built version, to [js.cookie](https://github.com/js-cookie/js-cookie).
  - The DB schema for the events table has been changed to accommodate for Kiosk's Locale. Run the following SQL command in your DB to add the table, and set the locale for past events.
  ```
  ALTER TABLE events ADD COLUMN (locale TEXT);
