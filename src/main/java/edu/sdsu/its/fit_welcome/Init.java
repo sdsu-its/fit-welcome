@@ -1,7 +1,11 @@
 package edu.sdsu.its.fit_welcome;
 
+import edu.sdsu.its.Jobs.SyncUserDB;
+import edu.sdsu.its.Schedule;
+import edu.sdsu.its.Vault;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import org.apache.log4j.Logger;
+import org.quartz.SchedulerException;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -41,6 +45,20 @@ public class Init implements ServletContextListener {
 
             LOGGER.info(String.format("Initial Staff Created. ID: \"%d\"", DEFAULT_ID));
         }
+
+        try {
+            Schedule.getScheduler().start();
+        } catch (SchedulerException e) {
+            LOGGER.error("Problem Starting Scheduler", e);
+        }
+        try {
+            if (Boolean.parseBoolean(Vault.getParam("syncEnable")))
+                SyncUserDB.schedule(Schedule.getScheduler(), Integer.parseInt(Vault.getParam("syncFrequency")));
+            else
+                LOGGER.warn("User Sync has been DISABLED - Check Vault Config to Enable");
+        } catch (SchedulerException e) {
+            LOGGER.error("Problem Scheduling Course List Update Job", e);
+        }
     }
 
     /**
@@ -48,6 +66,12 @@ public class Init implements ServletContextListener {
      */
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
+        try {
+            Schedule.getScheduler().shutdown();
+        } catch (SchedulerException e) {
+            LOGGER.error("Problem shutting down scheduler");
+        }
+
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         // Loop through all drivers
         Enumeration<Driver> drivers = DriverManager.getDrivers();
