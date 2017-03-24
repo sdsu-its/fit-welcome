@@ -4,6 +4,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.5.0] - 2017-03-24 -  _TBA_
+### Added
+ - The Users Table in the DB can now be synced with Blackboard to ensure an
+ accurate dataset is available at all times. This replaces the update script
+ that relied on a CSV file containing all of the user's information.
+
+### Changed
+ - Added `bb-api-user-sync` secret and added `bb-API-secret`, `bb-url`,
+ `syncEnable`, and `syncFrequency` fields to main app secret.
+ - DB Schema has been adapted to accommodate Bb Sync
+```
+CREATE TABLE dsk (
+  `PK`   INT AUTO_INCREMENT PRIMARY KEY,
+  `name` TEXT
+);
+
+INSERT INTO dsk (`name`) VALUES ('EXTERNAL');
+
+CREATE TABLE department (
+  `PK`   INT AUTO_INCREMENT PRIMARY KEY,
+  `name` TEXT
+);
+
+ALTER TABLE users
+  ADD COLUMN `dsk` INT,
+  ADD FOREIGN KEY (`dsk`) REFERENCES dsk (`PK`),
+  ADD COLUMN `department` INT,
+  ADD FOREIGN KEY (`department`) REFERENCES department (`PK`),
+  ADD COLUMN `updated` TIMESTAMP;
+
+UPDATE users
+SET dsk = (SELECT PK
+           FROM dsk
+           WHERE name = 'EXTERNAL');
+
+ALTER TABLE events
+  ADD FOREIGN KEY (`redid`) REFERENCES users (`id`);
+```
+
 ## [2.4.1] - 2016-12-22 - _Kane_
 ### Changed
  - Switched the Live Dashboard from frequent polling to Server Sent Events (SSE). This reduced both server and DB load, as well as reduces network traffic.
