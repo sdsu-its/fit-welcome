@@ -5,7 +5,7 @@ import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
 import edu.sdsu.its.fit_welcome.Quote;
-import edu.sdsu.its.fit_welcome.Vault;
+import edu.sdsu.its.Vault;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 

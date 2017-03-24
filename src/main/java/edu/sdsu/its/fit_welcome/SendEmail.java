@@ -1,5 +1,6 @@
 package edu.sdsu.its.fit_welcome;
 
+import edu.sdsu.its.Vault;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.EmailAttachment;
 import org.apache.commons.mail.EmailException;

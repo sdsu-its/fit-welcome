@@ -1,6 +1,6 @@
 package edu.sdsu.its.fit_welcome_tests;
 
-import edu.sdsu.its.fit_welcome.Vault;
+import edu.sdsu.its.Vault;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 

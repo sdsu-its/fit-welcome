@@ -1,6 +1,7 @@
 package edu.sdsu.its.fit_welcome;
 
 import com.opencsv.CSVWriter;
+import edu.sdsu.its.Vault;
 import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
