@@ -29,12 +29,13 @@ public class TestBbUsers {
     public void getAllUsers() throws Exception {
         LOGGER.info("Retrieving All Users from DB");
 
-        User[] users = Users.getAllUsers(25);
-        assertNotNull(users);
-        assertTrue("No Users Returned", users.length > 0);
-        LOGGER.info(String.format("Retrieved %d users from Bb", users.length));
+        Users.UserReport userReport = Users.getAllUsers(0, 250);
+        assertNotNull(userReport);
+        assertNotNull(userReport.users);
+        assertTrue("No Users Returned", userReport.users.length > 0);
+        LOGGER.info(String.format("Retrieved %d users from Bb", userReport.users.length));
 
-        for (User user : users) {
+        for (User user : userReport.users) {
             assertNotNull(user.externalId);
             assertNotNull(user.dataSourceId);
             assertNotNull(user.DSK);

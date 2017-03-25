@@ -31,13 +31,15 @@ public class Users {
      * @param limit Stop paging after N Users to Pull (0 pulls all users)
      * @return {@link User[]} All Users
      */
-    public static User[] getAllUsers(int limit) {
+    public static UserReport getAllUsers(int offset, int limit) {
         String baseURL = Vault.getParam("bb-url");
-        String endpoint = "/learn/api/public/v1/users";
+        String endpoint = "/learn/api/public/v1/users?offset=" + offset;
+        int page = 0;
         List<User> users = new ArrayList<>();
 
         try {
             while (endpoint != null && (limit == 0 || users.size() <= limit)) {
+                LOGGER.info(String.format("Requesting page %d of Users", ++page));
                 final HttpResponse httpResponse = Unirest.get(baseURL + endpoint)
                         .header("Authorization", "Bearer " + Auth.getToken())
                         .asString();
@@ -58,7 +60,7 @@ public class Users {
         for (User user : users)
             setDSK(user);
 
-        return users.toArray(new User[]{});
+        return new UserReport(endpoint == null, users.toArray(new User[]{}));
     }
 
     private static void setDSK(User user) {
@@ -73,5 +75,15 @@ public class Users {
     private static class ResponsePayload {
         User[] results;
         Map<String, String> paging;
+    }
+
+    public static class UserReport {
+        public boolean done;
+        public User[] users;
+
+        public UserReport(boolean done, User[] users) {
+            this.done = done;
+            this.users = users;
+        }
     }
 }

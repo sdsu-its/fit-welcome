@@ -17,6 +17,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
  *         Created on 2/3/17.
  */
 public class SyncUserDB implements Job {
+    private static final int BATCH_SIZE = 100;
     private final Logger LOGGER = Logger.getLogger(this.getClass());
 
     public SyncUserDB() {
@@ -51,43 +52,53 @@ public class SyncUserDB implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LOGGER.warn("Starting User Sync");
-        int updateCount = 0;
+        boolean done = false;
+        int offset = 0;
 
-        User[] users = Users.getAllUsers(0);
-        assert users != null;
+        while (!done) {
+            int updateCount = 0;
 
-        LOGGER.info(String.format("Retrieved %d users", users.length));
-        for(User user: users){
-            int username;
-            if (user.studentId == null || user.studentId.isEmpty()) {
-                LOGGER.warn("StudentID is not defined for User: " + user.externalId);
-                try {
-                    username = Integer.parseInt(user.externalId);
-                } catch (NumberFormatException e) {
-                    LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
-                    continue;
+
+            Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
+            assert userReport != null;
+            assert userReport.users != null;
+
+            LOGGER.info(String.format("Retrieved %d users", userReport.users.length));
+            done = userReport.done;
+
+            for (User user : userReport.users) {
+                int username;
+                if (user.studentId == null || user.studentId.isEmpty()) {
+                    LOGGER.warn("StudentID is not defined for User: " + user.externalId);
+                    try {
+                        username = Integer.parseInt(user.externalId);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
+                        continue;
+                    }
+                } else {
+                    try {
+                        username = Integer.parseInt(user.studentId);
+                    } catch (NumberFormatException e) {
+                        LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.studentId));
+                        continue;
+                    }
                 }
-            } else {
-                try {
-                    username = Integer.parseInt(user.studentId);
-                } catch (NumberFormatException e) {
-                    LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.studentId));
+
+                if (!user.availability.get("available").toUpperCase().equals("YES"))
                     continue;
-                }
+
+                DB.syncUser(username,
+                        user.name.get("given"),
+                        user.name.get("family"),
+                        user.contact.get("email"),
+                        user.DSK,
+                        user.job.get("department"));
+                updateCount++;
             }
 
-            if (!user.availability.get("available").toUpperCase().equals("YES"))
-                continue;
-
-            DB.syncUser(username,
-                    user.name.get("given"),
-                    user.name.get("family"),
-                    user.contact.get("email"),
-                    user.DSK,
-                    user.job.get("department"));
-            updateCount++;
+            LOGGER.warn(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
+            offset += BATCH_SIZE;
         }
-
-        LOGGER.warn(String.format("User Sync Completed - Updated %d users", updateCount));
     }
 }
