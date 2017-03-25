@@ -142,10 +142,33 @@ public class DB {
             connection.setAutoCommit(false);
             statement = connection.createStatement();
 
-            final String dskSQL = "";
-            final String departmentSQL = "";
+            final String dskSQL = "INSERT IGNORE INTO dsk (`name`) VALUES ('" + dsk + "');";
+            final String departmentSQL = "INSERT IGNORE INTO department (`name`) VALUES ('" + department + "');";
 
-            final String updateUserSQL = "";
+            final String updateUserSQL = "INSERT INTO users (`id`, `first_name`, `last_name`, `email`, `dsk`, `department`, `updated`) VALUES (\n" +
+                    "  " + id + ",\n" +
+                    "  '" + first_name + "',\n" +
+                    "  '" + last_name + "',\n" +
+                    "  '" + email + "',\n" +
+                    "  (SELECT `PK`\n" +
+                    "   FROM dsk\n" +
+                    "   WHERE name = '" + dsk.externalId + "'),\n" +
+                    "  (SELECT `PK`\n" +
+                    "   FROM department\n" +
+                    "   WHERE name = '" + department + "'),\n" +
+                    "  now()\n" +
+                    ")\n" +
+                    "ON DUPLICATE KEY UPDATE\n" +
+                    "  `first_name` = '" + first_name + "',\n" +
+                    "  `last_name`  = '" + last_name + "',\n" +
+                    "  `email`      = '" + email + "',\n" +
+                    "  `dsk`        = (SELECT `PK`\n" +
+                    "                  FROM dsk\n" +
+                    "                  WHERE name = '" + dsk.externalId + "'),\n" +
+                    "  `department` = (SELECT `PK`\n" +
+                    "                  FROM department\n" +
+                    "                  WHERE name = '" + department + "'),\n" +
+                    "  `updated`    = now();\n";
 
             LOGGER.debug(String.format("Executing SQL Statement as Batch - \"%s\"", dskSQL));
             statement.addBatch(dskSQL);

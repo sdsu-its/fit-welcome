@@ -100,5 +100,8 @@ public class SyncUserDB implements Job {
             LOGGER.warn(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
             offset += BATCH_SIZE;
         }
+
+        LOGGER.warn("Cleaning Users Table");
+        DB.cleanUsers(5);
     }
 }
