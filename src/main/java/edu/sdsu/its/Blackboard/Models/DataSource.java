@@ -9,10 +9,8 @@ package edu.sdsu.its.Blackboard.Models;
 public class DataSource {
     public String id;
     public String externalId;
-    public String description;
 
-    public DataSource(String externalId, String description) {
+    public DataSource(String externalId) {
         this.externalId = externalId;
-        this.description = description;
     }
 }

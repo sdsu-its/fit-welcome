@@ -85,7 +85,7 @@ public class SyncUserDB implements Job {
                     }
                 }
 
-                if (!user.availability.get("available").toUpperCase().equals("YES"))
+                if (!user.availability.get("available").equals("Yes"))
                     continue;
 
                 DB.syncUser(username,
@@ -93,7 +93,7 @@ public class SyncUserDB implements Job {
                         user.name.get("family"),
                         user.contact.get("email"),
                         user.DSK,
-                        user.job.get("department"));
+                        user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
                 updateCount++;
             }
 

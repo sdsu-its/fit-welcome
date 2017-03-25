@@ -38,7 +38,7 @@ public class Users {
         List<User> users = new ArrayList<>();
 
         try {
-            while (endpoint != null && (limit == 0 || users.size() <= limit)) {
+            while (endpoint != null && (limit == 0 || users.size() < limit)) {
                 LOGGER.info(String.format("Requesting page %d of Users", ++page));
                 final HttpResponse httpResponse = Unirest.get(baseURL + endpoint)
                         .header("Authorization", "Bearer " + Auth.getToken())

@@ -142,8 +142,17 @@ public class DB {
             connection.setAutoCommit(false);
             statement = connection.createStatement();
 
-            final String dskSQL = "INSERT IGNORE INTO dsk (`name`) VALUES ('" + dsk + "');";
-            final String departmentSQL = "INSERT IGNORE INTO department (`name`) VALUES ('" + department + "');";
+            final String dskSQL = "INSERT INTO dsk (`name`)\n" +
+                    "SELECT '" + dsk.externalId + "' FROM dsk\n" +
+                    "WHERE NOT EXISTS (SELECT * FROM dsk\n" +
+                    "      WHERE name='" + dsk.externalId + "' )\n" +
+                    "LIMIT 1;";
+
+            final String departmentSQL = "INSERT INTO department (`name`)\n" +
+                    "SELECT '" + department + "' FROM department\n" +
+                    "WHERE NOT EXISTS (SELECT * FROM department\n" +
+                    "      WHERE name='" + department + "' )\n" +
+                    "LIMIT 1;";
 
             final String updateUserSQL = "INSERT INTO users (`id`, `first_name`, `last_name`, `email`, `dsk`, `department`, `updated`) VALUES (\n" +
                     "  " + id + ",\n" +
@@ -152,22 +161,25 @@ public class DB {
                     "  '" + email + "',\n" +
                     "  (SELECT `PK`\n" +
                     "   FROM dsk\n" +
-                    "   WHERE name = '" + dsk.externalId + "'),\n" +
+                    "   WHERE name = '" + dsk.externalId + "'\n" +
+                    "   LIMIT 1),\n" +
                     "  (SELECT `PK`\n" +
                     "   FROM department\n" +
-                    "   WHERE name = '" + department + "'),\n" +
-                    "  now()\n" +
-                    ")\n" +
+                    "   WHERE name = '" + department + "'\n" +
+                    "   LIMIT 1),\n" +
+                    "  now())\n" +
                     "ON DUPLICATE KEY UPDATE\n" +
                     "  `first_name` = '" + first_name + "',\n" +
                     "  `last_name`  = '" + last_name + "',\n" +
                     "  `email`      = '" + email + "',\n" +
                     "  `dsk`        = (SELECT `PK`\n" +
                     "                  FROM dsk\n" +
-                    "                  WHERE name = '" + dsk.externalId + "'),\n" +
+                    "                  WHERE name = '" + dsk.externalId + "'\n" +
+                    "                  LIMIT 1),\n" +
                     "  `department` = (SELECT `PK`\n" +
                     "                  FROM department\n" +
-                    "                  WHERE name = '" + department + "'),\n" +
+                    "                  WHERE name = '" + department + "'\n" +
+                    "                  LIMIT 1),\n" +
                     "  `updated`    = now();\n";
 
             LOGGER.debug(String.format("Executing SQL Statement as Batch - \"%s\"", dskSQL));
