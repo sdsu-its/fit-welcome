@@ -16,9 +16,11 @@ import static org.quartz.TriggerBuilder.newTrigger;
  * @author Tom Paulus
  *         Created on 2/3/17.
  */
-public class SyncUserDB implements Job {
+public class SyncUserDB implements InterruptableJob {
     private static final int BATCH_SIZE = 100;
     private final Logger LOGGER = Logger.getLogger(this.getClass());
+
+    private boolean stopFlag = false;
 
     public SyncUserDB() {
     }
@@ -55,7 +57,7 @@ public class SyncUserDB implements Job {
         boolean done = false;
         int offset = 0;
 
-        while (!done) {
+        while (!done && !stopFlag) {
             int updateCount = 0;
 
             Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
@@ -66,6 +68,7 @@ public class SyncUserDB implements Job {
             done = userReport.done;
 
             for (User user : userReport.users) {
+                if (!stopFlag) break;
                 try {
                     DB.syncUser(getID(user),
                             user.name.get("given"),
@@ -115,5 +118,13 @@ public class SyncUserDB implements Job {
             LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.userName));
         }
         return username;
+    }
+
+    /**
+     * Stop Job
+     */
+    @Override
+    public void interrupt() throws UnableToInterruptJobException {
+        stopFlag = true;
     }
 }
