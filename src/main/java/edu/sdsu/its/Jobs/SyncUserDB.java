@@ -58,7 +58,6 @@ public class SyncUserDB implements Job {
         while (!done) {
             int updateCount = 0;
 
-
             Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
             assert userReport != null;
             assert userReport.users != null;
@@ -85,15 +84,21 @@ public class SyncUserDB implements Job {
                     }
                 }
 
-                if (!user.availability.get("available").equals("Yes"))
+                if (!user.availability.get("available").equals("Yes")) {
+                    LOGGER.info(String.format("Skipping User %d NOT available", username));
                     continue;
+                }
 
-                DB.syncUser(username,
-                        user.name.get("given"),
-                        user.name.get("family"),
-                        user.contact.get("email"),
-                        user.DSK,
-                        user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
+                try {
+                    DB.syncUser(username,
+                            user.name.get("given"),
+                            user.name.get("family"),
+                            user.contact.get("email"),
+                            user.DSK,
+                            user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
+                } catch (Exception e) {
+                    LOGGER.warn("Problem Updating User", e);
+                }
                 updateCount++;
             }
 

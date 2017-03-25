@@ -143,42 +143,42 @@ public class DB {
             statement = connection.createStatement();
 
             final String dskSQL = "INSERT INTO dsk (`name`)\n" +
-                    "SELECT '" + dsk.externalId + "' FROM dsk\n" +
+                    "SELECT '" + sanitize(dsk.externalId) + "' FROM dsk\n" +
                     "WHERE NOT EXISTS (SELECT * FROM dsk\n" +
-                    "      WHERE name='" + dsk.externalId + "' )\n" +
+                    "      WHERE name='" + sanitize(dsk.externalId) + "' )\n" +
                     "LIMIT 1;";
 
             final String departmentSQL = "INSERT INTO department (`name`)\n" +
-                    "SELECT '" + department + "' FROM department\n" +
+                    "SELECT '" + sanitize(department) + "' FROM department\n" +
                     "WHERE NOT EXISTS (SELECT * FROM department\n" +
-                    "      WHERE name='" + department + "' )\n" +
+                    "      WHERE name='" + sanitize(department) + "' )\n" +
                     "LIMIT 1;";
 
             final String updateUserSQL = "INSERT INTO users (`id`, `first_name`, `last_name`, `email`, `dsk`, `department`, `updated`) VALUES (\n" +
                     "  " + id + ",\n" +
-                    "  '" + first_name + "',\n" +
-                    "  '" + last_name + "',\n" +
-                    "  '" + email + "',\n" +
+                    "  '" + sanitize(first_name) + "',\n" +
+                    "  '" + sanitize(last_name) + "',\n" +
+                    "  '" + sanitize(email) + "',\n" +
                     "  (SELECT `PK`\n" +
                     "   FROM dsk\n" +
-                    "   WHERE name = '" + dsk.externalId + "'\n" +
+                    "   WHERE name = '" + sanitize(dsk.externalId) + "'\n" +
                     "   LIMIT 1),\n" +
                     "  (SELECT `PK`\n" +
                     "   FROM department\n" +
-                    "   WHERE name = '" + department + "'\n" +
+                    "   WHERE name = '" + sanitize(department) + "'\n" +
                     "   LIMIT 1),\n" +
                     "  now())\n" +
                     "ON DUPLICATE KEY UPDATE\n" +
-                    "  `first_name` = '" + first_name + "',\n" +
-                    "  `last_name`  = '" + last_name + "',\n" +
-                    "  `email`      = '" + email + "',\n" +
+                    "  `first_name` = '" + sanitize(first_name) + "',\n" +
+                    "  `last_name`  = '" + sanitize(last_name) + "',\n" +
+                    "  `email`      = '" + sanitize(email) + "',\n" +
                     "  `dsk`        = (SELECT `PK`\n" +
                     "                  FROM dsk\n" +
-                    "                  WHERE name = '" + dsk.externalId + "'\n" +
+                    "                  WHERE name = '" + sanitize(dsk.externalId) + "'\n" +
                     "                  LIMIT 1),\n" +
                     "  `department` = (SELECT `PK`\n" +
                     "                  FROM department\n" +
-                    "                  WHERE name = '" + department + "'\n" +
+                    "                  WHERE name = '" + sanitize(department) + "'\n" +
                     "                  LIMIT 1),\n" +
                     "  `updated`    = now();\n";
 
