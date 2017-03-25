@@ -66,31 +66,8 @@ public class SyncUserDB implements Job {
             done = userReport.done;
 
             for (User user : userReport.users) {
-                int username;
-                if (user.studentId == null || user.studentId.isEmpty()) {
-                    LOGGER.warn("StudentID is not defined for User: " + user.externalId);
-                    try {
-                        username = Integer.parseInt(user.externalId);
-                    } catch (NumberFormatException e) {
-                        LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
-                        continue;
-                    }
-                } else {
-                    try {
-                        username = Integer.parseInt(user.studentId);
-                    } catch (NumberFormatException e) {
-                        LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.studentId));
-                        continue;
-                    }
-                }
-
-                if (!user.availability.get("available").equals("Yes")) {
-                    LOGGER.info(String.format("Skipping User %d NOT available", username));
-                    continue;
-                }
-
                 try {
-                    DB.syncUser(username,
+                    DB.syncUser(getID(user),
                             user.name.get("given"),
                             user.name.get("family"),
                             user.contact.get("email"),
@@ -102,11 +79,41 @@ public class SyncUserDB implements Job {
                 updateCount++;
             }
 
-            LOGGER.warn(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
+            LOGGER.info(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
             offset += BATCH_SIZE;
         }
 
         LOGGER.warn("Cleaning Users Table");
         DB.cleanUsers(5);
+    }
+
+    private int getID(User user) {
+        int username = 0;
+        if (user.studentId != null && !user.studentId.isEmpty()) {
+            try {
+                username = Integer.parseInt(user.externalId);
+            } catch (NumberFormatException e) {
+                LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
+            }
+            return username;
+        }
+
+        if (user.externalId != null && !user.externalId.isEmpty()) {
+            LOGGER.warn("StudentID is not defined for User: " + user.externalId);
+            try {
+                username = Integer.parseInt(user.externalId);
+            } catch (NumberFormatException e) {
+                LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
+            }
+            return username;
+        }
+
+        LOGGER.warn("ExternalID is not defined for User: " + user.externalId);
+        try {
+            username = Integer.parseInt(user.userName);
+        } catch (NumberFormatException e) {
+            LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.userName));
+        }
+        return username;
     }
 }

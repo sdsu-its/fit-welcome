@@ -10,6 +10,7 @@ import java.util.Map;
  */
 public class User {
     public String studentId;
+    public String userName;
     public String externalId;
     public String dataSourceId;
     public DataSource DSK;
