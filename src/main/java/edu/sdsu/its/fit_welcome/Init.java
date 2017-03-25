@@ -5,6 +5,7 @@ import edu.sdsu.its.Schedule;
 import edu.sdsu.its.Vault;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import org.apache.log4j.Logger;
+import org.quartz.JobExecutionContext;
 import org.quartz.SchedulerException;
 
 import javax.servlet.ServletContextEvent;
@@ -14,6 +15,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * Initialize and Teardown the WebApp and DB
@@ -67,7 +69,15 @@ public class Init implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         try {
-            Schedule.getScheduler().shutdown();
+            List<JobExecutionContext> currentlyExecuting = Schedule.getScheduler().getCurrentlyExecutingJobs();
+
+            for (JobExecutionContext jobExecutionContext : currentlyExecuting) {
+                if (jobExecutionContext.getJobDetail().getKey().getName().equals("JobKeyNameToInterrupt")) {
+                    Schedule.getScheduler().interrupt(jobExecutionContext.getJobDetail().getKey());
+                }
+            }
+
+            Schedule.getScheduler().shutdown(true);
         } catch (SchedulerException e) {
             LOGGER.error("Problem shutting down scheduler");
         }
