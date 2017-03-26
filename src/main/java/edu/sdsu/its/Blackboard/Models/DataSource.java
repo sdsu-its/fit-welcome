@@ -13,4 +13,9 @@ public class DataSource {
     public DataSource(String externalId) {
         this.externalId = externalId;
     }
+
+    @Override
+    public String toString() {
+        return "Data Source: " + externalId + " (" + id + ')';
+    }
 }

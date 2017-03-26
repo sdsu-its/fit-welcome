@@ -192,7 +192,7 @@ public class DB {
             statement.addBatch(updateUserSQL);
 
             LOGGER.debug("Executing Batch");
-            LOGGER.info(String.format("Updated User - %d", id));
+            LOGGER.debug(String.format("Updated User - %d", id));
             statement.executeBatch();
         } catch (Exception e) {
             LOGGER.warn("Problem Updating/Creating User", e);

@@ -11,15 +11,19 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
- * Sync the MapDB in the API Endpoint for Courses with the current courses in the Bb API.
+ * Sync the Users Table in the DB with the Users from Blackboard via their API.
+ * <p>
+ * Job is run in relatively small batches, so the frequency needs to be set relatively quick (30-60 seconds);
+ * this is done to keep the individual job times down, preventing spikes in memory and CPU usage.
  *
  * @author Tom Paulus
- *         Created on 2/3/17.
+ *         Created on 3/24/17.
  */
-public class SyncUserDB implements InterruptableJob {
+public class SyncUserDB implements Job {
+    private static final Logger LOGGER = Logger.getLogger(SyncUserDB.class);
     private static final int BATCH_SIZE = 100;
-    private static Thread thread;
-    private final Logger LOGGER = Logger.getLogger(this.getClass());
+
+    private static int lastOffset = 0;
 
     public SyncUserDB() {
     }
@@ -27,11 +31,11 @@ public class SyncUserDB implements InterruptableJob {
     /**
      * Schedule the Sync Job
      *
-     * @param scheduler
-     * @param intervalInHours How often the job should run in Hours
-     * @throws SchedulerException
+     * @param scheduler         {@link Scheduler} Quartz Scheduler Instance
+     * @param intervalInSeconds How often the job should run in Seconds
+     * @throws SchedulerException Something went wrong scheduling the job
      */
-    public static void schedule(Scheduler scheduler, int intervalInHours) throws SchedulerException {
+    public static void schedule(Scheduler scheduler, int intervalInSeconds) throws SchedulerException {
         // define the job and tie it to our MyJob class
         JobDetail job = newJob(SyncUserDB.class)
                 .withIdentity("SyncUserListJob", "group1")
@@ -42,7 +46,7 @@ public class SyncUserDB implements InterruptableJob {
                 .withIdentity("SyncTrigger", "group1")
                 .startNow()
                 .withSchedule(simpleSchedule()
-                        .withIntervalInHours(intervalInHours)
+                        .withIntervalInSeconds(intervalInSeconds)
                         .repeatForever())
                 .build();
 
@@ -52,100 +56,91 @@ public class SyncUserDB implements InterruptableJob {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        LOGGER.warn("Starting Sync Thread");
-        thread = new Thread(new Sync());
-        thread.start();
-    }
+        LOGGER.debug("Starting User Sync");
 
+        int offset = lastOffset;
+        int updateCount = 0;
 
-    /**
-     * Stop Job
-     */
-    @Override
-    public void interrupt() throws UnableToInterruptJobException {
-        LOGGER.warn("Stopping Sync Thread");
-        thread.interrupt();
-    }
+        Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
+        assert userReport != null;
+        assert userReport.users != null;
 
-    private static class Sync implements Runnable {
-        private final Logger LOGGER = Logger.getLogger(this.getClass());
+        LOGGER.debug(String.format("Retrieved %d users", userReport.users.length));
+        boolean done = userReport.done;
 
-        public void run() {
-            LOGGER.warn("Starting User Sync");
+        for (User user : userReport.users) {
+            final int id = getID(user);
+            if (id == 0) continue;
 
-            boolean done = false;
-            int offset = 0;
-
-            while (!done) {
-                int updateCount = 0;
-
-                Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
-                assert userReport != null;
-                assert userReport.users != null;
-
-                LOGGER.info(String.format("Retrieved %d users", userReport.users.length));
-                done = userReport.done;
-
-                for (User user : userReport.users) {
-                    final int id = getID(user);
-                    if (id == 0) continue;
-
-                    try {
-                        DB.syncUser(id,
-                                user.name.get("given"),
-                                user.name.get("family"),
-                                user.contact.get("email"),
-                                user.DSK,
-                                user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
-                        updateCount++;
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        // Intentionally Blank
-                    } catch (NoClassDefFoundError | IllegalStateException e) {
-                        // Abort the Thread, quickly and cleanly
-                        return;
-                    } catch (Exception e) {
-                        LOGGER.warn("Problem Updating User", e);
-                    }
-                }
-
-                LOGGER.info(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
-                offset += BATCH_SIZE;
+            if (user.availability == null || !user.availability.get("available").equals("Yes")) {
+                LOGGER.info(String.format("User %d is not available - Skipping", id));
+                continue;
             }
 
-            LOGGER.warn("Cleaning Users Table");
-            DB.cleanUsers(5);
-        }
-
-        private int getID(User user) {
-            int username = 0;
-            if (user.studentId != null && !user.studentId.isEmpty()) {
-                try {
-                    username = Integer.parseInt(user.externalId);
-                } catch (NumberFormatException e) {
-                    LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
-                }
-                return username;
-            }
-
-            if (user.externalId != null && !user.externalId.isEmpty()) {
-                LOGGER.warn("StudentID is not defined for User: " + user.externalId);
-                try {
-                    username = Integer.parseInt(user.externalId);
-                } catch (NumberFormatException e) {
-                    LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
-                }
-                return username;
-            }
-
-            LOGGER.warn("ExternalID is not defined for User: " + user.externalId);
             try {
-                username = Integer.parseInt(user.userName);
-            } catch (NumberFormatException e) {
-                LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.userName));
-            }
+                LOGGER.debug(String.format("Syncing User %d - %s", id, user.toString()));
 
-            return username;
+                DB.syncUser(id,
+                        user.name.get("given"),
+                        user.name.get("family"),
+                        user.contact.get("email"),
+                        user.DSK,
+                        user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
+                updateCount++;
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                // Intentionally Blank
+            } catch (NoClassDefFoundError | IllegalStateException e) {
+                // Abort the Thread, quickly and cleanly
+                return;
+            } catch (Exception e) {
+                LOGGER.warn("Problem Updating User", e);
+            }
         }
+
+        LOGGER.info(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
+        lastOffset += BATCH_SIZE;
+
+
+        if (done) doneProcedure();
+    }
+
+    private void doneProcedure() {
+        LOGGER.info("Completed User Sync - Resetting offset");
+        lastOffset = 0;
+
+        LOGGER.info("Cleaning Users Table");
+        DB.cleanUsers(5);
+    }
+
+    private int getID(User user) {
+        int username = 0;
+        if (user.studentId != null && !user.studentId.isEmpty()) {
+            try {
+                username = Integer.parseInt(user.externalId);
+                return username;
+            } catch (NumberFormatException e) {
+                LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
+            }
+        }
+
+        if (user.externalId != null && !user.externalId.isEmpty()) {
+            LOGGER.debug("StudentID is not defined for User: " + user.externalId);
+            try {
+                username = Integer.parseInt(user.externalId);
+                return username;
+            } catch (NumberFormatException e) {
+                LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.externalId));
+            }
+        }
+
+        LOGGER.debug("ExternalID is not defined for User: " + user.externalId);
+        try {
+            username = Integer.parseInt(user.userName);
+        } catch (NumberFormatException e) {
+            LOGGER.warn(String.format("NumberFormatException - Invalid ID: \"%s\"", user.userName));
+        }
+
+        return username;
     }
 }
