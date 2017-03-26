@@ -64,8 +64,8 @@ public class SyncUserDB implements Job {
 
         Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
         if (userReport == null || userReport.users == null || userReport.users.length == 0){
-            LOGGER.info("Received Empty Payload from API - Resetting Counter and cleaning DB");
-            done = true;
+            LOGGER.info("Received Empty Payload from API - Stopping!");
+            return;
         } else {
             LOGGER.debug(String.format("Retrieved %d users", userReport.users.length));
             done = userReport.done;

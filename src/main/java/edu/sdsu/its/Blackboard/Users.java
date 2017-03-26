@@ -32,6 +32,10 @@ public class Users {
      * @return {@link User[]} All Users
      */
     public static UserReport getAllUsers(int offset, int limit) {
+        return getAllUsers(offset, limit, true)
+    }
+
+    private static UserReport getAllUsers(int offset, int limit, boolean retry) {
         String baseURL = Vault.getParam("bb-url");
         String endpoint = "/learn/api/public/v1/users?offset=" + offset;
         int page = 0;
@@ -44,8 +48,17 @@ public class Users {
                         .header("Authorization", "Bearer " + Auth.getToken())
                         .asString();
 
-                LOGGER.debug("Request to get Users returned status - " + httpResponse.getStatus());
-                if (httpResponse.getStatus() / 100 != 2) return null;
+                if (httpResponse.getStatus() / 100 != 2) {
+                    LOGGER.error("Request to get Users returned status - " + httpResponse.getStatus());
+                    if (retry) {
+                        LOGGER.debug("Retrying with a new Token");
+                        Auth.resetToken();
+                        return getAllUsers(offset, limit, false);
+                    }
+
+                    return null;
+                } else
+                    LOGGER.debug("Request to get Users returned status - " + httpResponse.getStatus());
 
                 Gson gson = new Gson();
                 ResponsePayload payload = gson.fromJson(httpResponse.getBody().toString(), ResponsePayload.class);
