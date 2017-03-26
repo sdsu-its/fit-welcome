@@ -60,47 +60,49 @@ public class SyncUserDB implements Job {
 
         int offset = lastOffset;
         int updateCount = 0;
+        boolean done;
 
         Users.UserReport userReport = Users.getAllUsers(offset, BATCH_SIZE);
-        assert userReport != null;
-        assert userReport.users != null;
+        if (userReport == null || userReport.users == null || userReport.users.length == 0){
+            LOGGER.info("Received Empty Payload from API - Resetting Counter and cleaning DB");
+            done = true;
+        } else {
+            LOGGER.debug(String.format("Retrieved %d users", userReport.users.length));
+            done = userReport.done;
 
-        LOGGER.debug(String.format("Retrieved %d users", userReport.users.length));
-        boolean done = userReport.done;
+            for (User user : userReport.users) {
+                final int id = getID(user);
+                if (id == 0) continue;
 
-        for (User user : userReport.users) {
-            final int id = getID(user);
-            if (id == 0) continue;
+                if (user.availability == null || !user.availability.get("available").equals("Yes")) {
+                    LOGGER.info(String.format("User %d is not available - Skipping", id));
+                    continue;
+                }
 
-            if (user.availability == null || !user.availability.get("available").equals("Yes")) {
-                LOGGER.info(String.format("User %d is not available - Skipping", id));
-                continue;
+                try {
+                    LOGGER.debug(String.format("Syncing User %d - %s", id, user.toString()));
+
+                    DB.syncUser(id,
+                            user.name.get("given"),
+                            user.name.get("family"),
+                            user.contact.get("email"),
+                            user.DSK,
+                            user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
+                    updateCount++;
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    // Intentionally Blank
+                } catch (NoClassDefFoundError | IllegalStateException e) {
+                    // Abort the Thread, quickly and cleanly
+                    return;
+                } catch (Exception e) {
+                    LOGGER.warn("Problem Updating User", e);
+                }
             }
 
-            try {
-                LOGGER.debug(String.format("Syncing User %d - %s", id, user.toString()));
-
-                DB.syncUser(id,
-                        user.name.get("given"),
-                        user.name.get("family"),
-                        user.contact.get("email"),
-                        user.DSK,
-                        user.job != null && user.job.containsKey("department") ? user.job.get("department") : "NULL");
-                updateCount++;
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                // Intentionally Blank
-            } catch (NoClassDefFoundError | IllegalStateException e) {
-                // Abort the Thread, quickly and cleanly
-                return;
-            } catch (Exception e) {
-                LOGGER.warn("Problem Updating User", e);
-            }
+            LOGGER.info(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
+            lastOffset += BATCH_SIZE;
         }
-
-        LOGGER.info(String.format("User Sync Completed - Updated %d/%d users", updateCount, BATCH_SIZE));
-        lastOffset += BATCH_SIZE;
-
 
         if (done) doneProcedure();
     }
