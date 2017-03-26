@@ -14,6 +14,7 @@ war {
 dependencies {
     // Logging
     compile 'log4j:log4j:1.2.17'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 
     // DB
     compile 'mysql:mysql-connector-java:5.1.38'

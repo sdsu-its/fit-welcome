@@ -1,8 +1,7 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its;
 
 import edu.sdsu.its.Jobs.SyncUserDB;
-import edu.sdsu.its.Schedule;
-import edu.sdsu.its.Vault;
+import edu.sdsu.its.fit_welcome.DB;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
@@ -49,6 +48,7 @@ public class Init implements ServletContextListener {
         }
 
         try {
+            Schedule.getScheduler().clear();
             Schedule.getScheduler().start();
         } catch (SchedulerException e) {
             LOGGER.error("Problem Starting Scheduler", e);
@@ -59,7 +59,7 @@ public class Init implements ServletContextListener {
             else
                 LOGGER.warn("User Sync has been DISABLED - Check Vault Config to Enable");
         } catch (SchedulerException e) {
-            LOGGER.error("Problem Scheduling Course List Update Job", e);
+            LOGGER.error("Problem Scheduling User Sync Job", e);
         }
     }
 
