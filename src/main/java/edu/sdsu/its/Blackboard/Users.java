@@ -32,7 +32,7 @@ public class Users {
      * @return {@link User[]} All Users
      */
     public static UserReport getAllUsers(int offset, int limit) {
-        return getAllUsers(offset, limit, true)
+        return getAllUsers(offset, limit, true);
     }
 
     private static UserReport getAllUsers(int offset, int limit, boolean retry) {
