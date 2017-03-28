@@ -6,7 +6,7 @@ import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 
 /**
- * TODO JavaDoc
+ * Manage Scheduler Instance
  *
  * @author Tom Paulus
  *         Created on 2/3/17.

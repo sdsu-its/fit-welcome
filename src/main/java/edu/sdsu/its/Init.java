@@ -5,6 +5,7 @@ import edu.sdsu.its.fit_welcome.DB;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 import org.quartz.SchedulerException;
 
 import javax.servlet.ServletContextEvent;
@@ -49,13 +50,16 @@ public class Init implements ServletContextListener {
 
         try {
             Schedule.getScheduler().clear();
-            Schedule.getScheduler().start();
+            Schedule.getScheduler().startDelayed(30);
         } catch (SchedulerException e) {
             LOGGER.error("Problem Starting Scheduler", e);
         }
         try {
-            if (Boolean.parseBoolean(Vault.getParam("syncEnable")))
+            String envDisable = System.getenv("BB_SYNC_DISABLE");
+            if (Boolean.parseBoolean(Vault.getParam("syncEnable")) && !(envDisable != null && envDisable.toUpperCase().equals("TRUE")))
                 SyncUserDB.schedule(Schedule.getScheduler(), Integer.parseInt(Vault.getParam("syncFrequency")));
+            else if (envDisable != null && envDisable.toUpperCase().equals("TRUE"))
+                LOGGER.warn("User Sync has been DISABLED via Environment Variable (BB_SYNC_DISABLE)");
             else
                 LOGGER.warn("User Sync has been DISABLED - Check Vault Config to Enable");
         } catch (SchedulerException e) {
@@ -64,6 +68,7 @@ public class Init implements ServletContextListener {
     }
 
     /**
+     * Stop All Scheduler Jobs and Shut Down the Scheduler
      * Deregister DB Driver to prevent memory leaks.
      */
     @Override
@@ -72,14 +77,19 @@ public class Init implements ServletContextListener {
             List<JobExecutionContext> currentlyExecuting = Schedule.getScheduler().getCurrentlyExecutingJobs();
 
             for (JobExecutionContext jobExecutionContext : currentlyExecuting) {
-                if (jobExecutionContext.getJobDetail().getKey().getName().equals("JobKeyNameToInterrupt")) {
-                    Schedule.getScheduler().interrupt(jobExecutionContext.getJobDetail().getKey());
-                }
+                JobKey jobKey = jobExecutionContext.getJobDetail().getKey();
+                Schedule.getScheduler().interrupt(jobKey);
+                Schedule.getScheduler().deleteJob(jobKey);
             }
+        } catch (SchedulerException e) {
+            LOGGER.error("Problem Clearing Job Queue", e);
+        }
 
+        try {
+            Schedule.getScheduler().clear();
             Schedule.getScheduler().shutdown(true);
         } catch (SchedulerException e) {
-            LOGGER.error("Problem shutting down scheduler");
+            LOGGER.error("Problem shutting down scheduler", e);
         }
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
