@@ -5,7 +5,6 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.sdsu.its.Vault;
-import edu.sdsu.its.Blackboard.Models.AuthPayload;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.core.MediaType;
@@ -55,4 +54,17 @@ public class Auth {
         token = null;
         return getToken();
     }
+
+    /**
+     * Models Blackboard Authentication Payload
+     *
+     * @author Tom Paulus
+     *         Created on 1/27/17.
+     */
+    private static class AuthPayload {
+        public String access_token;
+        public String token_type;
+        public int expires_in;
+    }
+
 }

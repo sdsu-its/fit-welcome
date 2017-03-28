@@ -13,7 +13,7 @@ import java.util.List;
 
 
 /**
- * TODO JavaDoc
+ * Manage Locales, which allow different menus to be presented at different locations
  *
  * @author Tom Paulus
  *         Created on 12/16/16.
@@ -31,7 +31,7 @@ public class Locales {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     public Response listLocales() {
-        LOGGER.info("Recieved Request: [GET] LOCALES");
+        LOGGER.info("Received Request: [GET] LOCALES");
         Gson gson = new Gson();
         List locales = DB.getLocales();
         LOGGER.debug(String.format("Found %d locales", locales.size()));

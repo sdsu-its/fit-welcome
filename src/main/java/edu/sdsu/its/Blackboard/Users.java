@@ -13,7 +13,7 @@ import java.util.*;
 
 
 /**
- * TODO JavaDoc
+ * Manage Blackboard User Endpoint Interactions
  *
  * @author Tom Paulus
  *         Created on 3/24/17.
