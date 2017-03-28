@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.5.0] - 2017-03-24 -  _TBA_
+## [2.5.0] - 2017-03-28 -  _Lamar_
 ### Added
  - The Users Table in the DB can now be synced with Blackboard to ensure an
  accurate dataset is available at all times. This replaces the update script
@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
  - Added `bb-api-user-sync` secret and added `bb-API-secret`, `bb-url`,
  `syncEnable`, and `syncFrequency` fields to main app secret.
+ - Changed "Web Conferencing" button title in "Meet With ID" Group to "Zoom" to reflect new departmental changes.
  - DB Schema has been adapted to accommodate Bb Sync
 ```
 CREATE TABLE dsk (
@@ -42,6 +43,10 @@ SET dsk = (SELECT PK
 ALTER TABLE events
   ADD FOREIGN KEY (`redid`) REFERENCES users (`id`);
 ```
+### Fixed
+- Issue [FW-7](http://morden.sdsu.edu:9000/issue/FW-7) SSE Broadcasts were failing sometimes if the client closed the 
+connection, but the server has not yet de-registered the client.
+
 
 ## [2.4.1] - 2016-12-22 - _Kane_
 ### Changed
