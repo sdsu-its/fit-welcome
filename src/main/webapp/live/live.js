@@ -91,6 +91,9 @@ function loadEvents() {
             notify(obj.id);
         }
     };
+    SSEsource.onError = function () {
+        loadEvents();
+    };
 }
 
 /**

@@ -20,6 +20,8 @@ __FollowUp__ is an additional optional module that is run independently as a Jav
  - Param: `followup_freshness` - Within how many days to contact the users. For example a value of 3 would mean to contact those who have visited in the last 3 days.
  - Param: `followup_max` - The minimum number of days since the user was last emailed. For Example a value of 7 would mean that a user who visits every day would only get an email every 7 days.
 
+__Blackboard__ can be integrated to sync Users who have a Numerical Student ID, external ID, or Username with your Users Table in the DB. 
+
  - ___Full Param List is below!___
 
 
@@ -46,15 +48,35 @@ __Important Note:__ information in the __staff__ table has priority over informa
 
 #### Both
 Run the below commands in both your production and testing/staging databases.
-```
+``` sql
+
+CREATE TABLE dsk (
+  `PK`   INT AUTO_INCREMENT PRIMARY KEY,
+  `name` TEXT
+);
+
+INSERT INTO dsk (`name`) VALUES ('EXTERNAL');
+
+CREATE TABLE department (
+  `PK`   INT AUTO_INCREMENT PRIMARY KEY,
+  `name` TEXT
+);
+
 CREATE TABLE users
 (
-    id INT(9) PRIMARY KEY NOT NULL,
-    first_name TEXT,
-    last_name TEXT,
-    email TEXT,
-    send_emails TINYINT(1) DEFAULT '1'
+  id          INT(9)                              NOT NULL
+    PRIMARY KEY,
+  first_name  TEXT                                NULL,
+  last_name   TEXT                                NULL,
+  email       TEXT                                NULL,
+  send_emails TINYINT(1) DEFAULT '1'              NULL,
+  dsk         INT                                 NULL,
+  department  INT                                 NULL,
+  updated     TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  FOREIGN KEY (dsk) REFERENCES dsk (PK),
+  FOREIGN KEY (department) REFERENCES department (PK)
 );
+
 CREATE TABLE clock
 (
     id INT(9),
@@ -67,7 +89,8 @@ CREATE TABLE events
     TIMESTAMP TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL,
     redid INT(9),
     action TEXT,
-    params TEXT
+    params TEXT,
+    FOREIGN KEY (redid) REFERENCES users (id)
 );
 CREATE TABLE quotes
 (
@@ -101,11 +124,20 @@ INSERT INTO users VALUES (999999999, 'WalkIn', 'User', 'nobody@blackboard.sdsu.e
 
 #### Testing/Staging
 Run the set of commands below in your testing/staging database __in addition to__ the commands listed above.
-```
+``` sql
 INSERT INTO users VALUES (100000001, 'Test', 'User', 'unique_email@blackboard.sdsu.edu', 1);
 INSERT INTO staff VALUES (123456789, 'Test', 'Staff', 'staff@blackboard.sdsu.edu', 1, 0, 0);
 INSERT INTO staff VALUES (123123123, 'Test', 'Admin', 'admin@blackboard.sdsu.edu', 0, 1, 0);
 ```
+
+### Blackboard Setup
+In order to interface with Blackboard and it's REST API, you will need to be running Blackboard LEARN version 3000 or higher.
+Additionally, you will need to regsiter with the Blackboard Developer site, and create an application in order to obtain an
+Application ID, Application Key, Application Secret. Make note of these, especially the Secret, as they are only shown once
+and you will need to save them in the Vault (described below).
+Once you have your application ID, you will need to authorize the application with Blackboard. You can do this by going into
+the Blackboard Administrator Panel, then going into "REST API Integrations" and Creating an Integration. Enter the Application
+ID you obtained earlier and you should be good to go.
 
 ### Vault Setup
 You will need to create two secrets in the vault, one that will have the information for your production system, the
@@ -115,14 +147,18 @@ The name of the app that you want to use needs to be set as the `WELCOME_APP` en
 You will also need to set the `VAULT_ADDR`, `VAULT_ROLE` and `VAULT_SECRET` environment variables to their corresponding values.
 
 #### Production
+- `bb-API-secret` = Name of the Secret with the Blackboard Application Credentials
+- `bb-url` = Blackboard URL
+- `syncEnable` = Enable/Disable (T/F) Blackboard Sync
+- `syncFrequency` = How often the Sync Job should run (30s recommended)
 - `db-password` = Database Password
 - `db-url` = jdbc:mysql://db_host:3306/db_name _replace db_host, db_name and possibly the port with your MySQL server info_
--	`db-user` = Database Username
+- `db-user` = Database Username
 - `followup_freshness` = The maximum amount of time since the user's last visit to email the user
--	`followup_max` = The minimum number of days between emails
--	`followup_survey_link` = Survey Link for the User, use the string `{{ event_id }}` to fill in the Event ID.
+- `followup_max` = The minimum number of days between emails
+- `followup_survey_link` = Survey Link for the User, use the string `{{ event_id }}` to fill in the Event ID.
 Example: [http://www.bing.com/images/search?q={{ event_id }}](http://www.bing.com/images/search?q={{ event_id }})
--	`followup_unsubscribe` = Unsubscribe Link, use `{{ email }}` to substitute the email.
+- `followup_unsubscribe` = Unsubscribe Link, use `{{ email }}` to substitute the email.
 Example:  [http://your_domian_with_context/followup/unsubscribe.html?email={{ email }}](http://your_domian_with_context/followup/unsubscribe.html?email={{ email }})
 
 #### Testing/Staging
@@ -144,6 +180,15 @@ Create an additional application with the email credentials.
 Finally, create a fourth application with the Acuity Scheduling configuration information.
 - `User ID`
 - `API Key`
+
+#### Blackboard (`bb-api-user-sync`)
+You will need to create a Blackboard Application, with the Blackboard Developer Site, as described above.
+Save the various values that you got during the application creation process as the following values in the Vault 
+respectively. 
+- `applicationID`
+- `key`
+- `secret`
+
 
 ### Acuity Setup
 One small addition needs to be made to the Acuity Scheduler. By default, the Client Scheduling page of Acuity is not setup to process multiple sessions in the same window. To fix this, we need to add a small snippet of code to the Confirmation Page. This can be done by enabling _Custom Conversion Tracking_ (Under Import/Export/Syncing).

@@ -1,4 +1,4 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its;
 
 import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;

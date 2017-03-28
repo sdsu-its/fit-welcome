@@ -30,7 +30,7 @@
     "buttons": {
       "Blackboard": "finish('Meet an ID', 'Blackboard')",
       "i>Clicker&reg;": "finish('Meet an ID', 'iClickers')",
-      "Web Conferencing": "finish('Meet an ID', 'Web Conferencing')",
+      "Zoom": "finish('Meet an ID', 'Web Conferencing')",
       "Turnitin&reg;": "finish('Meet an ID', 'Turnitin')",
       "Respondus": "finish('Meet an ID', 'Respondus')",
       "Course Design": "finish('Meet an ID', 'Course Design')",

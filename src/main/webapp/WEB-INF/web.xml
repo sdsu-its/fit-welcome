@@ -22,7 +22,7 @@
         <async-supported>true</async-supported>
     </servlet>
     <listener>
-        <listener-class>edu.sdsu.its.fit_welcome.Init</listener-class>
+        <listener-class>edu.sdsu.its.Init</listener-class>
     </listener>
     <servlet-mapping>
         <servlet-name>edu.sdsu.its.fit_welcome</servlet-name>

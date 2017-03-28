@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -55,7 +56,11 @@ public class Live {
                 .data(String.class, gson.toJson(prepareEvent(broadcastEvent)))
                 .build();
         LOGGER.info(String.format("Broadcasting new Message to Clients - Event ID: %d", broadcastEvent.id));
-        broadcaster.broadcast(event);
+        try {
+            broadcaster.broadcast(event);
+        } catch (Exception e) {
+            LOGGER.warn(String.format("Problem Broadcasting Event - Event ID: %d", broadcastEvent.id), e);
+        }
     }
 
     /**

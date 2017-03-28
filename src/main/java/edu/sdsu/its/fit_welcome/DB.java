@@ -1,6 +1,8 @@
 package edu.sdsu.its.fit_welcome;
 
 import com.opencsv.CSVWriter;
+import edu.sdsu.its.Blackboard.Models.DataSource;
+import edu.sdsu.its.Vault;
 import edu.sdsu.its.fit_welcome.Models.Event;
 import edu.sdsu.its.fit_welcome.Models.Staff;
 import edu.sdsu.its.fit_welcome.Models.User;
@@ -24,7 +26,7 @@ import java.util.List;
  */
 @SuppressWarnings({"SqlNoDataSourceInspection", "SqlResolve"})
 public class DB {
-    private static final Logger Log = Logger.getLogger(DB.class);
+    private static final Logger LOGGER = Logger.getLogger(DB.class);
 
     /**
      * Create and return a new DB Connection
@@ -46,10 +48,10 @@ public class DB {
                         db_user,
                         db_pass);
             } else {
-                Log.warn("Not all DB Credentials retrieved from Vault");
+                LOGGER.warn("Not all DB Credentials retrieved from Vault");
             }
         } catch (Exception e) {
-            Log.fatal("Problem Initializing DB Connection", e);
+            LOGGER.fatal("Problem Initializing DB Connection", e);
         }
 
         return conn;
@@ -64,18 +66,18 @@ public class DB {
 
                 try {
                     statement = connection.createStatement();
-                    Log.info(String.format("Executing SQL Statement - \"%s\"", sql));
+                    LOGGER.info(String.format("Executing SQL Statement - \"%s\"", sql));
                     statement.execute(sql);
 
                 } catch (SQLException e) {
-                    Log.error("Problem Executing Statement \"" + sql + "\"", e);
+                    LOGGER.error("Problem Executing Statement \"" + sql + "\"", e);
                 } finally {
                     if (statement != null) {
                         try {
                             statement.close();
                             connection.close();
                         } catch (SQLException e) {
-                            Log.warn("Problem Closing Statement", e);
+                            LOGGER.warn("Problem Closing Statement", e);
                         }
                     }
                 }
@@ -91,7 +93,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName + ".csv");
@@ -102,13 +104,13 @@ public class DB {
             resultSet.close();
 
         } catch (SQLException e) {
-            Log.error("Problem Querying DB", e);
+            LOGGER.error("Problem Querying DB", e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    Log.warn("Problem Closing Data Dump File");
+                    LOGGER.warn("Problem Closing Data Dump File");
                 }
             }
 
@@ -117,7 +119,7 @@ public class DB {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -129,6 +131,98 @@ public class DB {
         return input.replace("'", "");
     }
 
+
+    public static void syncUser(final int id, final String first_name, final String last_name,
+                                final String email, final DataSource dsk, final String department) {
+        Statement statement = null;
+        Connection connection = null;
+
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+            statement = connection.createStatement();
+
+            final String dskSQL = "INSERT INTO dsk (`name`)\n" +
+                    "SELECT '" + sanitize(dsk.externalId) + "' FROM dsk\n" +
+                    "WHERE NOT EXISTS (SELECT * FROM dsk\n" +
+                    "      WHERE name='" + sanitize(dsk.externalId) + "' )\n" +
+                    "LIMIT 1;";
+
+            final String departmentSQL = "INSERT INTO department (`name`)\n" +
+                    "SELECT '" + sanitize(department) + "' FROM department\n" +
+                    "WHERE NOT EXISTS (SELECT * FROM department\n" +
+                    "      WHERE name='" + sanitize(department) + "' )\n" +
+                    "LIMIT 1;";
+
+            final String updateUserSQL = "INSERT INTO users (`id`, `first_name`, `last_name`, `email`, `dsk`, `department`, `updated`) VALUES (\n" +
+                    "  " + id + ",\n" +
+                    "  '" + sanitize(first_name) + "',\n" +
+                    "  '" + sanitize(last_name) + "',\n" +
+                    "  '" + sanitize(email) + "',\n" +
+                    "  (SELECT `PK`\n" +
+                    "   FROM dsk\n" +
+                    "   WHERE name = '" + sanitize(dsk.externalId) + "'\n" +
+                    "   LIMIT 1),\n" +
+                    "  (SELECT `PK`\n" +
+                    "   FROM department\n" +
+                    "   WHERE name = '" + sanitize(department) + "'\n" +
+                    "   LIMIT 1),\n" +
+                    "  now())\n" +
+                    "ON DUPLICATE KEY UPDATE\n" +
+                    "  `first_name` = '" + sanitize(first_name) + "',\n" +
+                    "  `last_name`  = '" + sanitize(last_name) + "',\n" +
+                    "  `email`      = '" + sanitize(email) + "',\n" +
+                    "  `dsk`        = (SELECT `PK`\n" +
+                    "                  FROM dsk\n" +
+                    "                  WHERE name = '" + sanitize(dsk.externalId) + "'\n" +
+                    "                  LIMIT 1),\n" +
+                    "  `department` = (SELECT `PK`\n" +
+                    "                  FROM department\n" +
+                    "                  WHERE name = '" + sanitize(department) + "'\n" +
+                    "                  LIMIT 1),\n" +
+                    "  `updated`    = now();\n";
+
+            LOGGER.debug(String.format("Executing SQL Statement as Batch - \"%s\"", dskSQL));
+            statement.addBatch(dskSQL);
+
+            LOGGER.debug(String.format("Executing SQL Statement as Batch - \"%s\"", departmentSQL));
+            statement.addBatch(departmentSQL);
+
+            LOGGER.debug(String.format("Executing SQL Statement as Batch - \"%s\"", updateUserSQL));
+            statement.addBatch(updateUserSQL);
+
+            LOGGER.debug("Executing Batch");
+            LOGGER.debug(String.format("Updated User - %d", id));
+            statement.executeBatch();
+        } catch (Exception e) {
+            LOGGER.warn("Problem Updating/Creating User", e);
+        } finally {
+
+            if (statement != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    LOGGER.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Remove Old Users from DB
+     *
+     * @param age After how many days should users be removed?
+     */
+    public static void cleanUsers(int age) {
+        executeStatement("DELETE FROM users\n" +
+                "WHERE dsk.PK != (SELECT `id`\n" +
+                "                 FROM dsk\n" +
+                "                 WHERE name = 'EXTERNAL')\n" +
+                "      AND updated < (NOW() - INTERVAL " + age + " DAY)\n" +
+                "      AND NOT COUNT((SELECT `ID` FROM events WHERE `redid` = users.id)) > 0;");
+    }
 
     /**
      * Get User for the specified ID
@@ -144,7 +238,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM users WHERE id = " + id + ";";
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -153,14 +247,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem querying DB for UserID", e);
+            LOGGER.error("Problem querying DB for UserID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -182,7 +276,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM users WHERE email = '" + email + "';";
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -191,14 +285,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem querying DB for UserID", e);
+            LOGGER.error("Problem querying DB for UserID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -221,7 +315,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM staff WHERE id = " + id + ";";
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -232,14 +326,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem querying DB for UserID", e);
+            LOGGER.error("Problem querying DB for UserID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -264,7 +358,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT * FROM staff " + restriction + ";";
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             final List<Staff> staffList = new ArrayList<>();
@@ -286,14 +380,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem querying DB for Staff List", e);
+            LOGGER.error("Problem querying DB for Staff List", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -302,7 +396,7 @@ public class DB {
     }
 
     /**
-     * Log FIT Center Event
+     * LOGGER FIT Center Event
      *
      * @param id     {@link int} Users's ID
      * @param action {@link String} User's Goal
@@ -320,7 +414,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Statement - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Statement - \"%s\"", sql));
             statement.execute(sql);
             ResultSet resultSet = statement.executeQuery("SELECT `AUTO_INCREMENT`\n" +
                     "FROM INFORMATION_SCHEMA.TABLES\n" +
@@ -331,14 +425,14 @@ public class DB {
             }
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem Creating New Event \"" + sql + "\"", e);
+            LOGGER.error("Problem Creating New Event \"" + sql + "\"", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -360,7 +454,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT MAX(id) FROM quotes;";
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -369,14 +463,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem querying DB for Max Quote ID", e);
+            LOGGER.error("Problem querying DB for Max Quote ID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -398,7 +492,7 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = "SELECT author, text FROM quotes WHERE id = " + quoteNum + ";";
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -408,14 +502,14 @@ public class DB {
 
             resultSet.close();
         } catch (SQLException e) {
-            Log.error("Problem querying DB for Quote by ID", e);
+            LOGGER.error("Problem querying DB for Quote by ID", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -459,20 +553,20 @@ public class DB {
         try {
             statement = connection.createStatement();
             final String sql = String.format("SELECT * FROM clock WHERE id = %d AND time_out = '0000-00-00 00:00:00';", id);
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             status = resultSet.next();
 
         } catch (SQLException e) {
-            Log.error("Problem Adding Action to DB", e);
+            LOGGER.error("Problem Adding Action to DB", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -514,7 +608,7 @@ public class DB {
         try {
             return queryToCSV(sql, fileName);
         } catch (IOException e) {
-            Log.error("Problem Saving Events to CSV", e);
+            LOGGER.error("Problem Saving Events to CSV", e);
             return null;
         }
     }
@@ -543,7 +637,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             List<Clock.ClockIO> clockIOs = new ArrayList<Clock.ClockIO>();
@@ -557,14 +651,14 @@ public class DB {
                 rarray[e] = clockIOs.get(e);
             }
         } catch (SQLException e) {
-            Log.error("Problem retreating Clock entries from DB");
+            LOGGER.error("Problem retreating Clock entries from DB");
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -581,7 +675,7 @@ public class DB {
     public static boolean createNewStaff(final Staff staff) {
         if (getStaff(staff.id) != null) {
             // If a staff member with that record already exists for that ID, thrown an error.
-            Log.warn("Cannot create new Staff user, a record with that ID already exists.");
+            LOGGER.warn("Cannot create new Staff user, a record with that ID already exists.");
             return false;
         }
 
@@ -601,7 +695,7 @@ public class DB {
         final String sql = "UPDATE users\n" +
                 "SET send_emails = 0\n" +
                 "WHERE email = '" + email + "';";
-        Log.info(String.format("Unsubscribing user with email: %s from FollowUp List", email));
+        LOGGER.info(String.format("Unsubscribing user with email: %s from FollowUp List", email));
         executeStatement(sql);
     }
 
@@ -614,7 +708,7 @@ public class DB {
         final String sql = "UPDATE users\n" +
                 "SET send_emails = 1\n" +
                 "WHERE email = '" + email + "';";
-        Log.info(String.format("Subscribing user with email: %s to FollowUp List", email));
+        LOGGER.info(String.format("Subscribing user with email: %s to FollowUp List", email));
         executeStatement(sql);
     }
 
@@ -632,7 +726,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
@@ -640,14 +734,14 @@ public class DB {
             }
 
         } catch (SQLException e) {
-            Log.error("Problem retrieving Event entries from DB");
+            LOGGER.error("Problem retrieving Event entries from DB");
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -670,7 +764,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
 
             while (resultSet.next()) {
@@ -687,14 +781,14 @@ public class DB {
             }
 
         } catch (SQLException e) {
-            Log.error("Problem retrieving Event entries from DB");
+            LOGGER.error("Problem retrieving Event entries from DB");
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -716,7 +810,7 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
                 appointmentType.eventText = resultSet.getString("event_text");
@@ -726,7 +820,7 @@ public class DB {
                 appointmentType.eventParams = "";
             }
         } catch (SQLException e) {
-            Log.error("Problem retrieving Acuity Appointment Matches entries from DB", e);
+            LOGGER.error("Problem retrieving Acuity Appointment Matches entries from DB", e);
             appointmentType.eventText = "";
             appointmentType.eventParams = "";
         } finally {
@@ -735,7 +829,7 @@ public class DB {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
@@ -768,18 +862,18 @@ public class DB {
 
         try {
             statement = connection.createStatement();
-            Log.info(String.format("Executing SQL Query - \"%s\"", sql));
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) result.add(resultSet.getString(1));
         } catch (SQLException e) {
-            Log.error("Problem retrieving Locales from DB", e);
+            LOGGER.error("Problem retrieving Locales from DB", e);
         } finally {
             if (statement != null) {
                 try {
                     statement.close();
                     connection.close();
                 } catch (SQLException e) {
-                    Log.warn("Problem Closing Statement", e);
+                    LOGGER.warn("Problem Closing Statement", e);
                 }
             }
         }
