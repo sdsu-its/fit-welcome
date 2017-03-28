@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * TODO JavaDoc
+ * Test Blackboard Integration
  *
  * @author Tom Paulus
  *         Created on 3/24/17.
