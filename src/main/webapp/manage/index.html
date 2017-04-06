@@ -7,9 +7,10 @@
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/signin.css">
 
-    <script src="../js/js.cookie.js" type="text/javascript"></script> <!-- Imported before load to deal with Redirect -->
+    <script src="../js/js.cookie.js" type="text/javascript"></script>
+    <!-- Imported before load to deal with Redirect -->
     <script type="text/javascript">
-        if (Cookies.get("manage-session") !== null && Cookies.get("manage-session").length > 0) {
+        if (Cookies.get("manage-session") !== undefined) {
             window.location.replace("manage.html");
         }
     </script>
@@ -19,6 +20,17 @@
     <div class="logo">
         <img class="logo" src="logo.png">
     </div>
+
+    <noscript>
+        <div class="alert alert-danger" role="alert" id="noScriptAlert">You do not have JavaScript Enabled! Checkout
+            will not work properly with out it.
+            <br>
+            Here are the <a class="alert-link"
+                            href="http://www.enable-javascript.com/"
+                            target="_blank">
+                instructions how to enable JavaScript in your web browser</a>.
+        </div>
+    </noscript>
 
     <form class="form-signin">
         <h2 class="form-signin-heading">Please sign in</h2>

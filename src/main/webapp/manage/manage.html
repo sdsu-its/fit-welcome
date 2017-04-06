@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
           integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/common.css">
+
+    <!-- TODO Check Session Token and Redirect if necessary with post login redirect -->
+    <!-- TODO Add page determination based on # of URL -->
 </head>
 <body>
 <nav class="navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
@@ -35,11 +38,25 @@
     </div>
 </nav>
 
+<!-- Alerts -->
+<div class="container" id="alerts">
+    <noscript>
+        <div class="alert alert-danger" role="alert" id="noScriptAlert">You do not have JavaScript Enabled! Checkout
+            will not work properly with out it.
+            <br>
+            Here are the <a class="alert-link"
+                            href="http://www.enable-javascript.com/"
+                            target="_blank">
+                instructions how to enable JavaScript in your web browser</a>.
+        </div>
+    </noscript>
+</div>
+<!-- /alerts -->
+
 <div class="container" id="view-container">
     <!-- Will be filled by loadView() in index.js -->
 </div>
 
-<script src="https://use.fontawesome.com/510a1deb25.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" type="text/javascript"></script>
 <script src="js/tether.min.js" type="text/javascript"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
