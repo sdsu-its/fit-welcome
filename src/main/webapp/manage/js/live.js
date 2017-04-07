@@ -6,7 +6,7 @@
 
 const refreshRate = 2500; // Refresh event list every X milliseconds
 const flashDuration = 5000; // How long a notified row should flash
-var notifyChime = new Audio("Alert.mp3");
+var notifyChime = new Audio("../../assets/Alert.mp3");
 
 var latestEvent = 0;
 
@@ -18,29 +18,8 @@ var events = [];
 var SSEsource = null;
 
 window.onload = function () {
-    // Select the ID Input Area automatically on NON-iPads
-    var ua = navigator.userAgent;
-    var idBox = document.getElementById('userID');
-
-    if (!ua.toLowerCase().indexOf("iPad".toLowerCase()) > -1) {
-        idBox.focus();
-        idBox.select();
-    }
+    getPastEvents();
 };
-
-/**
- * OnSubmit Action
- * @returns {boolean} Always false to prevent refresh
- */
-function login() {
-    var submitButton = document.getElementsByClassName("submitButton")[0];
-    submitButton.innerHTML = '<i class="fa fa-spinner fa-pulse"></i> Loading...';
-    submitButton.disabled = true;
-
-    userID = document.getElementById("userID").value;
-    getPastEvents(userID);
-    return false; // Used to not change page
-}
 
 /**
  * Update document to display successful login
@@ -81,7 +60,7 @@ function setReady() {
  * Load Events via Server Sent Events
  */
 function loadEvents() {
-    SSEsource = new EventSource("../api/live/stream");
+    SSEsource = new EventSource("../../api/live/stream");
     SSEsource.onmessage = function (event) {
         var obj = JSON.parse(event.data);
 
@@ -134,7 +113,7 @@ function flashRow(rowId) {
  *
  * @param userID (String) User ID, must be listed as Staff in the DB
  */
-function getPastEvents(userID) {
+function getPastEvents() {
     var xmlHttp = new XMLHttpRequest();
 
     xmlHttp.onreadystatechange = function () {
@@ -163,7 +142,8 @@ function getPastEvents(userID) {
         }
     };
 
-    xmlHttp.open('GET', "../api/live/getEvents" + "?id=" + userID);
+    xmlHttp.open('GET', "../api/live/getEvents");
+    // TODO Use Session Cookie!
     xmlHttp.send();
 }
 

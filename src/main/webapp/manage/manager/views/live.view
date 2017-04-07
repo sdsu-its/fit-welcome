@@ -1,0 +1,13 @@
+<div class="live">
+    <div id="loading" style="visibility: hidden;">Loading...</div>
+
+    <table id="events" align="center" style="visibility: hidden;">
+        <tr class="header">
+            <td>User's Name</td>
+            <td>Check-in Time</td>
+            <td>Visit Goal</td>
+            <td>Problem/Params</td>
+        </tr>
+    </table>
+</div>
+<script src="../../js/live.js" type="application/javascript"></script>

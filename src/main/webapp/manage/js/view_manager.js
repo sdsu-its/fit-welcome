@@ -2,10 +2,6 @@
  * Created by tom on 4/6/17.
  */
 
-window.onload = function () {
-    loadView("index");
-};
-
 function showHome() {
     if (user !== null) showPage("welcome", "menu-home");
     else showPage("index", "menu-home");

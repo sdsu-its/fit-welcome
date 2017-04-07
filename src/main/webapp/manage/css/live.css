@@ -1,16 +1,11 @@
-body {
-    font-family: Helvetica, sans-serif;
-    font-weight: lighter;
-}
-
-h1 {
+div.live h1 {
     font-size: 2em;
     font-weight: bold;
     text-align: center;
     padding-bottom: .5em;
 }
 
-table {
+div.live table {
     width: 95%;
 }
 
@@ -44,32 +39,23 @@ table {
     margin-top: 7em;
 }
 
-#badCred {
-    text-align: center;
-    color: red;
-    font-size: 1.5em;
-
-    margin-top: 1em;
-    margin-bottom: 1em;
-}
-
-table.edit {
+div.live table.edit {
     min-width: 25em;
 }
 
-table.edit td {
+div.live table.edit td {
     padding: .25em;
 }
 
-table.edit textarea {
+div.live table.edit textarea {
     width: 100%;
 }
 
-table.editButtons {
+div.live table.editButtons {
     padding: .5em 0 0;
 }
 
-table.editButtons button {
+div.live table.editButtons button {
     font-size: .75em;
     width: 100%;
     height: 2.5em;
@@ -123,7 +109,7 @@ table.editButtons button {
     /* IE 10+ */
 }
 
-tr.header > td, th {
+div.live tr.header > td, th {
     text-align: left;
 }
 
