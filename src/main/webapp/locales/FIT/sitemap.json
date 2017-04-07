@@ -8,7 +8,7 @@
       "Use the ParScore Machines": "finish('Use ParScore')",
       "Meet with an Instructional Designer": "showPage('ID Topics')",
       "Schedule a ParScore Appointment": "scheduler(536800)",
-      "Help with Blackboard": "finish('Meet with ID', 'Blackboard')",
+      "Help with Blackboard": "finish('Meet an ID', 'Blackboard')",
       "Learn how to use a new technology": "finish('Attend a workshop')",
       "Something that is not listed here": "showPage('Other')"
     }
