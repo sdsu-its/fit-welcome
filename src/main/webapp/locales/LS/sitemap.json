@@ -1,0 +1,19 @@
+{
+  "title": "Learning Spaces",
+  "mainHead": "Welcome to ITS Learning Spaces!",
+  "index": {
+    "pageHead": "Welcome <span class='firstName'>Jane</span>!",
+    "pageSubHead": "No objectives are defined at this juncture.",
+    "buttons": {
+    }
+  },
+  "admin": {
+    "pageHead": "Admin Tools",
+    "buttons": {
+      "Manual Time Entry": "showTimeEntry()",
+      "Email Timesheets": "showPage('timesheetReport')",
+      "Add a New Staff User": "showPage('newUser')",
+      "Force Clock Out all Users": "clockOutAll();"
+    }
+  }
+}
