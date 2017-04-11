@@ -9,7 +9,7 @@ repositories {
     mavenCentral()
 }
 war {
-    archiveName 'fit-welcome.war'
+    archiveName 'welcome.war'
 }
 dependencies {
     // Logging
