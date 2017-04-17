@@ -40,6 +40,7 @@
   "Other": {
     "pageHead": "Are We Getting Warmer?",
     "buttons": {
+      "Experience Virtual Reality" : "finish('VR')",
       "Informal Office": "finish('In-between Office')",
       "Use the Internet": "finish('Use the Internet')",
       "Printing/Scanning": "finish('Printing/Scanning')",
