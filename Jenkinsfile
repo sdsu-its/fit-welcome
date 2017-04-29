@@ -1,18 +1,32 @@
 pipeline {
   agent any
   stages {
-    stage('Build') {
+    stage('Build Web App') {
       steps {
-        sh '''# WebApp WAR
+        parallel(
+          "Build Web App": {
+            sh '''# WebApp WAR
 ./gradlew clean build war;'''
-        sh '''# Follow Up Module
-cd followup;
-./gradlew clean build fatJar;
-cd ..;'''
-        sh '''# Alerts Module
-cd alerts;
-./gradlew clean build fatJar;
-cd ..;'''
+            fileExists 'welcome.war'
+            
+          },
+          "Build Alerts Module": {
+            dir(path: 'alerts') {
+              sh './gradlew clean build fatJar;'
+              fileExists 'alerts-all-1.0.jar'
+            }
+            
+            
+          },
+          "Build Follow Up Module": {
+            dir(path: 'followup') {
+              sh './gradlew clean build fatJar;'
+              fileExists 'followup-all-1.0.jar'
+            }
+            
+            
+          }
+        )
       }
     }
   }
