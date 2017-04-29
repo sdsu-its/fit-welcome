@@ -16,4 +16,7 @@ cd ..;'''
       }
     }
   }
+  environment {
+    WELCOME_APP = 'fit_welcome_test'
+  }
 }
