@@ -30,14 +30,14 @@ public class Auth {
                         Vault.getParam(BB_API_SECRET, "secret"))
                 .asString();
 
-        if (httpResponse.getStatus() == 401) {
+        if (httpResponse.getStatus() / 100 != 2) {
             LOGGER.fatal("Problem Authenticating with Learn Server", new Exception(httpResponse.getBody()));
             return;
         }
 
         Gson gson = new Gson();
         AuthPayload payload = gson.fromJson(httpResponse.getBody(), AuthPayload.class);
-        LOGGER.debug("Recieved token from LEARN Server - " + payload.access_token);
+        LOGGER.debug("Received token from LEARN Server - " + payload.access_token);
         token = payload.access_token;
     }
 
