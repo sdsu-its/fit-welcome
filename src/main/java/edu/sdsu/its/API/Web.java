@@ -1,6 +1,7 @@
 package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.API.Models.Event;
 import edu.sdsu.its.API.Models.Login;
@@ -130,12 +131,20 @@ public class Web {
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public static class SimpleMessage {
-        String message;
+        @Expose
+        private String status = null;
+        @Expose
+        private String message;
 
         public SimpleMessage(String message) {
             this.message = message;
         }
-    }
 
+        public SimpleMessage(String status, String message) {
+            this.status = status;
+            this.message = message;
+        }
+    }
 }
