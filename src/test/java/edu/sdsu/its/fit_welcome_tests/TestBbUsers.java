@@ -4,7 +4,7 @@ import edu.sdsu.its.Blackboard.Models.DataSource;
 import edu.sdsu.its.Blackboard.Models.User;
 import edu.sdsu.its.Blackboard.Users;
 import edu.sdsu.its.Vault;
-import edu.sdsu.its.fit_welcome.DB;
+import edu.sdsu.its.Welcome.DB;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;

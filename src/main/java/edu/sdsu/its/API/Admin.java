@@ -1,9 +1,11 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
-import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.TimeEntry;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.Welcome.Report;
+import edu.sdsu.its.API.Models.Event;
+import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.API.Models.TimeEntry;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;

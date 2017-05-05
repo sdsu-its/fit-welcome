@@ -1,4 +1,4 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
 /**
  * Display Daily Quotes on the Confirmation Page
@@ -8,6 +8,7 @@ package edu.sdsu.its.fit_welcome;
  */
 
 import com.google.gson.Gson;
+import edu.sdsu.its.Welcome.DB;
 import org.joda.time.DateTime;
 
 import javax.ws.rs.Consumes;

@@ -1,17 +1,16 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
-import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Login;
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.Event;
+import edu.sdsu.its.API.Models.Login;
+import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.API.Models.User;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 
 /**
  * Primary Web Interactions

@@ -1,6 +1,7 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
+import edu.sdsu.its.Welcome.DB;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.Consumes;

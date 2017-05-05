@@ -1,10 +1,10 @@
 package edu.sdsu.its.fit_welcome_tests;
 
-import edu.sdsu.its.fit_welcome.DB;
-import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
-import edu.sdsu.its.fit_welcome.Quote;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.Event;
+import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.API.Models.User;
+import edu.sdsu.its.API.Quote;
 import edu.sdsu.its.Vault;
 import org.apache.log4j.Logger;
 import org.junit.Test;

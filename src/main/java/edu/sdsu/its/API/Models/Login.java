@@ -1,6 +1,6 @@
-package edu.sdsu.its.fit_welcome.Models;
+package edu.sdsu.its.API.Models;
 
-import edu.sdsu.its.fit_welcome.Acutiy;
+import edu.sdsu.its.API.Acutiy;
 
 /**
  * Models a Login for a User
