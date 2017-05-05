@@ -1,6 +1,6 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.Welcome;
 
-import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.API.Models.Staff;
 import org.apache.log4j.Logger;
 
 import java.io.File;

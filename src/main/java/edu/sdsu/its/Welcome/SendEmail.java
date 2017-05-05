@@ -1,4 +1,4 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.Welcome;
 
 import edu.sdsu.its.Vault;
 import org.apache.commons.mail.DefaultAuthenticator;

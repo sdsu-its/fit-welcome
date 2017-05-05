@@ -1,6 +1,7 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
-import edu.sdsu.its.fit_welcome.Models.User;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.User;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 

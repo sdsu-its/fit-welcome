@@ -1,8 +1,8 @@
 package edu.sdsu.its;
 
 import edu.sdsu.its.Jobs.SyncUserDB;
-import edu.sdsu.its.fit_welcome.DB;
-import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.Staff;
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;

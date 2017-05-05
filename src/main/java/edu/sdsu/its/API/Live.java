@@ -1,8 +1,9 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
-import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.Event;
+import edu.sdsu.its.API.Models.Staff;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -13,7 +14,6 @@ import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.util.List;
 
 /**

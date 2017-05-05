@@ -1,12 +1,13 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import edu.sdsu.its.Vault;
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.API.Models.User;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;

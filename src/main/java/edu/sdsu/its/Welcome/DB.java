@@ -1,11 +1,14 @@
-package edu.sdsu.its.fit_welcome;
+package edu.sdsu.its.Welcome;
 
 import com.opencsv.CSVWriter;
 import edu.sdsu.its.Blackboard.Models.DataSource;
 import edu.sdsu.its.Vault;
-import edu.sdsu.its.fit_welcome.Models.Event;
-import edu.sdsu.its.fit_welcome.Models.Staff;
-import edu.sdsu.its.fit_welcome.Models.User;
+import edu.sdsu.its.API.Acutiy;
+import edu.sdsu.its.API.Clock;
+import edu.sdsu.its.API.Models.Event;
+import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.API.Models.User;
+import edu.sdsu.its.API.Quote;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -405,7 +408,7 @@ public class DB {
      * @return {link int} Created Event ID
      */
     public static int logEvent(final String timestamp, final int id, final String action, final String locale, String params) {
-        params = params != null ? params : ""; // Set Params to an empty string if it is null, which happens when no value is passed in from the API
+        params = params != null ? params : ""; // Set Params to an empty string if it is null, which happens when no value is passed in from the Welcome
         final String sql = String.format("INSERT INTO events(TIMESTAMP, redid, action, locale, params) VALUE ('%s', %d, '%s', '%s', '%s')", timestamp, id, sanitize(action), sanitize(locale), sanitize(params));
 
         Statement statement = null;
@@ -799,7 +802,7 @@ public class DB {
     /**
      * Get Appointment Matches from the DB
      *
-     * @param appointmentType {@link Acutiy.AppointmentType} Appointment Type from Acuity API
+     * @param appointmentType {@link Acutiy.AppointmentType} Appointment Type from Acuity Welcome
      * @return {@link Acutiy.AppointmentType} Appointment Type with Event Params
      */
     public static Acutiy.AppointmentType getAppointmentTypeMatch(Acutiy.AppointmentType appointmentType) {
