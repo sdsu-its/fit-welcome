@@ -15,7 +15,7 @@ public class Staff extends User {
     public boolean instructional_designer;
 
     public Staff(int id, String firstName, String lastName, String email, boolean clockable, boolean admin, boolean instructional_designer) {
-        super(id, firstName, lastName, email);
+        super(id, firstName, lastName, email, false);
         this.clockable = clockable;
         this.admin = admin;
         this.instructional_designer = instructional_designer;
