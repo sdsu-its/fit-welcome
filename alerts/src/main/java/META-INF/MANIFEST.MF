@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: edu.sdsu.its.fit_welcome.alerts.Main
-

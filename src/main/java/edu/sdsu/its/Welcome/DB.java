@@ -11,6 +11,7 @@ import edu.sdsu.its.API.Models.User;
 import edu.sdsu.its.API.Quote;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 
 import java.io.File;
@@ -245,7 +246,13 @@ public class DB {
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
-                user = new User(id, resultSet.getString("first_name"), resultSet.getString("last_name"), resultSet.getString("email"));
+                user = new User(
+                        id,
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getString("email"),
+                        resultSet.getBoolean("send_emails")
+                );
             }
 
             resultSet.close();
@@ -283,7 +290,12 @@ public class DB {
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
-                user = new User(resultSet.getInt("id"), resultSet.getString("first_name"), resultSet.getString("last_name"), resultSet.getString("email"));
+                user = new User(
+                        resultSet.getInt("id"),
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getString("email"),
+                        resultSet.getBoolean("send_emails"));
             }
 
             resultSet.close();
@@ -304,6 +316,48 @@ public class DB {
     }
 
     /**
+     * Check when the User was last Emailed
+     *
+     * @param userID    {@link int} User's ID
+     * @param emailName {@link String} Name of the email being Sent
+     * @return {@link Duration} Time since last email
+     */
+    public static Duration lastEmailed(final int userID, final String emailName) {
+        final String sql = "SELECT MAX(TIMESTAMP) FROM email WHERE ID=" + userID + " AND TYPE = '" + emailName + "' ;";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+        DateTime last = new DateTime(0); // The beginning of Joda Time
+
+        try {
+            statement = connection.createStatement();
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            if (resultSet.next()) {
+                Timestamp ts = resultSet.getTimestamp(1);
+                if (ts != null) last = new DateTime(ts);
+            }
+
+        } catch (SQLException e) {
+            LOGGER.error("Problem retrieving Email entries from DB");
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    LOGGER.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return new Duration(last, DateTime.now());
+
+    }
+
+
+    /**
      * Get Staff User based on ID
      *
      * @param id {@link int} User's ID (Commonly their RedID)
@@ -322,8 +376,14 @@ public class DB {
             ResultSet resultSet = statement.executeQuery(sql);
 
             if (resultSet.next()) {
-                staff = new Staff(id, resultSet.getString("first_name"), resultSet.getString("last_name"),
-                        resultSet.getString("email"), resultSet.getBoolean("clockable"), resultSet.getBoolean("admin"), resultSet.getBoolean("instructional_designer"));
+                staff = new Staff(
+                        id,
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getString("email"),
+                        resultSet.getBoolean("clockable"),
+                        resultSet.getBoolean("admin"),
+                        resultSet.getBoolean("instructional_designer"));
             }
 
 
@@ -368,8 +428,15 @@ public class DB {
 
 
             while (resultSet.next()) {
-                staffList.add(new Staff(resultSet.getInt("id"), resultSet.getString("first_name"), resultSet.getString("last_name"),
-                        resultSet.getString("email"), resultSet.getBoolean("clockable"), resultSet.getBoolean("admin"), resultSet.getBoolean("instructional_designer")));
+                staffList.add(
+                        new Staff(
+                                resultSet.getInt("id"),
+                                resultSet.getString("first_name"),
+                                resultSet.getString("last_name"),
+                                resultSet.getString("email"),
+                                resultSet.getBoolean("clockable"),
+                                resultSet.getBoolean("admin"),
+                                resultSet.getBoolean("instructional_designer")));
             }
 
             Collections.sort(staffList, (staff1, staff2) -> staff1.lastName.compareToIgnoreCase(staff2.lastName));
@@ -578,6 +645,60 @@ public class DB {
     }
 
     /**
+     * Export All events that happened within maxAge from Now
+     *
+     * @param maxAge {@link int} Maximum Age of the Events to fetch
+     * @return {@link Event[]} All events that fall between the specified time range
+     */
+    public static Event[] exportEvents(final int maxAge) {
+        final String sql = "SELECT *\n" +
+                "FROM events\n" +
+                "WHERE TIMESTAMP BETWEEN DATE_SUB(now(), INTERVAL " + maxAge + " DAY) AND NOW()\n" +
+                "ORDER BY TIMESTAMP ASC;";
+
+        Connection connection = getConnection();
+        Statement statement = null;
+
+        Event[] rarray = null;
+
+        try {
+            statement = connection.createStatement();
+            LOGGER.info(String.format("Executing SQL Query - \"%s\"", sql));
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            List<Event> eventList = new ArrayList<>();
+
+            while (resultSet.next()) {
+                eventList.add(
+                        new Event(
+                                resultSet.getInt("ID"),
+                                new User(resultSet.getInt("redid")),
+                                new DateTime(resultSet.getTimestamp("TIMESTAMP")))
+                );
+            }
+
+            rarray = new Event[eventList.size()];
+            for (int e = 0; e < eventList.size(); e++) {
+                rarray[e] = eventList.get(e);
+            }
+
+        } catch (SQLException e) {
+            LOGGER.error("Problem retrieving Event entries from DB", e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                    connection.close();
+                } catch (SQLException e) {
+                    LOGGER.warn("Problem Closing Statement", e);
+                }
+            }
+        }
+
+        return rarray;
+    }
+
+    /**
      * Export all Events to a CSV.
      *
      * @param start    {@link String} Start Date (Inclusive). Use HTML-Date (2015-12-23) format.
@@ -645,8 +766,11 @@ public class DB {
 
             List<Clock.ClockIO> clockIOs = new ArrayList<Clock.ClockIO>();
             while (resultSet.next()) {
-                clockIOs.add(new Clock.ClockIO(DateTime.parse(resultSet.getString("time_in"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0")),
-                        DateTime.parse(resultSet.getString("time_out"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0"))));
+                clockIOs.add(
+                        new Clock.ClockIO(
+                                DateTime.parse(resultSet.getString("time_in"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0")),
+                                DateTime.parse(resultSet.getString("time_out"), DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.0")))
+                );
             }
 
             rarray = new Clock.ClockIO[clockIOs.size()];
@@ -882,5 +1006,17 @@ public class DB {
         }
 
         return result;
+    }
+
+    /**
+     * Log emails that are sent
+     *
+     * @param recipientID {@link int} Recipient ID
+     * @param type        {@link String} Type of Email Sent
+     */
+
+    public static void logEmail(final int recipientID, final String type) {
+        final String sql = "INSERT INTO email (TIMESTAMP, ID, TYPE) VALUES (NOW(), " + recipientID + ", '" + sanitize(type) + "');";
+        executeStatement(sql);
     }
 }

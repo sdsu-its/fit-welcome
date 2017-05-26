@@ -23,6 +23,12 @@ public class Event {
 
     public boolean notify = false;
 
+    public Event(int id, User owner, DateTime time) {
+        this.id = id;
+        this.owner = owner;
+        this.time = time;
+    }
+
     public Event(int id, User owner, DateTime time, String type, String locale, String params) {
         this.id = id;
         this.owner = owner;

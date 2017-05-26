@@ -17,12 +17,18 @@ public class User {
     public String firstName;
     public String lastName;
     public String email;
+    public boolean subscribed;
 
-    public User(int id, String firstName, String lastName, String email) {
+    public User(int id, String firstName, String lastName, String email, boolean subscribed) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.subscribed = subscribed;
+    }
+
+    public User(int id) {
+        this.id = id;
     }
 
     public static User getUser(final int id) {
