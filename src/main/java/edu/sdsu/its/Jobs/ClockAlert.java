@@ -27,17 +27,18 @@ public class ClockAlert implements Job {
      * Schedule the Alert Job to run Every Week night at 10PM Pacific Time
      *
      * @param scheduler {@link Scheduler} Quartz Scheduler Instance
+     * @param cron      {@link String} CRON Schedule String for Job
      * @throws SchedulerException Something went wrong scheduling the job
      * @throws ParseException     There was an issue parsing the CRON String
      */
-    public static void schedule(Scheduler scheduler) throws SchedulerException, ParseException {
+    public static void schedule(Scheduler scheduler, String cron) throws SchedulerException, ParseException {
         JobDetail job = newJob(SyncUserDB.class)
                 .withIdentity("SendClockAlerts", "CRON")
                 .build();
 
         // Trigger the job to run now, and then repeat every X Seconds
         CronTriggerImpl trigger = new CronTriggerImpl();
-        trigger.setCronExpression("30 22 * * 1-5");
+        trigger.setCronExpression(cron);
         trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
 
         // Tell quartz to schedule the job using our trigger

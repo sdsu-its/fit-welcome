@@ -69,9 +69,9 @@ public class Init implements ServletContextListener {
         }
 
         try {
-            if (Boolean.parseBoolean(Vault.getParam("alertEnable"))) {
+            if (Boolean.parseBoolean(Vault.getParam("alert_enable"))) {
                 LOGGER.info("Scheduling Non-Clock Out Alerts Job");
-                ClockAlert.schedule(Schedule.getScheduler());
+                ClockAlert.schedule(Schedule.getScheduler(), Vault.getParam("alert_schedule"));
             } else {
                 LOGGER.warn("Non-Clock Out alerts have been disabled via the Vault - Job will NOT be scheduled");
             }
@@ -80,9 +80,9 @@ public class Init implements ServletContextListener {
         }
 
         try {
-            if (Boolean.parseBoolean(Vault.getParam("followupEnable"))) {
+            if (Boolean.parseBoolean(Vault.getParam("followup_enable"))) {
                 LOGGER.info("Scheduling Follow Up Survey Job");
-                FollowUp.schedule(Schedule.getScheduler());
+                FollowUp.schedule(Schedule.getScheduler(), Vault.getParam("followup_schedule"));
             } else {
                 LOGGER.warn("Follow Up Survey Emails have been disabled via the Vault - Job will NOT be scheduled");
             }

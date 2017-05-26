@@ -35,17 +35,18 @@ public class FollowUp implements Job {
      * at 4PM Pacific Time
      *
      * @param scheduler {@link Scheduler} Quartz Scheduler Instance
+     * @param cron      {@link String} CRON Schedule String for Job
      * @throws SchedulerException Something went wrong scheduling the job
      * @throws ParseException     There was an issue parsing the CRON String
      */
-    public static void schedule(Scheduler scheduler) throws SchedulerException, ParseException {
+    public static void schedule(Scheduler scheduler, String cron) throws SchedulerException, ParseException {
         JobDetail job = newJob(SyncUserDB.class)
                 .withIdentity("Follow Up", "CRON")
                 .build();
 
         // Trigger the job to run now, and then repeat every X Seconds
         CronTriggerImpl trigger = new CronTriggerImpl();
-        trigger.setCronExpression("0 16 * * 3,5");
+        trigger.setCronExpression(cron);
         trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
 
         // Tell quartz to schedule the job using our trigger
