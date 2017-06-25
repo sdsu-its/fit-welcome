@@ -1,0 +1,18 @@
+body div.container div.card {
+    text-align: center;
+}
+
+body div.container div.card h4.card-title {
+    font-size: 7rem;
+    font-weight: 300;
+}
+
+body div.container div.card h6.card-subtitle {
+    font-size: 2rem;
+    font-weight: 200;
+}
+
+body div.container div.card img.logo {
+    height: 4rem;
+    margin: 2rem 0 -.75rem;
+}

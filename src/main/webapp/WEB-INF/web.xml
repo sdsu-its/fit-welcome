@@ -6,6 +6,29 @@
         version="3.1">
     <display-name>Welcome - Visitor Tracking &amp; Analytics</display-name>
 
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/assets/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Index</servlet-name>
+        <servlet-class>edu.sdsu.its.Routes.Index</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Index</servlet-name>
+        <url-pattern>/index</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ClientIndex</servlet-name>
+        <servlet-class>edu.sdsu.its.Routes.ClientIndex</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ClientIndex</servlet-name>
+        <url-pattern>/client</url-pattern>
+    </servlet-mapping>
+
     <servlet>
         <servlet-name>edu.sdsu.its.Welcome</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -21,13 +44,16 @@
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
     </servlet>
-    <listener>
-        <listener-class>edu.sdsu.its.Init</listener-class>
-    </listener>
+
     <servlet-mapping>
         <servlet-name>edu.sdsu.its.Welcome</servlet-name>
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
+
+    <listener>
+        <listener-class>edu.sdsu.its.Init</listener-class>
+    </listener>
+
     <session-config>
         <session-timeout>
             30
@@ -35,6 +61,6 @@
     </session-config>
 
     <welcome-file-list>
-        <welcome-file>index.html</welcome-file>
+        <welcome-file>index</welcome-file>
     </welcome-file-list>
 </web-app>
