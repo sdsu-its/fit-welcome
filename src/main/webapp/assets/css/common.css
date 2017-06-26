@@ -40,3 +40,50 @@ body > a:visited {
     color: inherit;
     text-decoration: none;
 }
+
+/* Welcome Styles */
+
+body div.container div.card.welcome {
+    text-align: center;
+}
+
+body div.container div.card.welcome h4.card-title {
+    font-size: 7rem;
+    font-weight: 300;
+}
+
+body div.container div.card.welcome h6.card-subtitle {
+    font-size: 2rem;
+    font-weight: 200;
+}
+
+body div.container div.card.welcome img.logo {
+    height: 4rem;
+    margin: 2rem 0 -.75rem;
+}
+
+/* Type Select (Appointment / Walk-in) */
+
+body div.container div.card.type {
+    text-align: center;
+}
+
+body div.container div.card.type h5.card-title {
+    font-size: 2.5rem;
+    font-weight: 200;
+}
+
+body div.container div.card.type div.row{
+    margin-top: 2rem;
+}
+
+body div.container div.card.type button {
+    width: 100%;
+    height: 8rem;
+
+    background-color: #374355;
+    border-color: #374355;
+
+    font-size: 3rem;
+    font-weight: 200;
+}

@@ -12,21 +12,12 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>Index</servlet-name>
-        <servlet-class>edu.sdsu.its.Routes.Index</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>Index</servlet-name>
-        <url-pattern>/index</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>ClientIndex</servlet-name>
+        <servlet-name>ClientUI</servlet-name>
         <servlet-class>edu.sdsu.its.Routes.ClientIndex</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ClientIndex</servlet-name>
-        <url-pattern>/client</url-pattern>
+        <servlet-name>ClientUI</servlet-name>
+        <url-pattern>/index</url-pattern>
     </servlet-mapping>
 
     <servlet>

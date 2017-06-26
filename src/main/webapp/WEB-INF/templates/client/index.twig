@@ -1,15 +1,29 @@
-{% include "header.twig" with {'page': 'index'} %}
+{% include "header.twig" %}
 
-<a href="client/type">
-    <div class="container">
-        <div class="card">
-            <div class="card-block">
-                <h4 class="card-title">Welcome!</h4>
-                <h6 class="card-subtitle mb-2">Tap the screen to get started</h6>
-                <img class="logo" src="assets/images/logo.png">
-            </div>
-        </div>
-    </div>
-</a>
+{% include "welcome.twig" %}
+{% include "type.twig" %}
+
+<script type="text/javascript">
+    const timeout = 30; // Session Timeout - Seconds\
+    var t;
+
+    window.onload = resetTimer;
+
+    // DOM Events
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onmousedown = resetTimer; // touchscreen presses
+    document.ontouchstart = resetTimer;
+    document.onclick = resetTimer;     // touchpad clicks
+    document.onscroll = resetTimer;    // scrolling with arrow keys
+    document.onkeypress = resetTimer;
+
+    function resetTimer() {
+        clearTimeout(t);
+        t = setTimeout(reset, timeout * 1000)
+    }
+</script>
 
 {% include "footer.twig" %}
