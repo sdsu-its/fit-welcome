@@ -87,3 +87,34 @@ body div.container div.card.type button {
     font-size: 3rem;
     font-weight: 200;
 }
+
+/* ID Entry Styles*/
+
+body div.container div.card.id-entry {
+    text-align: center;
+}
+
+body div.container div.card.id-entry h5.card-title {
+    font-size: 2.5rem;
+    font-weight: 200;
+}
+
+body div.container div.card.id-entry div.row{
+    margin-top: 1rem;
+}
+
+body div.container div.card.id-entry button {
+    width: 100%;
+    height: 4.5rem;
+
+    background-color: #374355;
+    border-color: #374355;
+
+    font-size: 2rem;
+    font-weight: 200;
+}
+
+body div.container div.card.id-entry input {
+    font-size: 1.5rem;
+    font-weight: 300;
+}

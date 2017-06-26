@@ -8,7 +8,7 @@
  * Show Visit Type Card (Appointment vs. Walk in)
  */
 function showTypeSelect() {
-    $("div.card").fadeOut(400, function () {
+    $("div.card:not(.type)").parent().fadeOut(400, function () {
         $("div.card.type").parent().fadeIn(400);
     });
 
@@ -26,19 +26,23 @@ function loadAppointmentList() {
  * Show list of upcoming appointments
  */
 function showAppointmentList(e) {
-    $("div.card").fadeOut(400, function () {
+    $("div.card:not(.appointment-list)").parent().fadeOut(400, function () {
         $("div.card.appointment-list").parent().fadeIn(400);
     });
 }
 
 function showIDEntry(e) {
-    $("div.card").fadeOut(400, function () {
+    $("div.card:not(.id-entry)").parent().fadeOut(400, function () {
         $("div.card.id-entry").parent().fadeIn(400);
     });
+    $('#idBox').focus();
 }
 
 function showGoalList() {
-
+    hideKeyboard();
+    $("div.card:not(.goal-list)").parent().fadeOut(400, function () {
+        $("div.card.goal-list").parent().fadeIn(400);
+    });
 }
 
 /**
@@ -46,8 +50,15 @@ function showGoalList() {
  */
 function reset() {
     if (!$("div.card.welcome").is(":visible")) {
-        $("div.card").parent().fadeOut(400, function () {
+        $("div.card:not(.welcome)").parent().fadeOut(400, function () {
             $("div.card.welcome").parent().fadeIn(400);
         });
+        hideKeyboard();
+        swal.close();
+        $("#idEntryForm")[0].reset();
     }
+}
+
+function hideKeyboard() {
+    document.activeElement.blur();
 }
