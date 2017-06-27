@@ -1,6 +1,7 @@
 package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
+import edu.sdsu.its.API.Models.SimpleMessage;
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.API.Models.User;
 import org.apache.log4j.Logger;
@@ -38,7 +39,7 @@ public class Followup {
         User user = null;
 
         if (email != null && email.length() < 0) {
-            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new Web.SimpleMessage("No Email included in request"))).build();
+            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new SimpleMessage("No Email included in request"))).build();
         }
 
         if (email != null) {
@@ -51,7 +52,7 @@ public class Followup {
             response = Response.status(Response.Status.ACCEPTED).entity(GSON.toJson(user)).build();
         } else {
             LOGGER.warn(String.format("No Matching User found for email \"%s\"", email));
-            response = Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new Web.SimpleMessage("User Not Found"))).build();
+            response = Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new SimpleMessage("User Not Found"))).build();
         }
         return response;
     }
@@ -72,7 +73,7 @@ public class Followup {
         User user = null;
 
         if (email != null && email.length() < 0) {
-            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new Web.SimpleMessage("No Email included in request"))).build();
+            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new SimpleMessage("No Email included in request"))).build();
         }
 
         if (email != null) {
@@ -83,7 +84,7 @@ public class Followup {
             DB.subscribe(email);
             response = Response.status(Response.Status.ACCEPTED).entity(GSON.toJson(user)).build();
         } else {
-            response = Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new Web.SimpleMessage("User not Found"))).build();
+            response = Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new SimpleMessage("User not Found"))).build();
         }
 
         return response;

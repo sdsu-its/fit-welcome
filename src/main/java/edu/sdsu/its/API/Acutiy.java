@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import edu.sdsu.its.API.Models.SimpleMessage;
 import edu.sdsu.its.Vault;
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.API.Models.Staff;
@@ -337,14 +338,14 @@ public class Acutiy {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to POST ACUITY/APPOINTMENTMAP - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(gson.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(gson.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         AppointmentType[] appointmentTypes = gson.fromJson(payload, AppointmentType[].class);
         for (AppointmentType appointmentType : appointmentTypes) {
             DB.setAppointmentTypeMatch(appointmentType);
         }
-        return Response.status(Response.Status.ACCEPTED).entity(gson.toJson(new Web.SimpleMessage("Success"))).build();
+        return Response.status(Response.Status.ACCEPTED).entity(gson.toJson(new SimpleMessage("Success"))).build();
     }
 
     /**

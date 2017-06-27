@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import edu.sdsu.its.API.Models.Event;
+import edu.sdsu.its.API.Models.SimpleMessage;
 import edu.sdsu.its.API.Models.Staff;
 import edu.sdsu.its.API.Models.User;
 import edu.sdsu.its.Welcome.DB;
@@ -98,11 +99,7 @@ public class Client {
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
-    public static class SimpleMessage {
-        @Expose String message;
 
-        public SimpleMessage(String message) {
-            this.message = message;
         }
     }
 }
