@@ -1,5 +1,6 @@
 package edu.sdsu.its.API.Models;
 
+import com.google.gson.annotations.Expose;
 import edu.sdsu.its.Welcome.DB;
 
 import java.util.regex.Matcher;
@@ -13,8 +14,8 @@ import java.util.regex.Pattern;
  *         Created on 12/12/15.
  */
 public class User {
-    public int id;
-    public String firstName;
+    @Expose public int id;
+    @Expose public String firstName;
     public String lastName;
     public String email;
     public boolean subscribed;

@@ -17,10 +17,7 @@ function verifyID() {
         url: "api/client/login?id=" + val
     })
         .done(function (resp) {
-            // TODO Save Response User for final event submission
-
-            console.log(resp);
-            sweetAlert("Schweet!", "You coo!", "success");
+            sessionStorage.setItem("user", JSON.stringify(resp));
             showGoalList();
         })
         .fail(function (resp) {
@@ -31,6 +28,52 @@ function verifyID() {
                 console.warn(resp);
             }
         });
+}
 
-    $("#idEntryForm")[0].reset();
+/**
+ * Get a Random quote from the API to display on confirmation.
+ */
+function loadQuote() {
+    $.ajax({
+        method: "GET",
+        url: "api/quote"
+    })
+        .done(function (resp) {
+            $('#quoteText').html(resp.text);
+            $('#quoteAuthor').html(resp.author);
+        })
+        .fail(function (resp) {
+            console.warn("Problem getting Quote");
+            console.log(resp);
+        })
+}
+
+/**
+ * Log an event to the API
+ *
+ * @param goal {@link String} Client Goal
+ * @param params {@link String} Visit Params
+ */
+function logEvent(goal, params) {
+    var payload = {
+        "owner": JSON.parse(sessionStorage.getItem("user")),
+        "type": goal,
+        "params": params,
+        "locale": "DEFAULT" // fixme
+    };
+
+    $.ajax({
+        method: "POST",
+        url: "api/client/event",
+        data: JSON.stringify(payload),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json"
+    })
+        .done(function (resp) {
+            showFinalConfirmation();
+        })
+        .fail(function (resp) {
+            sweetAlert("Shoot!", "Something has gone awry! Please let a staff member know.", "warning");
+            console.warn(resp);
+        });
 }

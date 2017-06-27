@@ -12,14 +12,16 @@ function showTypeSelect() {
         $("div.card.type").parent().fadeIn(400);
     });
 
+    // Load Appointment List and Final Quote in the background when an interaction starts
     loadAppointmentList();
+    loadQuote();
 }
 
 /**
  * Load Upcoming appointments from the Welcome API
  */
 function loadAppointmentList() {
-
+//TODO
 }
 
 /**
@@ -33,16 +35,27 @@ function showAppointmentList(e) {
 
 function showIDEntry(e) {
     $("div.card:not(.id-entry)").parent().fadeOut(400, function () {
-        $("div.card.id-entry").parent().fadeIn(400);
+        $("div.card.id-entry").parent().fadeIn(400, function () {
+            $('#idBox').focus();
+        });
     });
-    $('#idBox').focus();
 }
 
 function showGoalList() {
-    hideKeyboard();
     $("div.card:not(.goal-list)").parent().fadeOut(400, function () {
         $("div.card.goal-list").parent().fadeIn(400);
+        hideKeyboard();
+        $("#idEntryForm")[0].reset();
     });
+}
+
+function showFinalConfirmation() {
+    $("div.card:not(.confirmation)").parent().fadeOut(400, function () {
+        $("div.card.confirmation").parent().fadeIn(400);
+    });
+
+    // Show final message for 10 seconds, before resetting the page
+    setTimeout(reset, 10000);
 }
 
 /**
@@ -61,4 +74,16 @@ function reset() {
 
 function hideKeyboard() {
     document.activeElement.blur();
+}
+
+//noinspection JSUnusedGlobalSymbols
+function showPage(pageName) {
+    $("div.card:not(.goal-" + pageName.toLowerCase() + ")").parent().fadeOut(400, function () {
+        $("div.card.goal-" + pageName.toLowerCase()).parent().fadeIn(400);
+    });
+}
+
+//noinspection JSUnusedGlobalSymbols
+function finish(goal, params) {
+    logEvent(goal, params);
 }

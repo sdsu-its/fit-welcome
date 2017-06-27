@@ -1,0 +1,96 @@
+[
+  {
+    "pageID": "list",
+    "pageHead": "What do you hope to accomplish today?",
+    "buttons": [
+      {
+        "title": "Use the ParScore Machines",
+        "action": "finish('Use ParScore', 'Walk In')"
+      },
+      {
+        "title": "Meet with an Instructional Designer",
+        "action": "showPage('ID-Topics')"
+      },
+      {
+        "title": "Schedule a ParScore Appointment",
+        "action": "scheduler(536800)"
+      },
+      {
+        "title": "Help with Blackboard",
+        "action": "finish('Meet an ID', 'Blackboard')"
+      },
+      {
+        "title": "Learn how to use a new technology",
+        "action": "finish('Attend a workshop')"
+      },
+      {
+        "title": "Something that is not listed here",
+        "action": "showPage('Other')"
+      }
+    ]
+  },
+  {
+    "pageID": "ID-Topics",
+    "pageHead": "What can we help you with?",
+    "buttons": [
+      {
+        "title": "Blackboard",
+        "action": "finish('Meet an ID', 'Blackboard')"
+      },
+      {
+        "title": "i>Clicker&reg;",
+        "action": "finish('Meet an ID', 'iClickers')"
+      },
+      {
+        "title": "Zoom",
+        "action": "finish('Meet an ID', 'Web Conferencing')"
+      },
+      {
+        "title": "Turnitin&reg;",
+        "action": "finish('Meet an ID', 'Turnitin')"
+      },
+      {
+        "title": "Respondus",
+        "action": "finish('Meet an ID', 'Respondus')"
+      },
+      {
+        "title": "Course Design",
+        "action": "finish('Meet an ID', 'Course Design')"
+      },
+      {
+        "title": "Something Else",
+        "action": "finish('Meet an ID', 'Other')"
+      }
+    ]
+  },
+  {
+    "pageID": "Other",
+    "pageHead": "Are We Getting Warmer?",
+    "buttons": [
+      {
+        "title": "Experience Virtual Reality",
+        "action": "finish('VR')"
+      },
+      {
+        "title": "Informal Office",
+        "action": "finish('In-between Office')"
+      },
+      {
+        "title": "Use the Internet",
+        "action": "finish('Use the Internet')"
+      },
+      {
+        "title": "Printing/Scanning",
+        "action": "finish('Printing/Scanning')"
+      },
+      {
+        "title": "Take a break in between classes",
+        "action": "finish('Take a break between classes')"
+      },
+      {
+        "title": "Something Completely Different",
+        "action": "finish('Other')"
+      }
+    ]
+  }
+]
