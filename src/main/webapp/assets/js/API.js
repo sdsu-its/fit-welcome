@@ -4,6 +4,8 @@
  * Created by tom on 6/24/17.
  */
 
+var appointmentMade = false;
+
 /**
  * Verify entered ID
  */
@@ -27,6 +29,43 @@ function verifyID() {
                 sweetAlert("Shoot!", "Something has gone awry! Please let a staff member know.", "warning");
                 console.warn(resp);
             }
+        });
+}
+
+/**
+ * Load Upcoming appointments from the Welcome API
+ */
+function loadAppointmentList() {
+    $.ajax({
+        method: "GET",
+        url: "api/client/appointments"
+    })
+        .done(function (resp) {
+            var $table = $('#appointment-list').find('tbody');
+            $table.empty();
+            for (var a = 0; a < resp.length; a++) {
+                var appointment = resp[a];
+                var row = $table[0].insertRow(-1);
+                row.id = "appointment-" + appointment.id;
+                row.insertCell(0).outerHTML = "<th class='row'>" + appointment.time + "</th>";
+                row.insertCell(1).innerHTML = appointment.name;
+                row.insertCell(2).innerHTML = appointment.type;
+                $(row).addClass("appointment");
+                $(row).data("appt-id", appointment.id);
+                $(row).data("time", appointment.time);
+                $(row).data("name", appointment.name);
+                $(row).data("type", appointment.type);
+                $(row).data("owner-id", appointment.ownerId);
+            }
+
+            $('.appointment').click(function () {
+                showAppointmentDetail(this);
+            });
+
+        })
+        .fail(function (resp) {
+            sweetAlert("Shoot!", "Something has gone awry! Please let a staff member know.", "warning");
+            console.warn(resp);
         });
 }
 
@@ -57,11 +96,29 @@ function loadQuote() {
 function logEvent(goal, params) {
     var payload = {
         "owner": JSON.parse(sessionStorage.getItem("user")),
-        "type": goal,
+        "appointmentMade": appointmentMade,
+        "goal": goal,
         "params": params,
         "locale": "DEFAULT" // fixme
     };
 
+    postEvent(payload);
+}
+
+function logAppointment(e) {
+    var appointmentID = $(e).data("appt-id");
+    appointmentMade = true;
+
+    var payload = {
+        "appointmentMade": appointmentMade,
+        "appointmentId": appointmentID,
+        "locale": "DEFAULT" // fixme
+    };
+
+    postEvent(payload);
+}
+
+function postEvent(payload) {
     $.ajax({
         method: "POST",
         url: "api/client/event",
@@ -69,7 +126,7 @@ function logEvent(goal, params) {
         contentType: "application/json; charset=utf-8",
         dataType: "json"
     })
-        .done(function (resp) {
+        .done(function () {
             showFinalConfirmation();
         })
         .fail(function (resp) {

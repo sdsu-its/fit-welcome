@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 
 /**
  * @author Tom Paulus
@@ -51,10 +52,26 @@ public class Client {
         User user = (staff == null) ? User.getUser(id) : null;
 
         if (user == null && staff == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new Web.SimpleMessage("User not Found"))).build();
+            return Response.status(Response.Status.NOT_FOUND).entity(GSON.toJson(new SimpleMessage("User not Found"))).build();
         }
 
         return Response.status(Response.Status.OK).entity(GSON.toJson(staff == null ? user : staff)).build();
+    }
+
+    @Path("appointments")
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response upcomingAppointments() {
+        Acutiy.Appointment[] appointments = Acutiy.getUpcoming();
+        LOGGER.info(String.format("There are %d upcoming appointments", appointments.length));
+
+        RedactedAppointment[] result = new RedactedAppointment[appointments.length];
+        for (int i = 0; i < appointments.length; i++) {
+            result[i] = new RedactedAppointment(appointments[i]);
+        }
+
+        return Response.status(Response.Status.OK).entity(GSON.toJson(result)).build();
     }
 
     /**
@@ -71,18 +88,7 @@ public class Client {
         LOGGER.info("Received Request: [POST] EVENT - " + payload);
 
         // Use a Standard JSON to de-marshal the data, since we want all fields
-        final Event event = new Gson().fromJson(payload, Event.class);
-
-        if (event.params != null && event.params.contains("Appointment ID:")) {
-            String appointmentID = event.params.replace("Appointment ID:", "").replaceAll(" ", "");
-            LOGGER.debug(String.format("Checking In User: %d for appointment with ID: %s", event.owner.id, appointmentID));
-            Acutiy.Appointment appointment = Acutiy.checkIn(Integer.parseInt(appointmentID));
-            Acutiy.AppointmentType appointmentType = DB.getAppointmentTypeMatch(new Acutiy.AppointmentType(appointment.appointmentTypeID));
-
-            event.type = appointmentType.eventText;
-            if (appointmentType.eventParams != null && appointmentType.eventParams.length() > 0)
-                event.params = appointmentType.eventParams + ", " + event.params;
-        }
+        final Event event = new Gson().fromJson(payload, ClientEvent.class).convertToEvent();
 
         Thread thread = new Thread() {
             public void run() {
@@ -99,7 +105,77 @@ public class Client {
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
+    private static class ClientEvent {
+        boolean appointmentMade;
+        Integer appointmentId;
+        User owner;
+        String goal;
+        String params;
+        String locale;
 
+        Event convertToEvent() {
+            if ((this.appointmentId == null || new Integer(0).equals(this.appointmentId)) && this.appointmentMade) {
+                // Check for "Lost" Appointment Existence
+                final Acutiy.Appointment apptByOwner = Acutiy.getApptByOwner(this.owner.id);
+                if (apptByOwner != null) {
+                    this.appointmentId = apptByOwner.id;
+                    LOGGER.info("Found matching appointment for user that was not shown in UI");
+                    LOGGER.debug("Appointment ID: " + this.appointmentId);
+                    LOGGER.debug("Owner: " + this.owner.id);
+                }
+            }
+
+            if (!new Integer(0).equals(this.appointmentId)) {
+                // Process Appointment Check-in
+                LOGGER.debug(String.format("Checking Appointment with ID: %d", this.appointmentId));
+                Acutiy.Appointment appointment = Acutiy.checkIn(this.appointmentId);
+                Acutiy.AppointmentType appointmentType = DB.getAppointmentTypeMatch(new Acutiy.AppointmentType(appointment.appointmentTypeID));
+
+                if (owner == null || owner.id == 0) {
+                    final int ownerID = appointment.getOwnerID();
+
+                    if (owner == null) {
+                        owner = new User(ownerID);
+                    } else {
+                        owner.id = ownerID;
+                    }
+                }
+                LOGGER.debug(String.format("Appointment Owner: %d", owner.id));
+                this.goal = appointmentType.eventText;
+                if (this.params != null && !this.params.isEmpty()) {
+                    this.params = this.params + ", " + "Appointment ID: " + this.appointmentId;
+                }
+
+                if (appointmentType.eventParams != null && appointmentType.eventParams.length() > 0)
+                    this.params = appointmentType.eventParams + ", " + this.params;
+            } else {
+                LOGGER.debug("This is a Walk-in Appointment");
+            }
+
+            return new Event(owner, goal, params, locale);
         }
+    }
+
+    private static class RedactedAppointment {
+        private static final int ID_LENGTH = 9;
+        private static final int REVEAL = 3;
+        private static final String MASK_CHAR = "*";
+
+        @Expose Integer id;
+        @Expose String time;
+        @Expose String name;
+        @Expose String type;
+        @Expose String ownerId;
+
+        public RedactedAppointment(Acutiy.Appointment appointment) {
+            this.id = appointment.id;
+            this.time = appointment.time;
+            this.name = String.format("%s, %s.", appointment.lastName, appointment.firstName.charAt(0));
+            this.type = appointment.type;
+            this.ownerId = String.join("", Collections.nCopies(ID_LENGTH - REVEAL, MASK_CHAR))
+                    + appointment.getOwnerID() % ((int) Math.pow(10, REVEAL));
+        }
+
+
     }
 }

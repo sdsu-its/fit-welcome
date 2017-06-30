@@ -8,10 +8,10 @@ import edu.sdsu.its.API.Models.SimpleMessage;
 import edu.sdsu.its.Vault;
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.API.Models.Staff;
-import edu.sdsu.its.API.Models.User;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Communicate with the Acuity Scheduling API
@@ -36,9 +37,12 @@ import java.util.List;
 public class Acutiy {
     private static final String USERID = Vault.getParam("Acuity", "User ID");
     private static final String KEY = Vault.getParam("Acuity", "API Key");
-    private static final Logger Log = Logger.getLogger(Acutiy.class);
-    private static final int FUZZY_THRESHOLD = 3;
+    private static final Logger LOGGER = Logger.getLogger(Acutiy.class);
+    private static final DateTimeFormatter acuityFmt = DateTimeFormat.forPattern("hh:mma");
 
+    private static final int PAST_DURATION = -1;  // Should be < 0
+    private static final int UPCOMING_DURATION = 3; // Should be > 0
+    private static final String TIMEZONE = "America/Los_Angeles";
 
     private static String getCurrentTimeStamp(final String pattern) {
         // See https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html for Format of Pattern
@@ -47,83 +51,45 @@ public class Acutiy {
         return sdfDate.format(now);
     }
 
-    private static boolean apptMatch(final Appointment appointment, final User user) {
-        boolean match = false;
-        // Check by ID
-        for (Appointment.Form f : appointment.forms) {
-            for (Appointment.Value v : f.values) {
-                if (v.name.contains("RedID") && v.value != null && v.value.length() > 0) {
-                    int userID;
-                    try {
-                        userID = Integer.valueOf(v.value);
-                    } catch (NumberFormatException e) {
-                        Log.warn("Invalid RedID Format");
-                        continue;
-                    }
-                    if (userID == user.id) {
-                        Log.debug(String.format("Direct Match by ID found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
-                        match = true;
-                        break;
-                    }
-                }
-            }
-            if (match) break;
-        }
-
-        // Check by Name
-        if (!match && appointment.firstName.equals(user.firstName) &&
-                appointment.lastName.equals(user.lastName)) {
-            Log.debug(String.format("Direct Match by Name found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
-            match = true;
-        } else if (StringUtils.getLevenshteinDistance(appointment.firstName, user.firstName) <= FUZZY_THRESHOLD &&
-                StringUtils.getLevenshteinDistance(appointment.lastName, user.lastName) <= FUZZY_THRESHOLD) {
-            Log.debug(String.format("Fuzzy Match found for %s %s - AppointmentID: %d", user.firstName, user.lastName, appointment.id));
-            match = true;
-        }
-
-        return match;
-    }
-
     /**
-     * Get all appointments for the provided User for the current date
-     * Matches based on First/Last Name only
-     *
-     * @param user {@link User} User for whom appointments should be pulled
-     * @return {@link Appointment} User's Appointment, null if none exists.
+     * Get all upcoming appointments for the next N hours
      */
-    public static Appointment getAppt(final User user) {
+    public static Appointment[] getUpcoming() {
+//        TODO Check if appointment type is allowed to be shown on the console
+//        TODO Add field to Acuity Appointment Map for "Show" boolean
+
         final Appointment[] appointments = getToday();
-        final List<Appointment> appointmentsForUser = new ArrayList<>();
+        final List<Appointment> upcomingAppointments = new ArrayList<>();
 
         for (Appointment appointment : appointments) {
             if (appointment.notes.toLowerCase().contains("Checked in".toLowerCase())) {
-                Log.debug(String.format("Disregarding Appointment (ID: %d) - Already Checked In", appointment.id));
+                LOGGER.debug(String.format("Disregarding Appointment (ID: %d) - Already Checked In", appointment.id));
                 // Already CheckedIn
                 continue;
             }
 
-            if (apptMatch(appointment, user)) {
-                appointmentsForUser.add(appointment);
+            LocalTime apptTime = acuityFmt.parseLocalTime(appointment.time);
+
+            LOGGER.debug(String.format("Checking if %s is an upcoming appointment", appointment.toString()));
+            // Appointment times must meet the following criteria:
+            // apptTime-UPCOMING_DURATION < NOW < apptTime+PAST_DURATION
+            // The must be within the next UPCOMING_DURATION, or past PAST_DURATION Hours.
+            final LocalTime now = LocalTime.now(DateTimeZone.forTimeZone(TimeZone.getTimeZone(TIMEZONE)));
+            Duration delta = new Duration(now.toDateTimeToday(), apptTime.toDateTimeToday());
+
+            if (delta.getStandardHours() < PAST_DURATION) {
+                LOGGER.debug("Not Valid - Happened to long ago in the past");
+            } else if (delta.getStandardHours() > UPCOMING_DURATION) {
+                LOGGER.debug("Not Valid - Is too far in the future");
+            } else {
+                LOGGER.debug("Valid - Falls within eligible range");
+                upcomingAppointments.add(appointment);
             }
+
+            LOGGER.debug(String.format("Found %d upcoming appointments", upcomingAppointments.size()));
         }
 
-
-        //Find the first Appointment of the day for that user
-        LocalTime earliestTime = new LocalTime("23:59:59"); // Last possible time fo the day
-        Appointment earliestAppt = null;
-
-        final DateTimeFormatter acuityFmt = DateTimeFormat.forPattern("hh:mma");
-
-        for (Appointment a : appointmentsForUser) {
-            LocalTime apptTime = acuityFmt.parseLocalTime(a.time);
-            if (earliestTime.isAfter(apptTime)) {
-                earliestTime = apptTime;
-                earliestAppt = a;
-            }
-        }
-
-        Log.debug(String.format("Earliest appointment for User: %d is %s", user.id, earliestAppt != null ? earliestAppt.toString() : "No Appt Found."));
-        return earliestAppt;
+        return upcomingAppointments.toArray(new Appointment[]{});
     }
 
     /**
@@ -146,10 +112,26 @@ public class Acutiy {
             final Gson gson = new Gson();
             result = gson.fromJson(response.getBody().toString(), Appointment.class);
         } catch (URISyntaxException e) {
-            Log.error("Could not formulate URI to fetch Acuity Appointment", e);
+            LOGGER.error("Could not formulate URI to fetch Acuity Appointment", e);
         }
 
         return result;
+    }
+
+    /**
+     * Get the next appointment for a User, given their ID
+     *
+     * @param id {@link Integer} User Id
+     * @return {@link Appointment} Next Appointment, Null if non-existent
+     */
+    public static Appointment getApptByOwner(final Integer id) {
+        for (Appointment appointment : getToday()) {
+            if (appointment.getOwnerID() == id) {
+                return appointment;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -170,7 +152,7 @@ public class Acutiy {
                     .build();
 
             final HttpResponse response = get(uri);
-            Log.debug(String.format("Get Request to Acuity for Today's Events returned (%s) - %s", response.getStatus(), response.toString()));
+            LOGGER.debug(String.format("Get Request to Acuity for Today's Events returned (%s) - %s", response.getStatus(), response.toString()));
 
             final Gson gson = new Gson();
             result = gson.fromJson(response.getBody().toString(), Appointment[].class);
@@ -178,7 +160,7 @@ public class Acutiy {
 
         } catch (URISyntaxException e) {
             result = null;
-            Log.error("Could not formulate Acuity Schedule Request", e);
+            LOGGER.error("Could not formulate Acuity Schedule Request", e);
         }
 
         return result;
@@ -212,7 +194,7 @@ public class Acutiy {
             result = gson.fromJson(response.getBody().toString(), Appointment.class);
 
         } catch (URISyntaxException e) {
-            Log.error("Could not formulate Acuity Schedule Request", e);
+            LOGGER.error("Could not formulate Acuity Schedule Request", e);
             result = null;
         }
 
@@ -226,7 +208,7 @@ public class Acutiy {
      * @return {@link HttpResponse} Response from get Request.
      */
     private static HttpResponse get(final URI uri) {
-        Log.info("Making a get request to: " + uri.toString());
+        LOGGER.info("Making a get request to: " + uri.toString());
 
         HttpResponse response;
 
@@ -237,7 +219,7 @@ public class Acutiy {
                     .asJson();
         } catch (UnirestException e) {
             response = null;
-            Log.error("Error connecting to Acuity Server", e);
+            LOGGER.error("Error connecting to Acuity Server", e);
         }
 
         return response;
@@ -251,7 +233,7 @@ public class Acutiy {
      * @return {@link HttpResponse} Response from Server
      */
     private static HttpResponse put(final URI uri, final String payload) {
-        Log.info("Making put request to: " + uri.toString());
+        LOGGER.info("Making put request to: " + uri.toString());
 
         HttpResponse response;
 
@@ -263,12 +245,12 @@ public class Acutiy {
                     .asJson();
         } catch (UnirestException e) {
             response = null;
-            Log.error("Error connecting to Acuity Server", e);
+            LOGGER.error("Error connecting to Acuity Server", e);
         }
 
         if (response != null && response.getStatus() != 200) {
-            Log.error("Error Connecting to Acuity - HTTP Error Code" + response.getStatus());
-            Log.info("Request Returned - " + response.getBody().toString());
+            LOGGER.error("Error Connecting to Acuity - HTTP Error Code" + response.getStatus());
+            LOGGER.info("Request Returned - " + response.getBody().toString());
         }
 
         return response;
@@ -293,7 +275,7 @@ public class Acutiy {
             HttpResponse response = get(uri);
             result = gson.fromJson(response.getBody().toString(), AppointmentType[].class);
         } catch (URISyntaxException e) {
-            Log.error("Could not formulate Acuity Schedule Request", e);
+            LOGGER.error("Could not formulate Acuity Schedule Request", e);
         }
         if (result != null) {
             for (int at = 0; at < result.length; at++) {
@@ -332,12 +314,12 @@ public class Acutiy {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response setAppointmentMap(@HeaderParam("REQUESTER") final String requester, final String payload) {
-        Log.info(String.format("Recieved Request: [POST] ACUITY/APPOINTMENTMAP - Requester: %s & Payload: %s", requester, payload));
+        LOGGER.info(String.format("Recieved Request: [POST] ACUITY/APPOINTMENTMAP - Requester: %s & Payload: %s", requester, payload));
         Gson gson = new Gson();
 
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
-            Log.warn("Unauthorized Request to POST ACUITY/APPOINTMENTMAP - ID: " + requester);
+            LOGGER.warn("Unauthorized Request to POST ACUITY/APPOINTMENTMAP - ID: " + requester);
             return Response.status(Response.Status.FORBIDDEN).entity(gson.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
@@ -368,10 +350,31 @@ public class Acutiy {
             return String.format("%s at %s (ID: %d)", type, time, id);
         }
 
+        public int getOwnerID() {
+            for (Acutiy.Appointment.Form form : this.forms) {
+                for (Acutiy.Appointment.Value value : form.values) {
+                    if (value.name.contains("RedID") && value.value != null && value.value.length() > 0) {
+                        int userID;
+                        try {
+                            userID = Integer.valueOf(value.value);
+                        } catch (NumberFormatException e) {
+                            LOGGER.warn("Invalid RedID Format");
+                            continue;
+                        }
+                        return userID;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
+        @SuppressWarnings("unused")
         class Form {
             public Value[] values;
         }
 
+        @SuppressWarnings("unused")
         class Value {
             public int id;
             public int fieldID;
