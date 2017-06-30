@@ -125,7 +125,7 @@ public class Client {
                 }
             }
 
-            if (!new Integer(0).equals(this.appointmentId)) {
+            if (this.appointmentId != null && !new Integer(0).equals(this.appointmentId)) {
                 // Process Appointment Check-in
                 LOGGER.debug(String.format("Checking Appointment with ID: %d", this.appointmentId));
                 Acutiy.Appointment appointment = Acutiy.checkIn(this.appointmentId);
