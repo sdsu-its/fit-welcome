@@ -8,6 +8,16 @@
 {% include "goal.twig" %}
 {% include "confirmation.twig" %}
 
+<div style="display: none">
+    <button type="button"
+            class="btn btn-primary"
+            id="back-button"
+            onclick="previous()">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        &nbsp; Back
+    </button>
+</div>
+
 <script type="text/javascript">
     const timeout = 30; // Session Timeout - Seconds\
     var t;

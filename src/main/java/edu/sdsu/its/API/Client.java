@@ -90,16 +90,14 @@ public class Client {
         // Use a Standard JSON to de-marshal the data, since we want all fields
         final Event event = new Gson().fromJson(payload, ClientEvent.class).convertToEvent();
 
-        Thread thread = new Thread() {
-            public void run() {
-                try {
-                    LOGGER.debug("Broadcasting new event");
-                    Live.broadcastEvent(event.logEvent());
-                } catch (Exception e) {
-                    LOGGER.warn("Problem Broadcasting Event", e);
-                }
+        Thread thread = new Thread(() -> {
+            try {
+                LOGGER.debug("Broadcasting new event");
+                Live.broadcastEvent(event.logEvent());
+            } catch (Exception e) {
+                LOGGER.warn("Problem Broadcasting Event", e);
             }
-        };
+        });
         thread.start();
 
         return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();

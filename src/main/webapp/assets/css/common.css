@@ -45,6 +45,21 @@ body > a:visited {
     text-decoration: none;
 }
 
+#back-button {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    height: 3rem;
+    border-radius: 3rem;
+
+    background-color: #374355;
+    border-color: #374355;
+    box-shadow: 5px 5px 45px 1px #C1C1C1;
+
+    font-size: 1.5rem;
+    font-weight: 200;
+}
+
 /* Welcome Styles */
 
 body div.container div.card.welcome {

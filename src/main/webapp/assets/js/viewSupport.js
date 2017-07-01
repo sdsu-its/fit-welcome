@@ -4,6 +4,17 @@
  * Created by tom on 6/24/17.
  */
 
+var hist = [reset];
+
+function addToHistory(pageFunction) {
+    hist.push(pageFunction);
+}
+
+function previous() {
+    hist.pop(); // Remove the Last Function from the stack, since it is for the current page
+    hist.pop()(); // Call the last display function called
+}
+
 /**
  * Show Visit Type Card (Appointment vs. Walk in)
  */
@@ -15,15 +26,22 @@ function showTypeSelect() {
     // Load Appointment List and Final Quote in the background when an interaction starts
     loadAppointmentList();
     loadQuote();
+    addToHistory(showTypeSelect);
 }
 
 /**
  * Show list of upcoming appointments
  */
 function showAppointmentList() {
-    $("div.card:not(.appointment-list)").parent().fadeOut(400, function () {
-        $("div.card.appointment-list").parent().fadeIn(400);
-    });
+    if (sessionStorage.getItem("appointments").length > 0) {
+        $("div.card:not(.appointment-list)").parent().fadeOut(400, function () {
+            $("div.card.appointment-list").parent().fadeIn(400);
+        });
+        addToHistory(showAppointmentList);
+    } else {
+        // If there are no upcoming appointments, treat it as a "Not-Found" situation
+        apptNotFound();
+    }
 }
 
 /**
@@ -35,6 +53,10 @@ function apptNotFound() {
     showIDEntry();
 }
 
+/**
+ * Show Appointment Detail Page. Prompting the user to confirm the appointment that they have selected.
+ * @param e Selected Appointment Row in the #appointment-list
+ */
 function showAppointmentDetail(e) {
     $('.info-parent .appt-time').html($(e).data("time"));
     $('.info-parent .appt-type').html($(e).data("type"));
@@ -46,28 +68,41 @@ function showAppointmentDetail(e) {
         $("div.card.appointment-detail").parent().fadeIn(400, function () {
         });
     });
+    addToHistory(showAppointmentDetail);
 }
 
+/**
+ * Show ID Entry Prompt
+ */
 function showIDEntry() {
     $("div.card:not(.id-entry)").parent().fadeOut(400, function () {
         $("div.card.id-entry").parent().fadeIn(400, function () {
             $('#idBox').focus();
         });
     });
+    addToHistory(showIDEntry);
 }
 
+/**
+ * Show Initial list of all Goals
+ */
 function showGoalList() {
-    $("div.card:not(.goal-list)").parent().fadeOut(400, function () {
+    $("#back-button, div.card:not(.goal-list)").parent().fadeOut(400, function () {
         $("div.card.goal-list").parent().fadeIn(400);
         hideKeyboard();
         $("#idEntryForm")[0].reset();
     });
+    addToHistory(showGoalList);
 }
 
+/**
+ * Show Final Confirmation Card. Includes Quote.
+ */
 function showFinalConfirmation() {
-    $("div.card:not(.confirmation)").parent().fadeOut(400, function () {
+    $("#back-button, div.card:not(.confirmation)").parent().fadeOut(400, function () {
         $("div.card.confirmation").parent().fadeIn(400);
     });
+    addToHistory(showFinalConfirmation);
 
     // Show final message for 10 seconds, before resetting the page
     setTimeout(reset, 10000);
@@ -78,7 +113,7 @@ function showFinalConfirmation() {
  */
 function reset() {
     if (!$("div.card.welcome").is(":visible")) {
-        $("div.card:not(.welcome)").parent().fadeOut(400, function () {
+        $("#back-button, div.card:not(.welcome)").parent().fadeOut(400, function () {
             $("div.card.welcome").parent().fadeIn(400);
         });
         hideKeyboard();
@@ -86,6 +121,8 @@ function reset() {
         $("#idEntryForm")[0].reset();
     }
     appointmentMade = false;
+    sessionStorage.clear();
+    hist = [reset];
 }
 
 function hideKeyboard() {
@@ -93,13 +130,28 @@ function hideKeyboard() {
 }
 
 //noinspection JSUnusedGlobalSymbols
+/**
+ * Show a Goal Page via its name. Used by buttons in the sitemap.json file.
+ *
+ * @param pageName Page name to display
+ */
 function showPage(pageName) {
     $("div.card:not(.goal-" + pageName.toLowerCase() + ")").parent().fadeOut(400, function () {
-        $("div.card.goal-" + pageName.toLowerCase()).parent().fadeIn(400);
+        $("#back-button, div.card.goal-" + pageName.toLowerCase()).parent().fadeIn(400);
+    });
+
+    addToHistory(function () {
+        showPage(pageName.toLowerCase())
     });
 }
 
 //noinspection JSUnusedGlobalSymbols
+/**
+ * Log an event. Used by buttons in the sitemap.json file.
+ *
+ * @param goal Visit Goal
+ * @param params Visit Params
+ */
 function finish(goal, params) {
     logEvent(goal, params);
 }

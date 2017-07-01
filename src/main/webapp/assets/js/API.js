@@ -62,10 +62,12 @@ function loadAppointmentList() {
                 showAppointmentDetail(this);
             });
 
+            sessionStorage.setItem("appointments", resp);
         })
         .fail(function (resp) {
             sweetAlert("Shoot!", "Something has gone awry! Please let a staff member know.", "warning");
             console.warn(resp);
+            sessionStorage.setItem("appointments", []);
         });
 }
 
