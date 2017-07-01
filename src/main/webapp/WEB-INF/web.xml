@@ -21,6 +21,16 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>FollowUp Unsubscribe</servlet-name>
+        <servlet-class>edu.sdsu.its.Routes.FollowUpUnSub</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FollowUp Unsubscribe</servlet-name>
+        <url-pattern>/followup/*</url-pattern>
+    </servlet-mapping>
+
+
+    <servlet>
         <servlet-name>edu.sdsu.its.Welcome</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 
