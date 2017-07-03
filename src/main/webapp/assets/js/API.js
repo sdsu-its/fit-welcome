@@ -10,6 +10,13 @@ var appointmentMade = false;
  * Verify entered ID
  */
 function verifyID() {
+    $(".card").LoadingOverlay("show",
+        {
+            color: "rgba(255, 255, 255, 0.80)",
+            image: "",
+            fontawesome: "fa fa-spinner fa-spin"
+        });
+
     var val = $("#idBox").val();
 
     if (val === "") return false; // Skip if field is blank
@@ -29,6 +36,9 @@ function verifyID() {
                 sweetAlert("Shoot!", "Something has gone awry! Please let a staff member know.", "warning");
                 console.warn(resp);
             }
+        })
+        .always(function () {
+            $(".card").LoadingOverlay("hide", true);
         });
 }
 

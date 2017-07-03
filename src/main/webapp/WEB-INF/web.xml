@@ -13,7 +13,7 @@
 
     <servlet>
         <servlet-name>ClientUI</servlet-name>
-        <servlet-class>edu.sdsu.its.Routes.ClientIndex</servlet-class>
+        <servlet-class>edu.sdsu.its.Routes.Client</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ClientUI</servlet-name>

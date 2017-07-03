@@ -16,13 +16,13 @@ import java.util.Map;
  * @author Tom Paulus
  *         Created on 6/24/17.
  */
-public class ClientIndex extends HttpServlet {
+public class Client extends HttpServlet {
     private final JtwigRenderer renderer = JtwigRenderer.defaultRenderer();
     final String TEMPLATE_PATH = "/WEB-INF/templates/client/index.twig";
 
     private static Page[] SITEMAP = null;
 
-    public ClientIndex() {
+    public Client() {
         super();
 
         if (SITEMAP == null) {
