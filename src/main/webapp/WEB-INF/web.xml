@@ -21,6 +21,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>Quick Clock</servlet-name>
+        <servlet-class>edu.sdsu.its.Routes.QuickClock</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Quick Clock</servlet-name>
+        <url-pattern>/qc</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>FollowUp Unsubscribe</servlet-name>
         <servlet-class>edu.sdsu.its.Routes.FollowUpUnSub</servlet-class>
     </servlet>

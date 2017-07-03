@@ -1,0 +1,23 @@
+<div class="container">
+    <div class="card welcome">
+        <div class="card-block">
+            <h4 class="card-title">Welcome</h4>
+            <h6 class="card-subtitle mb-4">Quick Clock</h6>
+            <h6 class="card-action mb-2">Please enter your Staff ID below.</h6>
+            <form onsubmit="hideKeyboard(); verifyID(); return false;" novalidate id="idEntryForm">
+                <div class="row">
+                    <div class="form-group offset-md-1 col-10">
+                        <input type="number" class="form-control" id="idBox" title="REDID" name="id" required
+                               autocomplete="off">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="offset-md-3 col-6">
+                        <button type="submit" class="btn btn-primary">Next&nbsp;
+                            <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
