@@ -10,16 +10,16 @@ var appointmentMade = false;
  * Verify entered ID
  */
 function verifyID() {
+    var val = $("#idBox").val();
+
+    if (val === "") return false; // Skip if field is blank
+
     $(".card").LoadingOverlay("show",
         {
             color: "rgba(255, 255, 255, 0.80)",
             image: "",
             fontawesome: "fa fa-spinner fa-spin"
         });
-
-    var val = $("#idBox").val();
-
-    if (val === "") return false; // Skip if field is blank
 
     $.ajax({
         method: "GET",
