@@ -18,27 +18,4 @@
     </button>
 </div>
 
-<script type="text/javascript">
-    const timeout = 30; // Session Timeout - Seconds\
-    var t;
-
-    window.onload = resetTimer;
-
-    // DOM Events
-    document.onmousemove = resetTimer;
-    document.onkeypress = resetTimer;
-    document.onload = resetTimer;
-    document.onmousemove = resetTimer;
-    document.onmousedown = resetTimer; // touchscreen presses
-    document.ontouchstart = resetTimer;
-    document.onclick = resetTimer;     // touchpad clicks
-    document.onscroll = resetTimer;    // scrolling with arrow keys
-    document.onkeypress = resetTimer;
-
-    function resetTimer() {
-        clearTimeout(t);
-        t = setTimeout(reset, timeout * 1000)
-    }
-</script>
-
 {% include "footer.twig" %}

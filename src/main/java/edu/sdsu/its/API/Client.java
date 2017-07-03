@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 import java.util.Collections;
 
 /**
@@ -44,8 +45,16 @@ public class Client {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@QueryParam("id") String uid) {
-        uid = uid.replace(" ", "+"); // Re Encode Spaces as + signs
         LOGGER.info("Received Request: [GET] LOGIN - id = " + uid);
+
+        if (uid == null || uid.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(
+                    new SimpleMessage("Error",
+                            "No ID Specified").asJson())
+                    .build();
+        }
+
+        uid = new String(Base64.getDecoder().decode(uid));
 
         int id = User.parseSwipe(uid);
         Staff staff = Staff.getStaff(id);
@@ -173,7 +182,5 @@ public class Client {
             this.ownerId = String.join("", Collections.nCopies(ID_LENGTH - REVEAL, MASK_CHAR))
                     + String.format("%0" + REVEAL + "d", appointment.getOwnerID() % ((int) Math.pow(10, REVEAL)));
         }
-
-
     }
 }

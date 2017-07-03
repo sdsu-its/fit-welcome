@@ -1,4 +1,4 @@
-package edu.sdsu.its.API;
+package edu.sdsu.its.Welcome;
 
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.API.Models.User;

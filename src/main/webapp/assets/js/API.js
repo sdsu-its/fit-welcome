@@ -23,7 +23,7 @@ function verifyID() {
 
     $.ajax({
         method: "GET",
-        url: "api/client/login?id=" + val
+        url: "api/client/login?id=" + btoa(val)
     })
         .done(function (resp) {
             sessionStorage.setItem("user", JSON.stringify(resp));

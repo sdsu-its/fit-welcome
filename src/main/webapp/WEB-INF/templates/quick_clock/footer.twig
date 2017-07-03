@@ -29,5 +29,17 @@
     });
 </script>
 
+<script type="application/javascript">
+    document.onkeypress = function () {
+        const inputBox = document.getElementById("idBox");
+
+        if ($("div.card.welcome:visible").length > 0) {
+            var value = inputBox.value;
+            inputBox.select();
+            inputBox.value = value;
+        }
+    };
+</script>
+
 </body>
 </html>

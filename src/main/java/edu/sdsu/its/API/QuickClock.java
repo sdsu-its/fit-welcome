@@ -2,11 +2,13 @@ package edu.sdsu.its.API;
 
 import edu.sdsu.its.API.Models.SimpleMessage;
 import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.Welcome.Clock;
 import org.apache.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Base64;
 
 /**
  * @author Tom Paulus
@@ -26,8 +28,17 @@ public class QuickClock {
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response getClockStatus(@QueryParam("id") final int id) {
+    public Response getClockStatus(@QueryParam("id") String id) {
         LOGGER.info("Received Request: [GET] CLOCK/STATUS - id = " + id);
+
+        if (id == null || id.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(
+                    new SimpleMessage("Error",
+                            "No ID Specified").asJson())
+                    .build();
+        }
+
+        id = new String(Base64.getDecoder().decode(id));
 
         Staff staff = Staff.getStaff(id);
         if (staff == null || !staff.clockable) {
@@ -51,8 +62,17 @@ public class QuickClock {
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response toggleClock(@QueryParam("id") final int id) {
+    public Response toggleClock(@QueryParam("id") String id) {
         LOGGER.info("Received Request: [GET] CLOCK/TOGGLE - id = " + id);
+
+        if (id == null || id.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(
+                    new SimpleMessage("Error",
+                            "No ID Specified").asJson())
+                    .build();
+        }
+
+        id = new String(Base64.getDecoder().decode(id));
 
         Staff staff = Staff.getStaff(id);
         if (staff == null || !staff.clockable) {

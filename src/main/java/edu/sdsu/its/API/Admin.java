@@ -2,6 +2,7 @@ package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
 import edu.sdsu.its.API.Models.SimpleMessage;
+import edu.sdsu.its.Welcome.Clock;
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.Welcome.Report;
 import edu.sdsu.its.API.Models.Event;

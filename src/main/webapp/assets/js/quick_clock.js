@@ -12,7 +12,7 @@ function verifyID() {
 
     $.ajax({
         method: "GET",
-        url: "api/clock/status?id=" + val
+        url: "api/clock/status?id=" + btoa(val)
     })
         .done(function (resp) {
             sessionStorage.setItem("id", val);
@@ -46,7 +46,7 @@ function toggleClock() {
 
     $.ajax({
         method: "GET",
-        url: "api/clock/toggle?id=" + sessionStorage.getItem("id")
+        url: "api/clock/toggle?id=" + btoa(sessionStorage.getItem("id"))
     })
         .done(function (resp) {
             if (resp.toLowerCase() === 'true') {

@@ -16,5 +16,41 @@
 <script src="assets/lib/loadingoverlay.min.js" type="application/javascript"></script>
 <script src="assets/js/viewSupport.js" type="application/javascript"></script>
 <script src="assets/js/API.js" type="application/javascript"></script>
+
+<script type="text/javascript">
+    const timeout = 30; // Session Timeout - Seconds\
+    var t;
+
+    window.onload = resetTimer;
+
+    // DOM Events
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onmousedown = resetTimer; // touchscreen presses
+    document.ontouchstart = resetTimer;
+    document.onclick = resetTimer;     // touchpad clicks
+    document.onscroll = resetTimer;    // scrolling with arrow keys
+    document.onkeypress = resetTimer;
+
+    function resetTimer() {
+        clearTimeout(t);
+        t = setTimeout(reset, timeout * 1000)
+    }
+</script>
+
+<script type="application/javascript">
+    document.onkeypress = function () {
+        const inputBox = document.getElementById("idBox");
+
+        if ($("div.card.id-entry:visible").length > 0) {
+            var value = inputBox.value;
+            inputBox.select();
+            inputBox.value = value;
+        }
+    };
+</script>
+
 </body>
 </html>
