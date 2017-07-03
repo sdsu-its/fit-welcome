@@ -171,7 +171,7 @@ public class Client {
             this.name = String.format("%s, %s.", appointment.lastName, appointment.firstName.charAt(0));
             this.type = appointment.type;
             this.ownerId = String.join("", Collections.nCopies(ID_LENGTH - REVEAL, MASK_CHAR))
-                    + appointment.getOwnerID() % ((int) Math.pow(10, REVEAL));
+                    + String.format("%0" + REVEAL + "d", appointment.getOwnerID() % ((int) Math.pow(10, REVEAL)));
         }
 
 

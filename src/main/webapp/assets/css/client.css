@@ -136,6 +136,9 @@ body div.container div.card.appointment-list div.list-parent {
     padding: 15px 15px 5px;
     border-radius: 5px;
     background: #ECEFF4;
+
+    max-height: 65vh;
+    overflow: scroll;
 }
 
 body div.container div.card.appointment-list #appointment-list {
