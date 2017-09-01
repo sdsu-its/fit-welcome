@@ -16,9 +16,15 @@ FIT Welcome also includes various staff tools, including...
 ## Setup
 FIT Welcome is written primarily in Java and is run using the TomCat framework to run the WebSites. A MySQL DB is used to store user information, as well as log events and clock in/out times.
 
-__FollowUp__ is an additional optional module that is run independently as a Java Executable at the end of every day (or whenever you like) that sends a follow up email with a survey link to users who have visited within the last X days. There is also a param to limit the number of emails a user gets.
+__FollowUp__ is an integrated module that will prompt recent visitors to provide feedback on the service that they received with a given schedule, like at the end of every day (or whenever you like) that sends a follow up email with a survey link to users who have visited within the last X days. There is also a param to limit the number of emails a user gets.
+ - Param: `followup_enable` - Enables the Job that check for eligible events and send emails to the respective parties
+ - Param: `followup_schedule` - A CRON String that determines the schedule that Follow Up messages will be sent.
  - Param: `followup_freshness` - Within how many days to contact the users. For example a value of 3 would mean to contact those who have visited in the last 3 days.
  - Param: `followup_max` - The minimum number of days since the user was last emailed. For Example a value of 7 would mean that a user who visits every day would only get an email every 7 days.
+
+__Alerts__ is an integrated module that will send an alert to all users who are still clocked-in at the time that the job is run. This is intedned to be run at the end of the business day to alert cockable staff who forgot to clock out – as staff who are not clocked-out will not be able to clock-in the next day.
+ - Param: `alerts_enable` - Enables the Job that reminds clocked-in users of their status
+ - Param: `alerts_schedule` - A CRON String that determines the schedule that Alert messages will be sent.
 
 __Blackboard__ can be integrated to sync Users who have a Numerical Student ID, external ID, or Username with your Users Table in the DB. 
 
@@ -147,6 +153,8 @@ The name of the app that you want to use needs to be set as the `WELCOME_APP` en
 You will also need to set the `VAULT_ADDR`, `VAULT_ROLE` and `VAULT_SECRET` environment variables to their corresponding values.
 
 #### Production
+- `alert_enable` = Enables Non-Clock Out Email Alert Messages
+- `alert_schedule` = CRON Schedule for Non-Clock Out emails
 - `bb-API-secret` = Name of the Secret with the Blackboard Application Credentials
 - `bb-url` = Blackboard URL
 - `syncEnable` = Enable/Disable (T/F) Blackboard Sync
@@ -154,6 +162,8 @@ You will also need to set the `VAULT_ADDR`, `VAULT_ROLE` and `VAULT_SECRET` envi
 - `db-password` = Database Password
 - `db-url` = jdbc:mysql://db_host:3306/db_name _replace db_host, db_name and possibly the port with your MySQL server info_
 - `db-user` = Database Username
+- `followup_enable` = Enables Follow Up Survey Emails
+- `followup_schedule` = CRON Schedule for Follow Up Survey Emails to be sent 
 - `followup_freshness` = The maximum amount of time since the user's last visit to email the user
 - `followup_max` = The minimum number of days between emails
 - `followup_survey_link` = Survey Link for the User, use the string `{{ event_id }}` to fill in the Event ID.

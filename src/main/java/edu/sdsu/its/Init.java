@@ -1,8 +1,8 @@
 package edu.sdsu.its;
 
-import edu.sdsu.its.Jobs.SyncUserDB;
-import edu.sdsu.its.fit_welcome.DB;
-import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.Jobs.*;
+import edu.sdsu.its.Welcome.DB;
+import edu.sdsu.its.API.Models.Staff;
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebListener;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -54,6 +55,7 @@ public class Init implements ServletContextListener {
         } catch (SchedulerException e) {
             LOGGER.error("Problem Starting Scheduler", e);
         }
+
         try {
             String envDisable = System.getenv("BB_SYNC_DISABLE");
             if (Boolean.parseBoolean(Vault.getParam("syncEnable")) && !(envDisable != null && envDisable.toUpperCase().equals("TRUE")))
@@ -64,6 +66,28 @@ public class Init implements ServletContextListener {
                 LOGGER.warn("User Sync has been DISABLED - Check Vault Config to Enable");
         } catch (SchedulerException e) {
             LOGGER.error("Problem Scheduling User Sync Job", e);
+        }
+
+        try {
+            if (Boolean.parseBoolean(Vault.getParam("alert_enable"))) {
+                LOGGER.info("Scheduling Non-Clock Out Alerts Job");
+                ClockAlert.schedule(Schedule.getScheduler(), Vault.getParam("alert_schedule"));
+            } else {
+                LOGGER.warn("Non-Clock Out alerts have been disabled via the Vault - Job will NOT be scheduled");
+            }
+        } catch (SchedulerException | ParseException e) {
+            LOGGER.error("Problem Scheduling Non-Clock Out Alerts Job", e);
+        }
+
+        try {
+            if (Boolean.parseBoolean(Vault.getParam("followup_enable"))) {
+                LOGGER.info("Scheduling Follow Up Survey Job");
+                FollowUp.schedule(Schedule.getScheduler(), Vault.getParam("followup_schedule"));
+            } else {
+                LOGGER.warn("Follow Up Survey Emails have been disabled via the Vault - Job will NOT be scheduled");
+            }
+        } catch (SchedulerException | ParseException e) {
+            LOGGER.error("Problem Scheduling Non-Clock Out Alerts Job", e);
         }
     }
 

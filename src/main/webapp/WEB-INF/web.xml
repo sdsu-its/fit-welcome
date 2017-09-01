@@ -4,17 +4,17 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
         version="3.1">
-    <display-name>Fit Center Welcome Console</display-name>
+    <display-name>Welcome - Visitor Tracking &amp; Analytics</display-name>
 
     <servlet>
-        <servlet-name>edu.sdsu.its.fit_welcome</servlet-name>
+        <servlet-name>edu.sdsu.its.Welcome</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 
         <!-- Register resources and providers under my.package.-->
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>
-                edu.sdsu.its.fit_welcome
+                edu.sdsu.its.API
             </param-value>
         </init-param>
 
@@ -25,7 +25,7 @@
         <listener-class>edu.sdsu.its.Init</listener-class>
     </listener>
     <servlet-mapping>
-        <servlet-name>edu.sdsu.its.fit_welcome</servlet-name>
+        <servlet-name>edu.sdsu.its.Welcome</servlet-name>
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
     <session-config>

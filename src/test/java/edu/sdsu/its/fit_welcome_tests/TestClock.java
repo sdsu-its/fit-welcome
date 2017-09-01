@@ -1,7 +1,7 @@
 package edu.sdsu.its.fit_welcome_tests;
 
-import edu.sdsu.its.fit_welcome.Clock;
-import edu.sdsu.its.fit_welcome.Models.Staff;
+import edu.sdsu.its.API.Clock;
+import edu.sdsu.its.API.Models.Staff;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
