@@ -145,6 +145,24 @@ function showPage(pageName) {
     });
 }
 
+/**
+ * Prepare and Show Appointment Scheduler Card.
+ * Uses Acuity Provided iframe.
+ *
+ * @param appointmentID Appointment ID being booked
+ */
+function scheduler(appointmentID) {
+    var user = JSON.parse(sessionStorage.getItem("user"));
+
+    $("#scheduler")[0].src = "https://fitcenter.acuityscheduling.com/schedule.php?appointmentType={{AID}}&first_name={{FIRST}}&last_name={{LAST}}&email={{EMAIL}}&field:2114596={{REDID}}"
+        .replace("{{AID}}", appointmentID)
+        .replace("{{FIRST}}", user.firstName)
+        .replace("{{LAST}}", user.lastName)
+        .replace("{{EMAIL}}", user.email)
+        .replace("{{REDID}}", user.id);
+    showPage("acuity-scheduler");
+}
+
 //noinspection JSUnusedGlobalSymbols
 /**
  * Log an event. Used by buttons in the sitemap.json file.

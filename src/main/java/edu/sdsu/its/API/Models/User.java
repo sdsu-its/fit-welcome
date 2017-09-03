@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 public class User {
     @Expose public int id;
     @Expose public String firstName;
-    public String lastName;
-    public String email;
+    @Expose public String lastName;
+    @Expose public String email;
     public boolean subscribed;
 
     public User(int id, String firstName, String lastName, String email, boolean subscribed) {

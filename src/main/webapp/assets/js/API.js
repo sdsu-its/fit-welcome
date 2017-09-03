@@ -14,7 +14,7 @@ function verifyID() {
 
     if (val === "") return false; // Skip if field is blank
 
-    $(".card").LoadingOverlay("show",
+    $(".card.id-entry").LoadingOverlay("show",
         {
             color: "rgba(255, 255, 255, 0.80)",
             image: "",
