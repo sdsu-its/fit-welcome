@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.util.TimeZone;
 
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * @author Tom Paulus
@@ -37,10 +38,14 @@ public class ClockAlert implements Job {
                 .build();
 
         // Trigger the job to run now, and then repeat every X Seconds
-        CronTriggerImpl trigger = new CronTriggerImpl();
-        trigger.withIdentity("Clock Alerts CRON Trigger", "CRON");
-        trigger.setCronExpression(cron);
-        trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
+        CronTriggerImpl cronTrigger = new CronTriggerImpl();
+        cronTrigger.setCronExpression(cron);
+        cronTrigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
+
+        Trigger trigger = newTrigger()
+                .withIdentity("Clock Alerts CRON Trigger", "CRON")
+                .withSchedule(cronTrigger.getScheduleBuilder())
+                .build();
 
         // Tell quartz to schedule the job using our trigger
         scheduler.scheduleJob(job, trigger);
