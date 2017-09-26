@@ -46,6 +46,7 @@ public class FollowUp implements Job {
 
         // Trigger the job to run now, and then repeat every X Seconds
         CronTriggerImpl trigger = new CronTriggerImpl();
+        trigger.withIdentity("Follow Up CRON Trigger", "CRON");
         trigger.setCronExpression(cron);
         trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
 
