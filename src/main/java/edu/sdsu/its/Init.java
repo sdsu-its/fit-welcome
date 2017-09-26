@@ -87,7 +87,7 @@ public class Init implements ServletContextListener {
                 LOGGER.warn("Follow Up Survey Emails have been disabled via the Vault - Job will NOT be scheduled");
             }
         } catch (SchedulerException | ParseException e) {
-            LOGGER.error("Problem Scheduling Non-Clock Out Alerts Job", e);
+            LOGGER.error("Problem Scheduling Follow Up Survey Job", e);
         }
     }
 
