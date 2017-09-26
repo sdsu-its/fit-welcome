@@ -38,6 +38,7 @@ public class ClockAlert implements Job {
 
         // Trigger the job to run now, and then repeat every X Seconds
         CronTriggerImpl trigger = new CronTriggerImpl();
+        trigger.withIdentity("Clock Alerts CRON Trigger", "CRON");
         trigger.setCronExpression(cron);
         trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
 
