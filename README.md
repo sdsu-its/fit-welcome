@@ -28,6 +28,8 @@ __Alerts__ is an integrated module that will send an alert to all users who are 
 
 __Blackboard__ can be integrated to sync Users who have a Numerical Student ID, external ID, or Username with your Users Table in the DB. 
 
+For generating CRON Schedules for Quartz Scheduler, the Job Agent that has been implemented, https://www.freeformatter.com/cron-expression-generator-quartz.html may come in very useful, since Quartz implements a unix-like format, but it is slightly different and strings are not cross compatible between `crontab` and Quartz.
+
  - ___Full Param List is below!___
 
 
