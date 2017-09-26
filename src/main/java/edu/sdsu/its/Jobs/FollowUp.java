@@ -49,6 +49,8 @@ public class FollowUp implements Job {
         trigger.setCronExpression(cron);
         trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
 
+        LOGGER.info(String.format("Scheduling Follow up job with CRON Schedule \"%s\"", cron));
+        
         // Tell quartz to schedule the job using our trigger
         scheduler.scheduleJob(job, trigger);
     }
