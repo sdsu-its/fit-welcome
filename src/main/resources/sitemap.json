@@ -12,16 +12,12 @@
         "action": "showPage('ID-Topics')"
       },
       {
-        "title": "Schedule a ParScore Appointment",
-        "action": "scheduler(536800)"
+        "title": "Learn how to use a new technology",
+        "action": "finish('Attend a workshop')"
       },
       {
         "title": "Help with Blackboard",
         "action": "finish('Meet an ID', 'Blackboard')"
-      },
-      {
-        "title": "Learn how to use a new technology",
-        "action": "finish('Attend a workshop')"
       },
       {
         "title": "Something that is not listed here",
