@@ -1,0 +1,17 @@
+{% include "header.twig" %}
+
+{% include "card-welcome.twig" %}
+{% include "card-action.twig" %}
+{% include "card-confirmation.twig" %}
+
+<div style="display: none">
+    <button type="button"
+            class="btn btn-primary"
+            id="back-button"
+            onclick="reset()">
+        <i class="fa fa-sign-out fa-flip-horizontal" aria-hidden="true"></i>
+        &nbsp; Log Out
+    </button>
+</div>
+
+{% include "footer.twig" %}

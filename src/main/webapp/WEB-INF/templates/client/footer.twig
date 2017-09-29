@@ -1,0 +1,58 @@
+{# Common JS #}
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+        integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"
+        integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
+        crossorigin="anonymous"></script>
+
+{# Acuity Scheduler Support #}
+<script src="https://d3gxy7nm8y4yjr.cloudfront.net/js/embed.js" type="text/javascript"></script>
+
+{# APP JS #}
+<script src="assets/lib/sweetalert.min.js" type="application/javascript"></script>
+<script src="assets/lib/loadingoverlay.min.js" type="application/javascript"></script>
+<script src="assets/js/viewSupport.js" type="application/javascript"></script>
+<script src="assets/js/API.js" type="application/javascript"></script>
+
+<script type="text/javascript">
+    const timeout = 30; // Session Timeout - Seconds\
+    var t;
+
+    window.onload = resetTimer;
+
+    // DOM Events
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onmousedown = resetTimer; // touchscreen presses
+    document.ontouchstart = resetTimer;
+    document.onclick = resetTimer;     // touchpad clicks
+    document.onscroll = resetTimer;    // scrolling with arrow keys
+    document.onkeypress = resetTimer;
+
+    function resetTimer() {
+        clearTimeout(t);
+        t = setTimeout(reset, timeout * 1000)
+    }
+</script>
+
+<script type="application/javascript">
+    document.onkeypress = function () {
+        const inputBox = document.getElementById("idBox");
+
+        if ($("div.card.id-entry:visible").length > 0) {
+            var value = inputBox.value;
+            inputBox.select();
+            inputBox.value = value;
+        }
+    };
+</script>
+
+</body>
+</html>

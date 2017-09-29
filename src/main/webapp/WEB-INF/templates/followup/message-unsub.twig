@@ -1,0 +1,17 @@
+<div class="message" id="unsubscribe" style="display: none">
+    <h1>Hi <span class="firstName"></span> <span class="lastName"></span>!</h1>
+    <p>Your email address has been removed from our list. You will no longer receive any emails as a result of
+        visiting the FIT Center.</p>
+    <p>We're sorry to see you go.</p>
+    <!-- Start Form -->
+    <form id="subscribe-form" onsubmit="subscribe(); return false;">
+        <label>Enter your email address below if you want to receive emails again</label>
+        <input id="email" name="email" size="25" class="email" placeholder="Your Email Address"
+               onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your Email Address'"
+               title="Please enter your Email Address"/>
+        <input type="submit" value="Subscribe" class="submit" title="Subscribe to List" required
+               autocomplete="off"/>
+    </form>
+    <!-- End Form -->
+
+</div>

@@ -1,0 +1,147 @@
+body {
+    background: url(../images/qc-background.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+
+    color: #374355;
+
+    width: 100%;
+    height: 100%;
+}
+
+body div.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+body div.container div.card {
+    background-color: #FFFFFF;
+    box-shadow: 15px 15px 45px 1px #222222;
+    border-radius: .5rem;
+}
+
+body div.container div.card div.card-block {
+    padding: 2.5rem;
+}
+
+#back-button {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    height: 3rem;
+    border-radius: 3rem;
+
+    background-color: #374355;
+    border-color: #374355;
+    box-shadow: 5px 5px 45px 1px #212121;
+
+    font-size: 1.5rem;
+    font-weight: 200;
+}
+
+/* Welcome Card Styles */
+
+body div.container div.card.welcome {
+    text-align: center;
+}
+
+body div.container div.card.welcome h4.card-title {
+    font-size: 4rem;
+    font-weight: 300;
+}
+
+body div.container div.card.welcome h6.card-subtitle {
+    font-size: 3rem;
+    font-weight: 200;
+    font-style: italic;
+}
+
+body div.container div.card.welcome h6.card-action {
+    font-size: 2rem;
+    font-weight: 200;
+}
+
+body div.container div.card.welcome img.logo {
+    height: 4rem;
+    margin: 2rem 0 -.75rem;
+}
+
+body div.container div.card.welcome div.row {
+    margin-top: 1rem;
+}
+
+body div.container div.card.welcome button {
+    width: 100%;
+    height: 4.5rem;
+
+    background-color: #374355;
+    border-color: #374355;
+
+    font-size: 2rem;
+    font-weight: 200;
+}
+
+body div.container div.card.welcome input {
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+/* Action Card Styles */
+
+body div.container div.card.action {
+    text-align: center;
+}
+
+body div.container div.card.action h5.card-title {
+    font-size: 2.5rem;
+    font-weight: 200;
+    margin-bottom: 1.75rem;
+}
+
+body div.container div.card.action h5.card-title span.status {
+    font-style: italic;
+}
+
+body div.container div.card.action div.row {
+    margin-top: 2rem;
+}
+
+body div.container div.card.action button {
+    width: 100%;
+    height: 8rem;
+
+    background-color: #374355;
+    border-color: #374355;
+
+    font-size: 3rem;
+    font-weight: 200;
+}
+
+/* Confirmation Card Styles */
+body div.container div.card.confirmation {
+    text-align: center;
+}
+
+body div.container div.card.confirmation h4.card-title {
+    font-size: 5.5rem;
+    font-weight: 300;
+    margin-bottom: 2.25rem;
+}
+
+body div.container div.card.confirmation h6.card-subtitle {
+    font-size: 2rem;
+    font-weight: 200;
+}
