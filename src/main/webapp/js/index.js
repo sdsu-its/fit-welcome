@@ -36,10 +36,9 @@ window.onload = function () {
 document.onkeypress = function () {
     const inputBox = document.getElementById("idBox");
 
-    if (currentPageID == "login") {
-        var value = inputBox.value;
-        inputBox.select();
-        inputBox.value = value;
+    if (currentPageID === "login") {
+        console.trace("Auto Capture Triggered!");
+        // inputBox.select();
     }
 };
 

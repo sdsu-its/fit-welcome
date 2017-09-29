@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * @author Tom Paulus
@@ -45,10 +46,17 @@ public class FollowUp implements Job {
                 .build();
 
         // Trigger the job to run now, and then repeat every X Seconds
-        CronTriggerImpl trigger = new CronTriggerImpl();
-        trigger.setCronExpression(cron);
-        trigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
+        CronTriggerImpl cronTrigger = new CronTriggerImpl();
+        cronTrigger.setCronExpression(cron);
+        cronTrigger.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
 
+        Trigger trigger = newTrigger()
+                .withIdentity("Follow Up CRON Trigger", "CRON")
+                .withSchedule(cronTrigger.getScheduleBuilder())
+                .build();
+
+        LOGGER.info(String.format("Scheduling Follow up job with CRON Schedule \"%s\"", cron));
+        
         // Tell quartz to schedule the job using our trigger
         scheduler.scheduleJob(job, trigger);
     }
