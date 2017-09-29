@@ -1,0 +1,24 @@
+{% for page in pages %}
+    <div class="container" style="display: none;">
+        <div class="card goal goal-{{ lower(page.pageID) }}">
+            <div class="card-block">
+                <h5 class="card-title">{{ page.pageHead }}</h5>
+                {% for button in page.buttons %}
+                    {% if (even(loop.index0)) %}
+                        <div class="row">
+                    {% endif %}
+                    <div class="col">
+                        <button
+                                type="button"
+                                class="btn btn-primary"
+                                onclick="{{ button.action }}">
+                            {{ button.title }}</button>
+                    </div>
+                    {% if (odd(loop.index0) or loop.last) %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

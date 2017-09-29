@@ -1,7 +1,6 @@
 package edu.sdsu.its.Welcome;
 
 import com.opencsv.CSVWriter;
-import edu.sdsu.its.API.Clock;
 import org.apache.log4j.Logger;
 import org.joda.time.format.DateTimeFormat;
 

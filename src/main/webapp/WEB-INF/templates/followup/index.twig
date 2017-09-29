@@ -1,0 +1,17 @@
+{% include "header.twig" %}
+
+<!-- Start Container -->
+<div class="container">
+
+    <!-- Start Logo -->
+    <a href="https://its.sdsu.edu" title="ITS Home Page"><img src="../assets/images/logo.png" alt="ITS Logo" height="74"
+                                                              class="logo"/></a>
+    <!-- End Logo -->
+
+    {% include "message-loading.twig" %}
+    {% include "message-404.twig" %}
+    {% include "message-unsub.twig" %}
+    {% include "message-resub.twig" %}
+</div><!-- End Container -->
+
+{% include "footer.twig" %}

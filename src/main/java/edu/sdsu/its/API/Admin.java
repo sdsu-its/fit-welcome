@@ -1,6 +1,8 @@
 package edu.sdsu.its.API;
 
 import com.google.gson.Gson;
+import edu.sdsu.its.API.Models.SimpleMessage;
+import edu.sdsu.its.Welcome.Clock;
 import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.Welcome.Report;
 import edu.sdsu.its.API.Models.Event;
@@ -46,7 +48,7 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to CLOCKABLESTAFF - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         Staff[] clockableStaff = DB.getAllStaff("WHERE clockable = 1");
@@ -69,7 +71,7 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to TIMEENTRY - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         TimeEntry entry = GSON.fromJson(payload, TimeEntry.class);
@@ -82,7 +84,7 @@ public class Admin {
             DB.clockOut(entry.user.id, "STR_TO_DATE('" + entry.getDate() + "','%Y-%m-%dT%H:%i')");
         }
 
-        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new Web.SimpleMessage("Clock Record Added Successfully"))).build();
+        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Clock Record Added Successfully"))).build();
     }
 
 
@@ -101,7 +103,7 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to CLOCKOUTALL - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         for (Staff s : DB.getAllStaff("WHERE clockable = 1")) {
@@ -114,7 +116,7 @@ public class Admin {
             }
         }
 
-        return Response.status(Response.Status.ACCEPTED).entity(GSON.toJson(new Web.SimpleMessage("All Users have been Clocked Out"))).build();
+        return Response.status(Response.Status.ACCEPTED).entity(GSON.toJson(new SimpleMessage("All Users have been Clocked Out"))).build();
     }
 
     /**
@@ -136,13 +138,13 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to TIMESHEETREPORT - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         Report.TimesheetReport timesheetReport = new Report.TimesheetReport(Staff.getStaff(requester), startDate, endDate, individual);
         new Thread(timesheetReport).start();
 
-        return Response.status(Response.Status.OK).entity(GSON.toJson(new Web.SimpleMessage("Timesheet Report Generated - Will be Emailed"))).build();
+        return Response.status(Response.Status.OK).entity(GSON.toJson(new SimpleMessage("Timesheet Report Generated - Will be Emailed"))).build();
     }
 
     /**
@@ -167,13 +169,13 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to USAGEREPORT - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         Report.UsageReport usageReport = new Report.UsageReport(Staff.getStaff(requester), startDate, endDate, GSON.fromJson(payload, ArrayList.class));
         new Thread(usageReport).start();
 
-        return Response.status(Response.Status.OK).entity(GSON.toJson(new Web.SimpleMessage("Usage Report Generated - Will be Emailed"))).build();
+        return Response.status(Response.Status.OK).entity(GSON.toJson(new SimpleMessage("Usage Report Generated - Will be Emailed"))).build();
     }
 
 
@@ -193,7 +195,7 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to MANUALVISIT - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         Event event = GSON.fromJson(payload, Event.class); // Make Sure to set timeString
@@ -205,7 +207,7 @@ public class Admin {
         if (!m.find()) {
             Log.warn("Problem matching time to RegEx Format");
             Log.debug("Input Date/Time - " + event.timeString);
-            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new Web.SimpleMessage("Error: Improperly Formatted Date String"))).build();
+            return Response.status(Response.Status.PRECONDITION_FAILED).entity(GSON.toJson(new SimpleMessage("Error: Improperly Formatted Date String"))).build();
         }
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm");
@@ -213,7 +215,7 @@ public class Admin {
         event.timeString = new Timestamp(dt.getMillis()).toString();
 
         event.logEvent();
-        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new Web.SimpleMessage("Event Created and Logged Successfully"))).build();
+        return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Event Created and Logged Successfully"))).build();
     }
 
     /**
@@ -232,15 +234,15 @@ public class Admin {
         Staff staff = (requester != null && requester.length() > 0) ? Staff.getStaff(Integer.parseInt(requester)) : null;
         if (staff == null || !staff.admin) {
             Log.warn("Unauthorized Request to NEWSTAFF - ID: " + requester);
-            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new Web.SimpleMessage("ID is not a valid Admin ID"))).build();
+            return Response.status(Response.Status.FORBIDDEN).entity(GSON.toJson(new SimpleMessage("ID is not a valid Admin ID"))).build();
         }
 
         Staff newStaff = GSON.fromJson(payload, Staff.class);
         if (!DB.createNewStaff(newStaff)) {
             Log.warn(String.format("Cannot Create Staff Member (%s %s) ID already exists in DB", newStaff.firstName, newStaff.lastName));
-            return Response.status(Response.Status.BAD_REQUEST).entity(GSON.toJson(new Web.SimpleMessage("ID Already Exists for a Staff Member"))).build();
+            return Response.status(Response.Status.BAD_REQUEST).entity(GSON.toJson(new SimpleMessage("ID Already Exists for a Staff Member"))).build();
         } else {
-            return Response.status(Response.Status.CREATED).entity(GSON.toJson(new Web.SimpleMessage("Staff Member Created"))).build();
+            return Response.status(Response.Status.CREATED).entity(GSON.toJson(new SimpleMessage("Staff Member Created"))).build();
         }
     }
 }
