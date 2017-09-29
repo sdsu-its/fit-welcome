@@ -44,8 +44,12 @@
 
 <script type="application/javascript">
     document.onkeypress = function () {
+        const inputBox = document.getElementById("idBox");
+
         if ($("div.card.id-entry:visible").length > 0) {
-            inputBox.focus();
+            var value = inputBox.value;
+            inputBox.select();
+            inputBox.value = value;
         }
     };
 </script>
