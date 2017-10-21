@@ -1,8 +1,10 @@
 package edu.sdsu.its;
 
-import edu.sdsu.its.Jobs.*;
-import edu.sdsu.its.Welcome.DB;
 import edu.sdsu.its.API.Models.Staff;
+import edu.sdsu.its.Jobs.ClockAlert;
+import edu.sdsu.its.Jobs.FollowUp;
+import edu.sdsu.its.Jobs.SyncUserDB;
+import edu.sdsu.its.Welcome.DB;
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
@@ -22,7 +24,7 @@ import java.util.List;
  * Initialize and Teardown the WebApp and DB
  *
  * @author Tom Paulus
- *         Created on 10/21/2016.
+ * Created on 10/21/2016.
  */
 @WebListener
 public class Init implements ServletContextListener {
@@ -51,7 +53,7 @@ public class Init implements ServletContextListener {
 
         try {
             Schedule.getScheduler().clear();
-            Schedule.getScheduler().startDelayed(30);
+            Schedule.getScheduler().standby();
         } catch (SchedulerException e) {
             LOGGER.error("Problem Starting Scheduler", e);
         }
@@ -88,6 +90,14 @@ public class Init implements ServletContextListener {
             }
         } catch (SchedulerException | ParseException e) {
             LOGGER.error("Problem Scheduling Follow Up Survey Job", e);
+        }
+
+        LOGGER.info("Starting Scheduler");
+        try {
+            Schedule.getScheduler().start();
+            if (!Schedule.getScheduler().isStarted()) throw new RuntimeException("Scheduler did not start!");
+        } catch (SchedulerException | RuntimeException e) {
+            LOGGER.fatal("Could not start Scheduler!", e);
         }
     }
 
