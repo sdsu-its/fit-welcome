@@ -41,7 +41,7 @@ public class FollowUp implements Job {
      * @throws ParseException     There was an issue parsing the CRON String
      */
     public static void schedule(Scheduler scheduler, String cron) throws SchedulerException, ParseException {
-        JobDetail job = newJob(SyncUserDB.class)
+        JobDetail job = newJob(FollowUp.class)
                 .withIdentity("Follow Up", "CRON")
                 .build();
 
