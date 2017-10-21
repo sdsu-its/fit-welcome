@@ -24,7 +24,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class FollowUp implements Job {
     final public static String EMAIL_NAME = "Follow Up Survey";
-    private static final Logger LOGGER = Logger.getLogger(ClockAlert.class);
+    private static final Logger LOGGER = Logger.getLogger(FollowUp.class);
 
     private static List<String> emailsSent = new ArrayList<>();
 
@@ -70,6 +70,8 @@ public class FollowUp implements Job {
         }
         final Event[] events = DB.exportEvents(Integer.parseInt(freshness));
         for (Event e : events) {
+            e.completeOwner();
+
             if (!emailsSent.contains(e.owner.email)) {
                 if (canEmail(e.owner)) {
                     emailsSent.add(e.owner.email);
