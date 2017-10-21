@@ -33,7 +33,7 @@ public class ClockAlert implements Job {
      * @throws ParseException     There was an issue parsing the CRON String
      */
     public static void schedule(Scheduler scheduler, String cron) throws SchedulerException, ParseException {
-        JobDetail job = newJob(SyncUserDB.class)
+        JobDetail job = newJob(ClockAlert.class)
                 .withIdentity("SendClockAlerts", "CRON")
                 .build();
 
