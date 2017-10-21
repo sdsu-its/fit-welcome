@@ -72,6 +72,11 @@ public class FollowUp implements Job {
         for (Event e : events) {
             e.completeOwner();
 
+            if (e.owner == null || e.owner.email == null || e.owner.email.isEmpty()) {
+                LOGGER.error("Could not complete user object for event id " + e.id);
+                continue;
+            }
+
             if (!emailsSent.contains(e.owner.email)) {
                 if (canEmail(e.owner)) {
                     emailsSent.add(e.owner.email);
