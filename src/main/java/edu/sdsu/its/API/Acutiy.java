@@ -22,10 +22,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Communicate with the Acuity Scheduling API
@@ -41,7 +38,7 @@ public class Acutiy {
     private static final DateTimeFormatter acuityFmt = DateTimeFormat.forPattern("hh:mma");
 
     private static final int PAST_DURATION = -1;  // Should be < 0
-    private static final int UPCOMING_DURATION = 3; // Should be > 0
+    private static final int UPCOMING_DURATION = 2; // Should be > 0
     private static final String TIMEZONE = "America/Los_Angeles";
 
     private static String getCurrentTimeStamp(final String pattern) {
@@ -89,6 +86,7 @@ public class Acutiy {
             LOGGER.debug(String.format("Found %d upcoming appointments", upcomingAppointments.size()));
         }
 
+        upcomingAppointments.sort(Comparator.comparing(o -> acuityFmt.parseLocalTime(o.time)));
         return upcomingAppointments.toArray(new Appointment[]{});
     }
 
