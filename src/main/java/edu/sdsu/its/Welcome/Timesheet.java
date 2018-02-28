@@ -47,13 +47,14 @@ public class Timesheet {
             Logger.getLogger(Timesheet.class).info(String.format("Saving Timesheet into %s.csv", fileName));
 
             CSVWriter writer = new CSVWriter(new FileWriter(file));
-            writer.writeNext(new String[]{"Day", "Hours", "Minutes"}); // Header Row
+            writer.writeNext(new String[]{"Day", "Hours", "Minutes", "Hours Fractional"}); // Header Row
 
             for (String day : days.keySet()) {
                 final int hours = (int) (days.get(day) / 60);
                 final int min = (int) (days.get(day) % 60);
+                final String hours_fractional = String.format("%.1f", days.get(day) / 60);
 
-                writer.writeNext(new String[]{day, Integer.toString(hours), Integer.toString(min)});
+                writer.writeNext(new String[]{day, Integer.toString(hours), Integer.toString(min), hours_fractional});
             }
             writer.close();
         } catch (IOException e) {
